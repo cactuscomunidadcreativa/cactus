@@ -1345,3 +1345,224 @@ textarea {
 [dir="rtl"] textarea {
     text-align: right;
 }
+
+/* ===================================
+   Plutchik Emotion Wheel
+   =================================== */
+.plutchik-wheel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    max-width: 100%;
+}
+
+.plutchik-wheel-container h3 {
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.plutchik-svg {
+    max-width: 100%;
+    height: auto;
+    cursor: pointer;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.plutchik-svg:hover {
+    transform: scale(1.02);
+}
+
+.emotion-segment {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.emotion-segment:hover {
+    filter: brightness(1.1);
+    transform-origin: center;
+}
+
+.emotion-segment.selected {
+    stroke: var(--text-primary);
+    stroke-width: 3;
+    filter: brightness(1.15);
+}
+
+.plutchik-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.plutchik-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.plutchik-wheel {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.plutchik-selection {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius);
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.plutchik-selection:not(.hidden) {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.selection-display {
+    margin-bottom: 12px;
+}
+
+.selection-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.selection-emotion {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.intensity-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.intensity-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-right: 4px;
+}
+
+.intensity-btn {
+    padding: 6px 12px;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #333;
+}
+
+.intensity-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.intensity-btn.active {
+    border-color: var(--text-primary);
+    transform: scale(1.1);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+.plutchik-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.plutchik-actions .btn {
+    flex: 1;
+}
+
+/* Plutchik Legend */
+.plutchik-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-sm);
+}
+
+.plutchik-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.plutchik-legend-item:hover {
+    background: var(--bg-card);
+}
+
+.plutchik-legend-item .color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* Modal larger for Plutchik */
+#moodModal .modal-content {
+    max-width: 480px;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .plutchik-svg {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+[data-theme="dark"] .emotion-segment.selected {
+    stroke: #fff;
+}
+
+/* Responsive Plutchik */
+@media (max-width: 640px) {
+    .plutchik-wheel-container {
+        padding: 12px;
+    }
+
+    .plutchik-svg {
+        max-width: 280px;
+    }
+
+    .plutchik-legend {
+        gap: 4px;
+    }
+
+    .plutchik-legend-item {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+
+    #moodModal .modal-content {
+        padding: 16px;
+    }
+}

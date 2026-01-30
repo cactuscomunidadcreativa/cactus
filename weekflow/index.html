@@ -242,26 +242,15 @@
         </div>
 
         <!-- Modals -->
-        <!-- Mood Picker -->
+        <!-- Mood Picker with Plutchik Wheel -->
         <div class="modal hidden" id="moodModal">
-            <div class="modal-content mood-picker">
-                <h3 data-i18n="mood.howAreYou">How are you feeling?</h3>
-                <div class="mood-options">
-                    <button class="mood-option" data-mood="1" onclick="selectMood(1)">😫</button>
-                    <button class="mood-option" data-mood="2" onclick="selectMood(2)">😕</button>
-                    <button class="mood-option" data-mood="3" onclick="selectMood(3)">😐</button>
-                    <button class="mood-option" data-mood="4" onclick="selectMood(4)">😊</button>
-                    <button class="mood-option" data-mood="5" onclick="selectMood(5)">😄</button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="mood.howAreYou">How are you feeling?</h3>
+                    <button class="btn-close" onclick="closeModal('moodModal')">×</button>
                 </div>
-                <div class="energy-slider">
-                    <label data-i18n="mood.energy">Energy Level</label>
-                    <input type="range" id="energyLevel" min="1" max="5" value="3">
-                    <div class="energy-labels">
-                        <span>🔋</span>
-                        <span>⚡</span>
-                    </div>
-                </div>
-                <button class="btn btn-primary btn-block" onclick="saveMood()" data-i18n="actions.save">Save</button>
+                <!-- Plutchik Wheel Container -->
+                <div id="plutchikContainer"></div>
             </div>
         </div>
 
@@ -454,6 +443,7 @@
     </div>
 
     <script src="/weekflow/i18n.js"></script>
+    <script src="/weekflow/plutchik.js"></script>
     <script src="/weekflow/app.js"></script>
 </body>
 </html>

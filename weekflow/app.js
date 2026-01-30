@@ -540,21 +540,82 @@ function loadCarryover() {
 }
 
 // ===================================
-// Mood
+// Mood with Plutchik Wheel
 // ===================================
+let plutchikWheel = null;
 let selectedMood = 4;
 
 function openMoodPicker() {
-    const myMood = state.moods?.find(m => m.member_id === state.currentUser.id);
-    selectedMood = myMood?.mood || 4;
+    const container = document.getElementById('plutchikContainer');
 
-    document.querySelectorAll('.mood-option').forEach(btn => {
-        btn.classList.toggle('selected', parseInt(btn.dataset.mood) === selectedMood);
-    });
-    document.getElementById('energyLevel').value = myMood?.energy || 3;
+    // Initialize Plutchik Wheel if not already
+    if (!plutchikWheel) {
+        plutchikWheel = new PlutchikWheel(container, {
+            onSave: async (selection) => {
+                await savePlutchikMood(selection);
+            },
+            onCancel: () => {
+                closeModal('moodModal');
+            }
+        });
+    }
+
+    // Update language
+    plutchikWheel.setLanguage(currentLang);
+
+    // Load current mood if exists
+    const myMood = state.moods?.find(m => m.member_id === state.currentUser.id);
+    if (myMood?.emotion_data) {
+        plutchikWheel.setSelection(myMood.emotion_data);
+    } else {
+        plutchikWheel.clearSelection();
+    }
+
     document.getElementById('moodModal').classList.remove('hidden');
 }
 
+async function savePlutchikMood(selection) {
+    try {
+        // Map emotion to traditional mood value (1-5)
+        const moodMapping = {
+            joy: 5,
+            anticipation: 4,
+            trust: 4,
+            surprise: 3,
+            fear: 2,
+            sadness: 2,
+            disgust: 2,
+            anger: 1
+        };
+
+        const moodValue = moodMapping[selection.emotion] || 3;
+
+        // Energy based on intensity
+        const energyMapping = {
+            low: 2,
+            medium: 3,
+            high: 4
+        };
+        const energy = energyMapping[selection.intensity] || 3;
+
+        await apiCall('/moods', 'POST', {
+            teamId: state.currentTeam.id,
+            memberId: state.currentUser.id,
+            mood: moodValue,
+            energy: energy,
+            emotion_data: selection  // Store full Plutchik data
+        });
+
+        await refreshData();
+        updateMoodDisplay();
+        closeModal('moodModal');
+
+    } catch (error) {
+        alert('Error saving mood: ' + error.message);
+    }
+}
+
+// Fallback for simple mood selection
 function selectMood(mood) {
     selectedMood = mood;
     document.querySelectorAll('.mood-option').forEach(btn => {
@@ -563,7 +624,7 @@ function selectMood(mood) {
 }
 
 async function saveMood() {
-    const energy = parseInt(document.getElementById('energyLevel').value);
+    const energy = parseInt(document.getElementById('energyLevel')?.value || 3);
 
     try {
         await apiCall('/moods', 'POST', {

@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
 
     // POST - Create or update mood
     if (req.method === 'POST') {
-      const { teamId, memberId, mood, energy, note } = req.body;
+      const { teamId, memberId, mood, energy, note, emotion_data } = req.body;
 
       if (!teamId || !memberId || !mood || !energy) {
         return res.status(400).json({ error: 'teamId, memberId, mood, and energy required' });
@@ -80,13 +80,14 @@ module.exports = async (req, res) => {
       const moodId = generateId();
 
       // Upsert - update if exists, insert if not
+      // emotion_data stores Plutchik wheel selection as JSON
       const result = await pool.query(
-        `INSERT INTO moods (id, team_id, member_id, mood, energy, note, week_start)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO moods (id, team_id, member_id, mood, energy, note, week_start, emotion_data)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (member_id, week_start)
-         DO UPDATE SET mood = $4, energy = $5, note = $6, created_at = NOW()
+         DO UPDATE SET mood = $4, energy = $5, note = $6, emotion_data = $8, created_at = NOW()
          RETURNING *`,
-        [moodId, teamId, memberId, mood, energy, note || null, weekStart]
+        [moodId, teamId, memberId, mood, energy, note || null, weekStart, emotion_data ? JSON.stringify(emotion_data) : null]
       );
 
       res.status(201).json(result.rows[0]);

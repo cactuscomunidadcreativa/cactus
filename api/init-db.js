@@ -48,10 +48,19 @@ async function initDatabase() {
         mood INTEGER NOT NULL CHECK (mood >= 1 AND mood <= 5),
         energy INTEGER NOT NULL CHECK (energy >= 1 AND energy <= 5),
         note TEXT,
+        emotion_data JSONB,
         week_start DATE NOT NULL,
         created_at TIMESTAMP DEFAULT NOW(),
         UNIQUE(member_id, week_start)
       );
+
+      -- Add emotion_data column if it doesn't exist (for existing databases)
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='moods' AND column_name='emotion_data') THEN
+          ALTER TABLE moods ADD COLUMN emotion_data JSONB;
+        END IF;
+      END $$;
 
       -- Integration settings table
       CREATE TABLE IF NOT EXISTS integrations (
