@@ -1,31 +1,53 @@
 /* ===================================
    WeekFlow - Main Application
+   Connected to Neon PostgreSQL
    =================================== */
+
+// API Base URL (changes based on environment)
+const API_BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/api'
+    : '/api';
 
 // App State
 let state = {
     currentUser: null,
     currentTeam: null,
     isAdmin: false,
-    presenterMode: false
+    presenterMode: false,
+    loading: false
 };
 
-// Generate unique IDs
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
+// ===================================
+// API Functions
+// ===================================
+async function apiCall(endpoint, method = 'GET', body = null) {
+    const options = {
+        method,
+        headers: { 'Content-Type': 'application/json' }
+    };
 
-// Generate team code
-function generateTeamCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    if (body) {
+        options.body = JSON.stringify(body);
     }
-    return code;
+
+    try {
+        const response = await fetch(`${API_BASE}${endpoint}`, options);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'API Error');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+    }
 }
 
-// Get current week label
+// ===================================
+// Utility Functions
+// ===================================
 function getWeekLabel() {
     const now = new Date();
     const day = now.getDate();
@@ -33,38 +55,16 @@ function getWeekLabel() {
     return `Week of ${month} ${day}`;
 }
 
-// Get week key for storage
-function getWeekKey() {
+function getWeekStart() {
     const now = new Date();
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Monday
+    startOfWeek.setDate(now.getDate() - now.getDay() + 1);
     return startOfWeek.toISOString().split('T')[0];
 }
 
-// ===================================
-// Storage Functions
-// ===================================
-function getTeams() {
-    try {
-        return JSON.parse(localStorage.getItem('weekflow_teams')) || {};
-    } catch (e) {
-        return {};
-    }
-}
-
-function saveTeams(teams) {
-    localStorage.setItem('weekflow_teams', JSON.stringify(teams));
-}
-
-function getTeamData(teamCode) {
-    const teams = getTeams();
-    return teams[teamCode] || null;
-}
-
-function saveTeamData(teamCode, data) {
-    const teams = getTeams();
-    teams[teamCode] = data;
-    saveTeams(teams);
+function showLoading(show = true) {
+    state.loading = show;
+    // Could add a loading indicator to UI
 }
 
 // ===================================
@@ -90,7 +90,7 @@ function showCreateTeam() {
     document.getElementById('createTeamModal').classList.remove('hidden');
 }
 
-function createTeam() {
+async function createTeam() {
     const teamName = document.getElementById('newTeamName').value.trim();
     const adminName = document.getElementById('adminName').value.trim();
 
@@ -99,55 +99,41 @@ function createTeam() {
         return;
     }
 
-    const teamCode = generateTeamCode();
-    const weekKey = getWeekKey();
+    showLoading(true);
 
-    const teamData = {
-        name: teamName,
-        code: teamCode,
-        createdAt: new Date().toISOString(),
-        adminId: generateId(),
-        members: {},
-        weeks: {}
-    };
+    try {
+        const result = await apiCall('/teams', 'POST', {
+            name: teamName,
+            creatorName: adminName
+        });
 
-    // Add admin as first member
-    const adminId = teamData.adminId;
-    teamData.members[adminId] = {
-        id: adminId,
-        name: adminName,
-        isAdmin: true,
-        mood: 4,
-        energy: 3,
-        joinedAt: new Date().toISOString()
-    };
+        state.currentTeam = {
+            id: result.team.id,
+            name: result.team.name,
+            code: result.team.code
+        };
+        state.currentUser = result.member;
+        state.isAdmin = result.member.role === 'admin';
 
-    // Initialize current week
-    teamData.weeks[weekKey] = {
-        showAndTell: [],
-        toDiscuss: [],
-        focus: [],
-        tasks: {}
-    };
-    teamData.weeks[weekKey].tasks[adminId] = [];
+        // Save session
+        localStorage.setItem('weekflow_session', JSON.stringify({
+            teamId: result.team.id,
+            teamCode: result.team.code,
+            memberId: result.member.id
+        }));
 
-    saveTeamData(teamCode, teamData);
+        closeModal('createTeamModal');
+        await loadTeamData();
+        showMainScreen();
 
-    // Set current user
-    state.currentUser = teamData.members[adminId];
-    state.currentTeam = teamData;
-    state.isAdmin = true;
-
-    localStorage.setItem('weekflow_session', JSON.stringify({
-        teamCode: teamCode,
-        oderId: adminId
-    }));
-
-    closeModal('createTeamModal');
-    showMainScreen();
+    } catch (error) {
+        alert('Error creating team: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
 }
 
-function joinTeam() {
+async function joinTeam() {
     const teamCode = document.getElementById('teamCode').value.trim().toUpperCase();
     const userName = document.getElementById('userName').value.trim();
 
@@ -156,59 +142,53 @@ function joinTeam() {
         return;
     }
 
-    const teamData = getTeamData(teamCode);
+    showLoading(true);
 
-    if (!teamData) {
-        alert('Team not found. Check the code and try again.');
-        return;
-    }
+    try {
+        // Find team by code
+        const team = await apiCall(`/teams?code=${teamCode}`);
 
-    // Check if user already exists (by name)
-    let existingUser = Object.values(teamData.members).find(m =>
-        m.name.toLowerCase() === userName.toLowerCase()
-    );
+        // Get existing members
+        const members = await apiCall(`/members?teamId=${team.id}`);
 
-    let userId;
-    if (existingUser) {
-        userId = existingUser.id;
-    } else {
-        // Add new member
-        userId = generateId();
-        const weekKey = getWeekKey();
+        // Check if user already exists
+        let member = members.find(m => m.name.toLowerCase() === userName.toLowerCase());
 
-        teamData.members[userId] = {
-            id: userId,
-            name: userName,
-            isAdmin: false,
-            mood: 4,
-            energy: 3,
-            joinedAt: new Date().toISOString()
-        };
-
-        // Initialize tasks for this user
-        if (!teamData.weeks[weekKey]) {
-            teamData.weeks[weekKey] = {
-                showAndTell: [],
-                toDiscuss: [],
-                focus: [],
-                tasks: {}
-            };
+        if (!member) {
+            // Create new member
+            member = await apiCall('/members', 'POST', {
+                teamId: team.id,
+                name: userName
+            });
         }
-        teamData.weeks[weekKey].tasks[userId] = [];
 
-        saveTeamData(teamCode, teamData);
+        state.currentTeam = {
+            id: team.id,
+            name: team.name,
+            code: team.code
+        };
+        state.currentUser = member;
+        state.isAdmin = member.role === 'admin';
+
+        // Save session
+        localStorage.setItem('weekflow_session', JSON.stringify({
+            teamId: team.id,
+            teamCode: team.code,
+            memberId: member.id
+        }));
+
+        await loadTeamData();
+        showMainScreen();
+
+    } catch (error) {
+        if (error.message.includes('not found')) {
+            alert('Team not found. Check the code and try again.');
+        } else {
+            alert('Error joining team: ' + error.message);
+        }
+    } finally {
+        showLoading(false);
     }
-
-    state.currentUser = teamData.members[userId];
-    state.currentTeam = teamData;
-    state.isAdmin = teamData.members[userId].isAdmin;
-
-    localStorage.setItem('weekflow_session', JSON.stringify({
-        teamCode: teamCode,
-        userId: userId
-    }));
-
-    showMainScreen();
 }
 
 function leaveTeam() {
@@ -223,9 +203,33 @@ function leaveTeam() {
 }
 
 // ===================================
+// Load Team Data
+// ===================================
+async function loadTeamData() {
+    if (!state.currentTeam) return;
+
+    try {
+        // Load members
+        state.members = await apiCall(`/members?teamId=${state.currentTeam.id}`);
+
+        // Load tasks for current week
+        state.tasks = await apiCall(`/tasks?teamId=${state.currentTeam.id}&includePending=true`);
+
+        // Load moods
+        state.moods = await apiCall(`/moods?teamId=${state.currentTeam.id}`);
+
+        // Load team pulse
+        state.pulse = await apiCall(`/moods?teamId=${state.currentTeam.id}&pulse=true`);
+
+    } catch (error) {
+        console.error('Error loading team data:', error);
+    }
+}
+
+// ===================================
 // Main Screen
 // ===================================
-function showMainScreen() {
+async function showMainScreen() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainScreen').classList.remove('hidden');
 
@@ -245,18 +249,25 @@ function showMainScreen() {
     updateMoodDisplay();
 
     // Load data
-    loadSections();
-    loadMembers();
-    loadMyTasks();
-    loadCarryover();
+    await refreshData();
 
     // Update mentions dropdown
     updateMentionsDropdown();
 }
 
+async function refreshData() {
+    await loadTeamData();
+    loadSections();
+    loadMembers();
+    loadMyTasks();
+    loadCarryover();
+}
+
 function updateMoodDisplay() {
     const moods = ['😫', '😕', '😐', '😊', '😄'];
-    document.getElementById('currentMood').textContent = moods[state.currentUser.mood - 1] || '😊';
+    const myMood = state.moods?.find(m => m.member_id === state.currentUser.id);
+    const moodValue = myMood?.mood || 4;
+    document.getElementById('currentMood').textContent = moods[moodValue - 1] || '😊';
 }
 
 // ===================================
@@ -277,58 +288,63 @@ function addItem(section) {
     document.getElementById('addItemModal').classList.remove('hidden');
 }
 
-function saveItem() {
+async function saveItem() {
     const content = document.getElementById('itemContent').value.trim();
-    const mention = document.getElementById('itemMention').value;
+    const mentionId = document.getElementById('itemMention').value;
 
     if (!content) return;
 
-    const weekKey = getWeekKey();
-    const teamData = getTeamData(state.currentTeam.code);
+    try {
+        // Map section names to match API
+        const sectionMap = {
+            showAndTell: 'show_and_tell',
+            toDiscuss: 'to_discuss',
+            focus: 'focus'
+        };
 
-    if (!teamData.weeks[weekKey]) {
-        teamData.weeks[weekKey] = { showAndTell: [], toDiscuss: [], focus: [], tasks: {} };
-    }
+        await apiCall('/tasks', 'POST', {
+            teamId: state.currentTeam.id,
+            memberId: state.currentUser.id,
+            section: sectionMap[currentSection],
+            text: content,
+            priority: 'normal'
+        });
 
-    const item = {
-        id: generateId(),
-        content: content,
-        author: state.currentUser.name,
-        authorId: state.currentUser.id,
-        mention: mention ? teamData.members[mention]?.name : null,
-        mentionId: mention || null,
-        createdAt: new Date().toISOString()
-    };
+        closeModal('addItemModal');
+        await refreshData();
 
-    teamData.weeks[weekKey][currentSection].push(item);
-    saveTeamData(state.currentTeam.code, teamData);
-    state.currentTeam = teamData;
-
-    closeModal('addItemModal');
-    loadSections();
-
-    // Update presenter if active
-    if (state.presenterMode) {
-        updatePresenterView();
+        if (state.presenterMode) {
+            updatePresenterView();
+        }
+    } catch (error) {
+        alert('Error saving item: ' + error.message);
     }
 }
 
 function loadSections() {
-    const weekKey = getWeekKey();
-    const weekData = state.currentTeam.weeks?.[weekKey] || {};
+    const weekStart = getWeekStart();
+    const sectionMap = {
+        showAndTell: 'show_and_tell',
+        toDiscuss: 'to_discuss',
+        focus: 'focus'
+    };
 
     ['showAndTell', 'toDiscuss', 'focus'].forEach(section => {
         const container = document.getElementById(section + 'Items');
-        const items = weekData[section] || [];
+        const items = (state.tasks || []).filter(t =>
+            t.section === sectionMap[section] &&
+            t.week_start === weekStart
+        );
+
+        const member = (id) => state.members?.find(m => m.id === id);
 
         container.innerHTML = items.map(item => `
             <div class="section-item" data-id="${item.id}">
                 <div class="item-header">
-                    <span class="author">${item.author}</span>
-                    ${item.mention ? `<span class="mention">@${item.mention}</span>` : ''}
-                    <span class="item-time">${formatTime(item.createdAt)}</span>
+                    <span class="author">${member(item.member_id)?.name || 'Unknown'}</span>
+                    <span class="item-time">${formatTime(item.created_at)}</span>
                 </div>
-                <div class="item-content">${item.content}</div>
+                <div class="item-content">${item.text}</div>
             </div>
         `).join('') || `<p style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 20px;">No items yet</p>`;
     });
@@ -344,40 +360,40 @@ function formatTime(isoString) {
 // ===================================
 function loadMembers() {
     const container = document.getElementById('membersGrid');
-    const weekKey = getWeekKey();
-    const weekData = state.currentTeam.weeks?.[weekKey] || {};
     const moods = ['😫', '😕', '😐', '😊', '😄'];
+    const weekStart = getWeekStart();
 
-    let totalMood = 0;
-    let moodCount = 0;
-
-    const membersHtml = Object.values(state.currentTeam.members).map(member => {
-        const tasks = weekData.tasks?.[member.id] || [];
-        const completed = tasks.filter(t => t.completed).length;
-        const total = tasks.length;
+    const membersHtml = (state.members || []).map(member => {
+        const memberTasks = (state.tasks || []).filter(t =>
+            t.member_id === member.id &&
+            t.section === 'personal' &&
+            t.week_start === weekStart
+        );
+        const completed = memberTasks.filter(t => t.status === 'completed').length;
+        const total = memberTasks.length;
         const progress = total > 0 ? (completed / total) * 100 : 0;
 
-        totalMood += member.mood || 4;
-        moodCount++;
+        const memberMood = state.moods?.find(m => m.member_id === member.id);
+        const moodValue = memberMood?.mood || 4;
 
         return `
             <div class="member-card">
                 <div class="member-header">
-                    <div class="member-avatar">${getInitials(member.name)}</div>
-                    <span class="member-name">${member.name}${member.isAdmin ? ' 👑' : ''}</span>
-                    <span class="member-mood">${moods[(member.mood || 4) - 1]}</span>
+                    <div class="member-avatar">${member.avatar || getInitials(member.name)}</div>
+                    <span class="member-name">${member.name}${member.role === 'admin' ? ' 👑' : ''}</span>
+                    <span class="member-mood">${moods[moodValue - 1]}</span>
                 </div>
                 <div class="member-progress">
                     <div class="member-progress-fill" style="width: ${progress}%"></div>
                 </div>
                 <div class="member-tasks">
-                    ${tasks.slice(0, 4).map(task => `
-                        <div class="member-task ${task.completed ? 'completed' : ''}">
+                    ${memberTasks.slice(0, 4).map(task => `
+                        <div class="member-task ${task.status === 'completed' ? 'completed' : ''}">
                             <span class="priority-dot priority-${task.priority}"></span>
                             <span>${task.text.substring(0, 40)}${task.text.length > 40 ? '...' : ''}</span>
                         </div>
                     `).join('')}
-                    ${tasks.length > 4 ? `<div class="member-task" style="opacity: 0.5;">+${tasks.length - 4} more...</div>` : ''}
+                    ${memberTasks.length > 4 ? `<div class="member-task" style="opacity: 0.5;">+${memberTasks.length - 4} more...</div>` : ''}
                 </div>
             </div>
         `;
@@ -386,8 +402,10 @@ function loadMembers() {
     container.innerHTML = membersHtml;
 
     // Update team pulse
-    const avgMood = moodCount > 0 ? (totalMood / moodCount).toFixed(1) : 4;
-    document.getElementById('pulseValue').textContent = `${moods[Math.round(avgMood) - 1]} ${avgMood}`;
+    if (state.pulse && state.pulse.avgMood) {
+        document.getElementById('pulseValue').textContent =
+            `${moods[Math.round(state.pulse.avgMood) - 1]} ${state.pulse.avgMood}`;
+    }
 }
 
 function getInitials(name) {
@@ -399,26 +417,35 @@ function getInitials(name) {
 // ===================================
 function loadMyTasks() {
     const container = document.getElementById('tasksList');
-    const weekKey = getWeekKey();
-    const tasks = state.currentTeam.weeks?.[weekKey]?.tasks?.[state.currentUser.id] || [];
+    const weekStart = getWeekStart();
 
-    const completed = tasks.filter(t => t.completed).length;
-    const total = tasks.length;
+    const myTasks = (state.tasks || []).filter(t =>
+        t.member_id === state.currentUser.id &&
+        t.section === 'personal'
+    );
+
+    // Separate current week and carryover
+    const currentWeekTasks = myTasks.filter(t => t.week_start === weekStart);
+    const carryoverTasks = myTasks.filter(t => t.week_start !== weekStart && t.status === 'pending');
+
+    const allTasks = [...carryoverTasks.map(t => ({...t, carryover: true})), ...currentWeekTasks];
+
+    const completed = allTasks.filter(t => t.status === 'completed').length;
+    const total = allTasks.length;
     const progress = total > 0 ? (completed / total) * 100 : 0;
 
     document.getElementById('progressFill').style.width = `${progress}%`;
     document.getElementById('progressText').textContent = `${completed}/${total}`;
 
-    container.innerHTML = tasks.map((task, index) => `
-        <div class="task-item" data-index="${index}">
-            <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${index})">
-                ${task.completed ? '✓' : ''}
+    container.innerHTML = allTasks.map(task => `
+        <div class="task-item" data-id="${task.id}">
+            <div class="task-checkbox ${task.status === 'completed' ? 'checked' : ''}" onclick="toggleTask('${task.id}')">
+                ${task.status === 'completed' ? '✓' : ''}
             </div>
             <div class="task-content">
-                <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                <div class="task-text ${task.status === 'completed' ? 'completed' : ''}">${task.text}</div>
                 <div class="task-meta">
                     <span class="task-priority">${getPriorityEmoji(task.priority)}</span>
-                    ${task.dueDate ? `<span class="task-due">📅 ${task.dueDate}</span>` : ''}
                     ${task.carryover ? `<span class="task-carryover">↩️</span>` : ''}
                 </div>
             </div>
@@ -437,52 +464,46 @@ function handleTaskKeypress(event) {
     }
 }
 
-function addTask() {
+async function addTask() {
     const input = document.getElementById('newTaskInput');
     const priority = document.getElementById('taskPriority').value;
-    const dueDate = document.getElementById('taskDueDate').value;
 
     const text = input.value.trim();
     if (!text) return;
 
-    const weekKey = getWeekKey();
-    const teamData = getTeamData(state.currentTeam.code);
+    try {
+        await apiCall('/tasks', 'POST', {
+            teamId: state.currentTeam.id,
+            memberId: state.currentUser.id,
+            section: 'personal',
+            text: text,
+            priority: priority
+        });
 
-    if (!teamData.weeks[weekKey].tasks[state.currentUser.id]) {
-        teamData.weeks[weekKey].tasks[state.currentUser.id] = [];
+        input.value = '';
+        await refreshData();
+
+    } catch (error) {
+        alert('Error adding task: ' + error.message);
     }
-
-    teamData.weeks[weekKey].tasks[state.currentUser.id].push({
-        id: generateId(),
-        text: text,
-        priority: priority,
-        dueDate: dueDate || null,
-        completed: false,
-        carryover: false,
-        createdAt: new Date().toISOString()
-    });
-
-    saveTeamData(state.currentTeam.code, teamData);
-    state.currentTeam = teamData;
-
-    input.value = '';
-    document.getElementById('taskDueDate').value = '';
-
-    loadMyTasks();
-    loadMembers();
 }
 
-function toggleTask(index) {
-    const weekKey = getWeekKey();
-    const teamData = getTeamData(state.currentTeam.code);
-    const tasks = teamData.weeks[weekKey].tasks[state.currentUser.id];
+async function toggleTask(taskId) {
+    const task = state.tasks?.find(t => t.id === taskId);
+    if (!task) return;
 
-    if (tasks[index]) {
-        tasks[index].completed = !tasks[index].completed;
-        saveTeamData(state.currentTeam.code, teamData);
-        state.currentTeam = teamData;
-        loadMyTasks();
-        loadMembers();
+    const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+
+    try {
+        await apiCall('/tasks', 'PUT', {
+            id: taskId,
+            status: newStatus
+        });
+
+        await refreshData();
+
+    } catch (error) {
+        alert('Error updating task: ' + error.message);
     }
 }
 
@@ -492,27 +513,12 @@ function toggleTask(index) {
 function loadCarryover() {
     if (!state.isAdmin) return;
 
-    const currentWeekKey = getWeekKey();
-    const weeks = Object.keys(state.currentTeam.weeks || {}).sort().reverse();
-    const previousWeekKey = weeks.find(w => w < currentWeekKey);
-
-    if (!previousWeekKey) {
-        document.getElementById('carryoverSection').classList.add('hidden');
-        return;
-    }
-
-    const previousWeek = state.currentTeam.weeks[previousWeekKey];
-    const pendingTasks = [];
-
-    Object.entries(previousWeek.tasks || {}).forEach(([userId, tasks]) => {
-        const member = state.currentTeam.members[userId];
-        tasks.filter(t => !t.completed).forEach(task => {
-            pendingTasks.push({
-                ...task,
-                memberName: member?.name || 'Unknown'
-            });
-        });
-    });
+    const weekStart = getWeekStart();
+    const pendingTasks = (state.tasks || []).filter(t =>
+        t.week_start < weekStart &&
+        t.status === 'pending' &&
+        t.section === 'personal'
+    );
 
     if (pendingTasks.length === 0) {
         document.getElementById('carryoverSection').classList.add('hidden');
@@ -522,10 +528,12 @@ function loadCarryover() {
     document.getElementById('carryoverSection').classList.remove('hidden');
     document.getElementById('carryoverCount').textContent = pendingTasks.length;
 
+    const getMemberName = (id) => state.members?.find(m => m.id === id)?.name || 'Unknown';
+
     document.getElementById('carryoverItems').innerHTML = pendingTasks.map(task => `
         <div class="carryover-item">
             <span class="priority-dot priority-${task.priority}"></span>
-            <span class="author">${task.memberName}:</span>
+            <span class="author">${getMemberName(task.member_id)}:</span>
             <span>${task.text}</span>
         </div>
     `).join('');
@@ -537,11 +545,13 @@ function loadCarryover() {
 let selectedMood = 4;
 
 function openMoodPicker() {
-    selectedMood = state.currentUser.mood || 4;
+    const myMood = state.moods?.find(m => m.member_id === state.currentUser.id);
+    selectedMood = myMood?.mood || 4;
+
     document.querySelectorAll('.mood-option').forEach(btn => {
         btn.classList.toggle('selected', parseInt(btn.dataset.mood) === selectedMood);
     });
-    document.getElementById('energyLevel').value = state.currentUser.energy || 3;
+    document.getElementById('energyLevel').value = myMood?.energy || 3;
     document.getElementById('moodModal').classList.remove('hidden');
 }
 
@@ -552,20 +562,24 @@ function selectMood(mood) {
     });
 }
 
-function saveMood() {
-    const energy = document.getElementById('energyLevel').value;
+async function saveMood() {
+    const energy = parseInt(document.getElementById('energyLevel').value);
 
-    const teamData = getTeamData(state.currentTeam.code);
-    teamData.members[state.currentUser.id].mood = selectedMood;
-    teamData.members[state.currentUser.id].energy = parseInt(energy);
+    try {
+        await apiCall('/moods', 'POST', {
+            teamId: state.currentTeam.id,
+            memberId: state.currentUser.id,
+            mood: selectedMood,
+            energy: energy
+        });
 
-    saveTeamData(state.currentTeam.code, teamData);
-    state.currentTeam = teamData;
-    state.currentUser = teamData.members[state.currentUser.id];
+        await refreshData();
+        updateMoodDisplay();
+        closeModal('moodModal');
 
-    updateMoodDisplay();
-    loadMembers();
-    closeModal('moodModal');
+    } catch (error) {
+        alert('Error saving mood: ' + error.message);
+    }
 }
 
 // ===================================
@@ -575,7 +589,7 @@ function updateMentionsDropdown() {
     const select = document.getElementById('itemMention');
     select.innerHTML = '<option value="">No one</option>';
 
-    Object.values(state.currentTeam.members).forEach(member => {
+    (state.members || []).forEach(member => {
         if (member.id !== state.currentUser.id) {
             const option = document.createElement('option');
             option.value = member.id;
@@ -606,51 +620,63 @@ function exitPresenterMode() {
 }
 
 function updatePresenterView() {
-    const weekKey = getWeekKey();
-    const weekData = state.currentTeam.weeks?.[weekKey] || {};
     const moods = ['😫', '😕', '😐', '😊', '😄'];
+    const weekStart = getWeekStart();
+    const sectionMap = {
+        showAndTell: 'show_and_tell',
+        toDiscuss: 'to_discuss',
+        focus: 'focus'
+    };
 
     // Update sections
     ['showAndTell', 'toDiscuss', 'focus'].forEach(section => {
         const container = document.getElementById('presenter' + section.charAt(0).toUpperCase() + section.slice(1));
-        const items = weekData[section] || [];
+        const items = (state.tasks || []).filter(t =>
+            t.section === sectionMap[section] &&
+            t.week_start === weekStart
+        );
+
+        const getMemberName = (id) => state.members?.find(m => m.id === id)?.name || 'Unknown';
 
         container.innerHTML = items.map(item => `
             <div class="presenter-item">
-                <span class="author">${item.author}:</span>
-                ${item.content}
-                ${item.mention ? `<span class="mention">@${item.mention}</span>` : ''}
+                <span class="author">${getMemberName(item.member_id)}:</span>
+                ${item.text}
             </div>
         `).join('') || '<p style="opacity: 0.5;">No items yet</p>';
     });
 
-    // Update team
-    let totalMood = 0;
-    let moodCount = 0;
+    // Update team members
+    const membersHtml = (state.members || []).map(member => {
+        const memberTasks = (state.tasks || []).filter(t =>
+            t.member_id === member.id &&
+            t.section === 'personal' &&
+            t.week_start === weekStart
+        );
+        const completed = memberTasks.filter(t => t.status === 'completed').length;
 
-    const membersHtml = Object.values(state.currentTeam.members).map(member => {
-        const tasks = weekData.tasks?.[member.id] || [];
-        const completed = tasks.filter(t => t.completed).length;
-
-        totalMood += member.mood || 4;
-        moodCount++;
+        const memberMood = state.moods?.find(m => m.member_id === member.id);
+        const moodValue = memberMood?.mood || 4;
 
         return `
             <div class="presenter-member">
-                <div class="member-avatar">${getInitials(member.name)}</div>
+                <div class="member-avatar">${member.avatar || getInitials(member.name)}</div>
                 <div class="member-info">
-                    <div class="member-name">${member.name}${member.isAdmin ? ' 👑' : ''}</div>
-                    <div class="member-tasks-count">${completed}/${tasks.length} tasks</div>
+                    <div class="member-name">${member.name}${member.role === 'admin' ? ' 👑' : ''}</div>
+                    <div class="member-tasks-count">${completed}/${memberTasks.length} tasks</div>
                 </div>
-                <span class="member-mood">${moods[(member.mood || 4) - 1]}</span>
+                <span class="member-mood">${moods[moodValue - 1]}</span>
             </div>
         `;
     }).join('');
 
     document.getElementById('presenterMembers').innerHTML = membersHtml;
 
-    const avgMood = moodCount > 0 ? (totalMood / moodCount).toFixed(1) : 4;
-    document.getElementById('presenterPulse').textContent = `${moods[Math.round(avgMood) - 1]} ${avgMood}`;
+    // Update pulse
+    if (state.pulse && state.pulse.avgMood) {
+        document.getElementById('presenterPulse').textContent =
+            `${moods[Math.round(state.pulse.avgMood) - 1]} ${state.pulse.avgMood}`;
+    }
 }
 
 // ===================================
@@ -693,9 +719,9 @@ document.addEventListener('click', (e) => {
 // Export to Doc
 // ===================================
 function exportToDoc() {
-    const weekKey = getWeekKey();
-    const weekData = state.currentTeam.weeks?.[weekKey] || {};
     const moods = ['😫', '😕', '😐', '😊', '😄'];
+    const weekStart = getWeekStart();
+    const sectionMap = { showAndTell: 'show_and_tell', toDiscuss: 'to_discuss', focus: 'focus' };
 
     let doc = `# ${state.currentTeam.name} - ${wft('export.title')}\n`;
     doc += `${wft('export.generated')}: ${new Date().toLocaleDateString()}\n\n`;
@@ -703,21 +729,29 @@ function exportToDoc() {
     // Sections
     ['showAndTell', 'toDiscuss', 'focus'].forEach(section => {
         const sectionName = wft(`sections.${section}`);
-        const items = weekData[section] || [];
+        const items = (state.tasks || []).filter(t =>
+            t.section === sectionMap[section] && t.week_start === weekStart
+        );
+        const getMemberName = (id) => state.members?.find(m => m.id === id)?.name || 'Unknown';
+
         doc += `## ${sectionName}\n`;
         items.forEach(item => {
-            doc += `- **${item.author}**: ${item.content}${item.mention ? ` @${item.mention}` : ''}\n`;
+            doc += `- **${getMemberName(item.member_id)}**: ${item.text}\n`;
         });
         doc += '\n';
     });
 
     // Team tasks
     doc += `## ${wft('sections.team')}\n`;
-    Object.values(state.currentTeam.members).forEach(member => {
-        const tasks = weekData.tasks?.[member.id] || [];
-        doc += `### ${member.name} ${moods[(member.mood || 4) - 1]}\n`;
-        tasks.forEach(task => {
-            const status = task.completed ? '✅' : '⬜';
+    (state.members || []).forEach(member => {
+        const memberTasks = (state.tasks || []).filter(t =>
+            t.member_id === member.id && t.section === 'personal' && t.week_start === weekStart
+        );
+        const memberMood = state.moods?.find(m => m.member_id === member.id);
+
+        doc += `### ${member.name} ${moods[(memberMood?.mood || 4) - 1]}\n`;
+        memberTasks.forEach(task => {
+            const status = task.status === 'completed' ? '✅' : '⬜';
             doc += `${status} ${task.text}\n`;
         });
         doc += '\n';
@@ -728,15 +762,171 @@ function exportToDoc() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `weekflow-${state.currentTeam.name}-${weekKey}.md`;
+    a.download = `weekflow-${state.currentTeam.name}-${weekStart}.md`;
     a.click();
     URL.revokeObjectURL(url);
 }
 
 // ===================================
+// Google Docs Export
+// ===================================
+function exportToGoogleDocs() {
+    const moods = ['😫', '😕', '😐', '😊', '😄'];
+    const weekStart = getWeekStart();
+    const sectionMap = { showAndTell: 'show_and_tell', toDiscuss: 'to_discuss', focus: 'focus' };
+
+    let content = `${state.currentTeam.name} - ${wft('export.title')}\n`;
+    content += `${'='.repeat(50)}\n`;
+    content += `${wft('export.generated')}: ${new Date().toLocaleDateString()}\n\n`;
+
+    const sectionIcons = { showAndTell: '📢', toDiscuss: '💬', focus: '🎯' };
+    const getMemberName = (id) => state.members?.find(m => m.id === id)?.name || 'Unknown';
+
+    ['showAndTell', 'toDiscuss', 'focus'].forEach(section => {
+        const sectionName = wft(`sections.${section}`);
+        const items = (state.tasks || []).filter(t =>
+            t.section === sectionMap[section] && t.week_start === weekStart
+        );
+        content += `${sectionIcons[section]} ${sectionName}\n`;
+        content += `${'-'.repeat(30)}\n`;
+        if (items.length === 0) {
+            content += `(No items)\n`;
+        } else {
+            items.forEach(item => {
+                content += `• ${getMemberName(item.member_id)}: ${item.text}\n`;
+            });
+        }
+        content += '\n';
+    });
+
+    // Team Pulse
+    if (state.pulse && state.pulse.avgMood) {
+        content += `📊 ${wft('export.teamPulse')}: ${moods[Math.round(state.pulse.avgMood) - 1]} ${state.pulse.avgMood}\n\n`;
+    }
+
+    // Team tasks
+    content += `👥 ${wft('sections.team')}\n`;
+    content += `${'='.repeat(50)}\n\n`;
+
+    (state.members || []).forEach(member => {
+        const memberTasks = (state.tasks || []).filter(t =>
+            t.member_id === member.id && t.section === 'personal' && t.week_start === weekStart
+        );
+        const completed = memberTasks.filter(t => t.status === 'completed').length;
+        const memberMood = state.moods?.find(m => m.member_id === member.id);
+
+        content += `${member.name} ${moods[(memberMood?.mood || 4) - 1]} (${completed}/${memberTasks.length})\n`;
+        content += `${'-'.repeat(30)}\n`;
+        if (memberTasks.length === 0) {
+            content += `(No tasks)\n`;
+        } else {
+            memberTasks.forEach(task => {
+                const status = task.status === 'completed' ? '✅' : '⬜';
+                const priority = task.priority === 'urgent' ? '🔥' : task.priority === 'important' ? '🟡' : '';
+                content += `${status} ${priority} ${task.text}\n`;
+            });
+        }
+        content += '\n';
+    });
+
+    document.getElementById('exportPreview').textContent = content;
+    document.getElementById('googleDocsModal').classList.remove('hidden');
+}
+
+function copyExportContent() {
+    const content = document.getElementById('exportPreview').textContent;
+    navigator.clipboard.writeText(content);
+    alert(wft('messages.contentCopied'));
+}
+
+function openGoogleDocs() {
+    window.open('https://docs.google.com/document/create', '_blank');
+}
+
+// ===================================
+// Slack Integration
+// ===================================
+async function openSlackSetup() {
+    try {
+        const integrations = await apiCall(`/integrations?teamId=${state.currentTeam.id}&type=slack`);
+        const settings = integrations[0]?.settings || {};
+
+        document.getElementById('slackWebhook').value = settings.webhookUrl || '';
+        document.getElementById('slackReminderDay').value = settings.reminderDay || '1';
+        document.getElementById('slackSummary').checked = settings.sendSummary !== false;
+    } catch (e) {
+        console.error('Error loading slack settings:', e);
+    }
+    document.getElementById('slackModal').classList.remove('hidden');
+}
+
+async function saveSlackSettings() {
+    const settings = {
+        webhookUrl: document.getElementById('slackWebhook').value.trim(),
+        reminderDay: document.getElementById('slackReminderDay').value,
+        sendSummary: document.getElementById('slackSummary').checked
+    };
+
+    try {
+        await apiCall('/integrations', 'POST', {
+            teamId: state.currentTeam.id,
+            type: 'slack',
+            settings: settings,
+            enabled: true
+        });
+
+        closeModal('slackModal');
+        alert(wft('messages.slackSaved'));
+        document.getElementById('slackBtn').innerHTML = `<span>✓ ${wft('actions.setup')}</span>`;
+    } catch (error) {
+        alert('Error saving settings: ' + error.message);
+    }
+}
+
+// ===================================
+// Email Integration
+// ===================================
+async function openEmailSetup() {
+    try {
+        const integrations = await apiCall(`/integrations?teamId=${state.currentTeam.id}&type=email`);
+        const settings = integrations[0]?.settings || {};
+
+        document.getElementById('emailAddresses').value = settings.addresses || '';
+        document.getElementById('emailReminderDay').value = settings.reminderDay || '1';
+        document.getElementById('emailSummary').checked = settings.sendSummary !== false;
+    } catch (e) {
+        console.error('Error loading email settings:', e);
+    }
+    document.getElementById('emailModal').classList.remove('hidden');
+}
+
+async function saveEmailSettings() {
+    const settings = {
+        addresses: document.getElementById('emailAddresses').value.trim(),
+        reminderDay: document.getElementById('emailReminderDay').value,
+        sendSummary: document.getElementById('emailSummary').checked
+    };
+
+    try {
+        await apiCall('/integrations', 'POST', {
+            teamId: state.currentTeam.id,
+            type: 'email',
+            settings: settings,
+            enabled: true
+        });
+
+        closeModal('emailModal');
+        alert(wft('messages.emailSaved'));
+        document.getElementById('emailBtn').innerHTML = `<span>✓ ${wft('actions.setup')}</span>`;
+    } catch (error) {
+        alert('Error saving settings: ' + error.message);
+    }
+}
+
+// ===================================
 // Initialize
 // ===================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Check URL parameters for direct join
     checkUrlParams();
 
@@ -744,17 +934,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const session = localStorage.getItem('weekflow_session');
     if (session) {
         try {
-            const { teamCode, userId } = JSON.parse(session);
-            const teamData = getTeamData(teamCode);
+            const { teamId, teamCode, memberId } = JSON.parse(session);
 
-            if (teamData && teamData.members[userId]) {
-                state.currentTeam = teamData;
-                state.currentUser = teamData.members[userId];
-                state.isAdmin = teamData.members[userId].isAdmin;
+            // Verify session with API
+            const team = await apiCall(`/teams?id=${teamId}`);
+            const members = await apiCall(`/members?teamId=${teamId}`);
+            const member = members.find(m => m.id === memberId);
+
+            if (team && member) {
+                state.currentTeam = {
+                    id: team.id,
+                    name: team.name,
+                    code: team.code
+                };
+                state.currentUser = member;
+                state.isAdmin = member.role === 'admin';
+
+                await loadTeamData();
                 showMainScreen();
                 return;
             }
         } catch (e) {
+            console.error('Session restore failed:', e);
             localStorage.removeItem('weekflow_session');
         }
     }
@@ -764,17 +965,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Auto-refresh every 30 seconds
-setInterval(() => {
-    if (state.currentTeam && !document.hidden) {
-        const teamData = getTeamData(state.currentTeam.code);
-        if (teamData) {
-            state.currentTeam = teamData;
-            loadSections();
-            loadMembers();
+setInterval(async () => {
+    if (state.currentTeam && !document.hidden && !state.loading) {
+        await refreshData();
 
-            if (state.presenterMode) {
-                updatePresenterView();
-            }
+        if (state.presenterMode) {
+            updatePresenterView();
         }
     }
 }, 30000);

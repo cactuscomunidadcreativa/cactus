@@ -855,6 +855,82 @@ body {
     cursor: pointer;
 }
 
+/* Settings Integrations */
+.settings-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.settings-section h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.integration-icon {
+    font-size: 18px;
+}
+
+/* Modal extras */
+.modal-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.form-help {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Export Preview */
+.export-preview {
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    margin-bottom: 16px;
+}
+
+.export-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.export-actions .btn {
+    flex: 1;
+}
+
 /* ===================================
    Responsive
    =================================== */
@@ -870,4 +946,68 @@ body {
     .main-content { padding: 16px; }
     .members-grid { grid-template-columns: 1fr; }
     .presenter-content { padding: 20px; }
+}
+
+/* ===================================
+   Language Switcher (expanded)
+   =================================== */
+.lang-switcher {
+    flex-wrap: wrap;
+    max-width: 400px;
+}
+
+/* ===================================
+   RTL Support (Arabic)
+   =================================== */
+[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .header-left,
+[dir="rtl"] .header-right {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .btn-icon {
+    transform: rotate(180deg);
+}
+
+[dir="rtl"] .task-item {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .task-checkbox {
+    margin-right: 0;
+    margin-left: 12px;
+}
+
+[dir="rtl"] .member-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .section-item .item-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .modal-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .presenter-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .presenter-member {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .form-group {
+    text-align: right;
+}
+
+[dir="rtl"] .input,
+[dir="rtl"] .select,
+[dir="rtl"] textarea {
+    text-align: right;
 }

@@ -47,6 +47,11 @@
                     <button class="lang-btn active" data-lang="en">EN</button>
                     <button class="lang-btn" data-lang="es">ES</button>
                     <button class="lang-btn" data-lang="pt">PT</button>
+                    <button class="lang-btn" data-lang="it">IT</button>
+                    <button class="lang-btn" data-lang="ja">日本語</button>
+                    <button class="lang-btn" data-lang="zh">中文</button>
+                    <button class="lang-btn" data-lang="ko">한국어</button>
+                    <button class="lang-btn" data-lang="ar">عربي</button>
                 </div>
             </div>
         </div>
@@ -309,9 +314,140 @@
                             <span data-i18n="actions.copy">Copy Link</span> 🔗
                         </button>
                     </div>
+
+                    <!-- Integrations -->
+                    <div class="settings-section">
+                        <h4 data-i18n="settings.integrations">Integrations</h4>
+                    </div>
+
+                    <div class="setting-item">
+                        <label>
+                            <span class="integration-icon">💬</span>
+                            <span data-i18n="settings.slack">Slack Reminders</span>
+                        </label>
+                        <button class="btn btn-sm btn-outline" id="slackBtn" onclick="openSlackSetup()">
+                            <span data-i18n="actions.setup">Setup</span>
+                        </button>
+                    </div>
+
+                    <div class="setting-item">
+                        <label>
+                            <span class="integration-icon">📄</span>
+                            <span data-i18n="settings.googleDocs">Export to Google Docs</span>
+                        </label>
+                        <button class="btn btn-sm btn-outline" onclick="exportToGoogleDocs()">
+                            <span data-i18n="actions.export">Export</span>
+                        </button>
+                    </div>
+
+                    <div class="setting-item">
+                        <label>
+                            <span class="integration-icon">📧</span>
+                            <span data-i18n="settings.emailReminders">Email Reminders</span>
+                        </label>
+                        <button class="btn btn-sm btn-outline" id="emailBtn" onclick="openEmailSetup()">
+                            <span data-i18n="actions.setup">Setup</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-outline btn-danger" onclick="leaveTeam()" data-i18n="settings.leave">Leave Team</button>
+                </div>
+            </div>
+        </div>
+        <!-- Slack Setup Modal -->
+        <div class="modal hidden" id="slackModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>💬 Slack Integration</h3>
+                    <button class="btn-close" onclick="closeModal('slackModal')">×</button>
+                </div>
+                <p class="modal-description" data-i18n="slack.description">
+                    Get reminders in Slack before your weekly check-ins.
+                </p>
+                <div class="form-group">
+                    <label data-i18n="slack.webhookUrl">Slack Webhook URL</label>
+                    <input type="text" id="slackWebhook" class="input" placeholder="https://hooks.slack.com/services/...">
+                    <small class="form-help" data-i18n="slack.webhookHelp">
+                        Create an incoming webhook in your Slack workspace settings.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="slack.reminderDay">Reminder Day</label>
+                    <select id="slackReminderDay" class="select">
+                        <option value="1">Monday morning</option>
+                        <option value="5">Friday morning</option>
+                        <option value="0">Sunday evening</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="slackSummary" checked>
+                        <span data-i18n="slack.sendSummary">Send weekly summary after meeting</span>
+                    </label>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveSlackSettings()">
+                    <span data-i18n="actions.save">Save</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Email Setup Modal -->
+        <div class="modal hidden" id="emailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📧 Email Reminders</h3>
+                    <button class="btn-close" onclick="closeModal('emailModal')">×</button>
+                </div>
+                <p class="modal-description" data-i18n="email.description">
+                    Receive email reminders before your weekly check-ins.
+                </p>
+                <div class="form-group">
+                    <label data-i18n="email.addresses">Team Email Addresses</label>
+                    <textarea id="emailAddresses" class="input textarea" placeholder="john@example.com&#10;jane@example.com"></textarea>
+                    <small class="form-help" data-i18n="email.addressesHelp">
+                        One email per line. All team members will receive reminders.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="email.reminderDay">Reminder Day</label>
+                    <select id="emailReminderDay" class="select">
+                        <option value="1">Monday 9:00 AM</option>
+                        <option value="5">Friday 9:00 AM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="emailSummary" checked>
+                        <span data-i18n="email.sendSummary">Send weekly summary after meeting</span>
+                    </label>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveEmailSettings()">
+                    <span data-i18n="actions.save">Save</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Google Docs Export Modal -->
+        <div class="modal hidden" id="googleDocsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📄 Export to Google Docs</h3>
+                    <button class="btn-close" onclick="closeModal('googleDocsModal')">×</button>
+                </div>
+                <p class="modal-description">
+                    Your weekly summary is ready to be copied to Google Docs.
+                </p>
+                <div class="export-preview" id="exportPreview">
+                    <!-- Preview content -->
+                </div>
+                <div class="export-actions">
+                    <button class="btn btn-outline" onclick="copyExportContent()">
+                        📋 <span data-i18n="actions.copyContent">Copy Content</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="openGoogleDocs()">
+                        📄 <span data-i18n="actions.openGoogleDocs">Open Google Docs</span>
+                    </button>
                 </div>
             </div>
         </div>
