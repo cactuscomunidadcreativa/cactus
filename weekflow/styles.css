@@ -48,11 +48,22 @@
 }
 
 html, body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg-body);
-    color: var(--text-primary);
-    line-height: 1.5;
-    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    background: var(--bg-body) !important;
+    color: var(--text-primary) !important;
+    line-height: 1.5 !important;
+    min-height: 100vh !important;
+}
+
+/* Override any global styles */
+body.weekflow-app {
+    background: #F8FAFC !important;
+    color: #1E293B !important;
+}
+
+[data-theme="dark"] body.weekflow-app {
+    background: #0F172A !important;
+    color: #F8FAFC !important;
 }
 
 .hidden {
