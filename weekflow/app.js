@@ -239,6 +239,12 @@ async function showMainScreen() {
     document.getElementById('userNameDisplay').textContent = state.currentUser.name;
     document.getElementById('displayTeamCode').textContent = state.currentTeam.code;
 
+    // Sync language selector with current language
+    const headerSelect = document.getElementById('headerLangSelect');
+    const settingsSelect = document.getElementById('settingsLang');
+    if (headerSelect) headerSelect.value = currentLang;
+    if (settingsSelect) settingsSelect.value = currentLang;
+
     // Show admin badge and presenter button
     if (state.isAdmin) {
         document.getElementById('adminBadge').classList.remove('hidden');
@@ -749,6 +755,11 @@ function openSettings() {
 
 function changeLanguage(lang) {
     setWeekFlowLang(lang);
+    // Sync all language selectors
+    const headerSelect = document.getElementById('headerLangSelect');
+    const settingsSelect = document.getElementById('settingsLang');
+    if (headerSelect) headerSelect.value = lang;
+    if (settingsSelect) settingsSelect.value = lang;
 }
 
 function copyTeamCode() {

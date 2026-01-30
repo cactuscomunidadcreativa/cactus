@@ -207,6 +207,28 @@ textarea {
     background: rgba(99, 102, 241, 0.1);
 }
 
+/* Header Language Select */
+.lang-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.lang-select:hover {
+    border-color: var(--primary);
+}
+
+.lang-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
 /* ===================================
    Buttons
    =================================== */
