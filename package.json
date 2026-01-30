@@ -1,0 +1,12 @@
+{
+  "name": "cactus-comunidad-creativa",
+  "version": "1.0.0",
+  "description": "Cactus Comunidad Creativa - Marketing & IA",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": ["marketing", "ia", "cactus"],
+  "author": "Cactus Comunidad Creativa",
+  "license": "MIT"
+}

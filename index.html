@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cactus Comunidad Creativa | Marketing & IA</title>
+    <meta name="description" content="Agencia de marketing, publicidad y comunicaciones potenciada por IA. Creatividad colectiva con el mejor talento global.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌵</text></svg>">
+</head>
+<body>
+    <!-- Partículas de IA de fondo -->
+    <div class="ai-particles" id="particles"></div>
+
+    <!-- Cursor personalizado -->
+    <div class="custom-cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="#" class="logo">
+                <span class="logo-icon">🌵</span>
+                <span class="logo-text">CACTUS</span>
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#servicios" class="nav-link">Servicios</a></li>
+                <li><a href="#soluciones" class="nav-link">Soluciones IA</a></li>
+                <li><a href="#apps" class="nav-link">Apps</a></li>
+                <li><a href="#portafolio" class="nav-link">Portafolio</a></li>
+                <li><a href="#precios" class="nav-link">Precios</a></li>
+            </ul>
+            <a href="#contacto" class="btn btn-primary nav-cta">
+                <span class="btn-text">Empezar</span>
+                <span class="btn-icon">→</span>
+            </a>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="hero-gradient"></div>
+            <div class="hero-grid"></div>
+        </div>
+        <div class="container hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                <span>Potenciado por Inteligencia Artificial</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="title-line">Creatividad</span>
+                <span class="title-line gradient-text">Colectiva</span>
+                <span class="title-line">+ IA</span>
+            </h1>
+            <p class="hero-description">
+                Somos una comunidad global de talentos creativos que transforma
+                tu marketing con inteligencia artificial. Estrategia, contenido
+                y automatización en un solo lugar.
+            </p>
+            <div class="hero-ctas">
+                <a href="#contacto" class="btn btn-primary btn-lg">
+                    <span class="btn-text">Solicitar Propuesta</span>
+                    <span class="btn-icon">→</span>
+                </a>
+                <a href="#servicios" class="btn btn-outline btn-lg">
+                    <span class="btn-text">Ver Servicios</span>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number" data-count="50">0</span>
+                    <span class="stat-label">Clientes Activos</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" data-count="200">0</span>
+                    <span class="stat-label">Proyectos IA</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" data-count="15">0</span>
+                    <span class="stat-label">Países</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="ai-brain">
+                <div class="brain-core"></div>
+                <div class="brain-ring ring-1"></div>
+                <div class="brain-ring ring-2"></div>
+                <div class="brain-ring ring-3"></div>
+                <div class="brain-nodes">
+                    <span class="node"></span>
+                    <span class="node"></span>
+                    <span class="node"></span>
+                    <span class="node"></span>
+                    <span class="node"></span>
+                    <span class="node"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marquee de Servicios -->
+    <section class="marquee-section">
+        <div class="marquee">
+            <div class="marquee-content">
+                <span>Social Media</span>
+                <span class="marquee-dot">◆</span>
+                <span>Content Creation</span>
+                <span class="marquee-dot">◆</span>
+                <span>Automatización</span>
+                <span class="marquee-dot">◆</span>
+                <span>Chatbots IA</span>
+                <span class="marquee-dot">◆</span>
+                <span>Email Marketing</span>
+                <span class="marquee-dot">◆</span>
+                <span>Publicidad Digital</span>
+                <span class="marquee-dot">◆</span>
+                <span>Estrategia</span>
+                <span class="marquee-dot">◆</span>
+                <span>Producción</span>
+                <span class="marquee-dot">◆</span>
+            </div>
+            <div class="marquee-content">
+                <span>Social Media</span>
+                <span class="marquee-dot">◆</span>
+                <span>Content Creation</span>
+                <span class="marquee-dot">◆</span>
+                <span>Automatización</span>
+                <span class="marquee-dot">◆</span>
+                <span>Chatbots IA</span>
+                <span class="marquee-dot">◆</span>
+                <span>Email Marketing</span>
+                <span class="marquee-dot">◆</span>
+                <span>Publicidad Digital</span>
+                <span class="marquee-dot">◆</span>
+                <span>Estrategia</span>
+                <span class="marquee-dot">◆</span>
+                <span>Producción</span>
+                <span class="marquee-dot">◆</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Servicios Section -->
+    <section class="section services" id="servicios">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Servicios</span>
+                <h2 class="section-title">Todo lo que necesitas para <span class="gradient-text">crecer</span></h2>
+                <p class="section-description">Todos nuestros servicios están potenciados por nuestro banco interno de apps con IA.</p>
+            </div>
+
+            <div class="services-grid">
+                <!-- Servicio 1 -->
+                <div class="service-card" data-aos="fade-up">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Social Media Management</h3>
+                    <p class="service-description">Gestión integral de redes sociales con IA. Community management, contenido y análisis predictivo.</p>
+                    <ul class="service-features">
+                        <li>Community Management con IA</li>
+                        <li>Calendarios Inteligentes</li>
+                        <li>Análisis de Sentimiento</li>
+                        <li>Reportes Predictivos</li>
+                    </ul>
+                    <a href="#contacto" class="service-link">
+                        <span>Conocer más</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+
+                <!-- Servicio 2 -->
+                <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Creación de Contenido</h3>
+                    <p class="service-description">Producción de contenido multimedia optimizado con IA. Videos, diseño, copywriting y más.</p>
+                    <ul class="service-features">
+                        <li>Videos Cortos (Reels, TikTok)</li>
+                        <li>Diseño Gráfico con IA</li>
+                        <li>Copywriting Optimizado</li>
+                        <li>Fotografía de Producto</li>
+                    </ul>
+                    <a href="#contacto" class="service-link">
+                        <span>Conocer más</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+
+                <!-- Servicio 3 -->
+                <div class="service-card featured" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-badge">Popular</div>
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Automatización Marketing</h3>
+                    <p class="service-description">Automatiza tu marketing con flujos inteligentes. Email, chatbots, CRM y más.</p>
+                    <ul class="service-features">
+                        <li>Email Marketing Inteligente</li>
+                        <li>Chatbots Conversacionales</li>
+                        <li>CRM Automatizado</li>
+                        <li>Lead Scoring con IA</li>
+                    </ul>
+                    <a href="#contacto" class="service-link">
+                        <span>Conocer más</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+
+                <!-- Servicio 4 -->
+                <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Publicidad Digital</h3>
+                    <p class="service-description">Campañas de performance optimizadas con IA. Google, Meta, LinkedIn y más.</p>
+                    <ul class="service-features">
+                        <li>Google Ads con IA</li>
+                        <li>Meta Ads Predictivo</li>
+                        <li>Audiencias Inteligentes</li>
+                        <li>Optimización ROAS</li>
+                    </ul>
+                    <a href="#contacto" class="service-link">
+                        <span>Conocer más</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+
+                <!-- Servicio 5 -->
+                <div class="service-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Estrategia & Consultoría</h3>
+                    <p class="service-description">Diseñamos estrategias integrales de marketing y comunicación potenciadas por datos.</p>
+                    <ul class="service-features">
+                        <li>Diagnóstico Digital</li>
+                        <li>Plan de Marketing</li>
+                        <li>Transformación Digital</li>
+                        <li>Capacitación en IA</li>
+                    </ul>
+                    <a href="#contacto" class="service-link">
+                        <span>Conocer más</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+
+                <!-- Servicio 6 -->
+                <div class="service-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Gestión de Procesos</h3>
+                    <p class="service-description">Optimizamos procesos internos de comunicación, personas e interrelaciones con IA.</p>
+                    <ul class="service-features">
+                        <li>Comunicación Interna</li>
+                        <li>Procesos Automatizados</li>
+                        <li>Gestión de Personas</li>
+                        <li>Interrelaciones B2B</li>
+                    </ul>
+                    <a href="#contacto" class="service-link">
+                        <span>Conocer más</span>
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Soluciones IA Section -->
+    <section class="section solutions" id="soluciones">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Tecnología</span>
+                <h2 class="section-title">IA en el <span class="gradient-text">centro</span> de todo</h2>
+                <p class="section-description">No solo usamos IA, somos IA-first. Cada proceso está optimizado con inteligencia artificial.</p>
+            </div>
+
+            <div class="solutions-showcase">
+                <div class="solution-visual">
+                    <div class="ai-interface">
+                        <div class="ai-screen">
+                            <div class="ai-header">
+                                <div class="ai-dots">
+                                    <span></span><span></span><span></span>
+                                </div>
+                                <span class="ai-title">Cactus AI Engine</span>
+                            </div>
+                            <div class="ai-content">
+                                <div class="ai-line typing"></div>
+                                <div class="ai-line"></div>
+                                <div class="ai-line"></div>
+                                <div class="ai-metrics">
+                                    <div class="metric">
+                                        <span class="metric-value">98%</span>
+                                        <span class="metric-label">Precisión</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value">3x</span>
+                                        <span class="metric-label">Velocidad</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value">24/7</span>
+                                        <span class="metric-label">Activo</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ai-glow"></div>
+                    </div>
+                </div>
+
+                <div class="solutions-list">
+                    <div class="solution-item active" data-solution="content">
+                        <div class="solution-number">01</div>
+                        <div class="solution-info">
+                            <h3>Generación de Contenido</h3>
+                            <p>IA que crea textos, imágenes y videos adaptados a tu marca y audiencia.</p>
+                        </div>
+                        <div class="solution-arrow">→</div>
+                    </div>
+                    <div class="solution-item" data-solution="analysis">
+                        <div class="solution-number">02</div>
+                        <div class="solution-info">
+                            <h3>Análisis Predictivo</h3>
+                            <p>Anticipamos tendencias y comportamientos para optimizar tus campañas.</p>
+                        </div>
+                        <div class="solution-arrow">→</div>
+                    </div>
+                    <div class="solution-item" data-solution="automation">
+                        <div class="solution-number">03</div>
+                        <div class="solution-info">
+                            <h3>Automatización Inteligente</h3>
+                            <p>Flujos de trabajo que aprenden y mejoran continuamente.</p>
+                        </div>
+                        <div class="solution-arrow">→</div>
+                    </div>
+                    <div class="solution-item" data-solution="optimization">
+                        <div class="solution-number">04</div>
+                        <div class="solution-info">
+                            <h3>Optimización en Tiempo Real</h3>
+                            <p>Ajustes automáticos basados en performance para maximizar ROI.</p>
+                        </div>
+                        <div class="solution-arrow">→</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apps Section -->
+    <section class="section apps" id="apps">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Nuestro Core</span>
+                <h2 class="section-title">Banco de <span class="gradient-text">Apps</span></h2>
+                <p class="section-description">Todo lo que hacemos viene de nuestro ecosistema interno de apps. Herramientas propias potenciadas por IA que usamos para nuestros clientes y que también puedes usar tú.</p>
+            </div>
+
+            <div class="apps-grid" id="appsGrid">
+                <!-- Las apps se cargan dinámicamente -->
+            </div>
+
+            <!-- Coming Soon -->
+            <div class="apps-coming-soon" data-aos="fade-up">
+                <div class="coming-soon-content">
+                    <div class="coming-soon-icon">🚀</div>
+                    <h3 class="coming-soon-title">Más apps próximamente</h3>
+                    <p class="coming-soon-description">Estamos constantemente desarrollando nuevas herramientas. Suscríbete para enterarte de los lanzamientos.</p>
+                    <div class="coming-soon-cta">
+                        <a href="#contacto" class="btn btn-outline">Notificarme</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Programas Propios Section -->
+    <section class="section programs" id="programas">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Programas Propios</span>
+                <h2 class="section-title">Soluciones <span class="gradient-text">exclusivas</span></h2>
+                <p class="section-description">Desarrollamos herramientas propias que ninguna otra agencia tiene.</p>
+            </div>
+
+            <div class="programs-grid">
+                <!-- ROWI -->
+                <div class="program-card" data-aos="fade-right">
+                    <div class="program-header">
+                        <div class="program-logo">
+                            <span class="program-icon">🧠</span>
+                            <span class="program-name">ROWI</span>
+                        </div>
+                        <span class="program-badge">IA Companion</span>
+                    </div>
+                    <h3 class="program-title">Tu Compañero de Inteligencia Emocional</h3>
+                    <p class="program-description">IA companion diseñado para desarrollar tu inteligencia emocional con coaching personalizado y herramientas de bienestar.</p>
+                    <ul class="program-features">
+                        <li>
+                            <span class="feature-icon">✓</span>
+                            <span>Coaching emocional con IA</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">✓</span>
+                            <span>Seguimiento de estado emocional</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">✓</span>
+                            <span>Ejercicios personalizados</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">✓</span>
+                            <span>Comunidad de apoyo</span>
+                        </li>
+                    </ul>
+                    <div class="program-cta">
+                        <a href="https://rowi.vercel.app/" target="_blank" class="btn btn-outline">Ver App</a>
+                    </div>
+                </div>
+
+                <!-- SCA/CAARD -->
+                <div class="program-card" data-aos="fade-left">
+                    <div class="program-header">
+                        <div class="program-logo">
+                            <span class="program-icon">⚖️</span>
+                            <span class="program-name">SCA</span>
+                        </div>
+                        <span class="program-badge">Arbitraje</span>
+                    </div>
+                    <h3 class="program-title">Sistema de Control de Arbitrajes</h3>
+                    <p class="program-description">Plataforma integral para gestión de arbitrajes institucionales optimizada con inteligencia artificial.</p>
+                    <ul class="program-features">
+                        <li>
+                            <span class="feature-icon">✓</span>
+                            <span>Gestión completa de casos</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">✓</span>
+                            <span>Calculadora de gastos automatizada</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">✓</span>
+                            <span>Portal de clientes integrado</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">✓</span>
+                            <span>Seguimiento de procesos con IA</span>
+                        </li>
+                    </ul>
+                    <div class="program-cta">
+                        <a href="https://caard-arbitraje.vercel.app/dashboard" target="_blank" class="btn btn-outline">Ver App</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Laboratorio IA -->
+            <div class="lab-section" data-aos="fade-up">
+                <div class="lab-content">
+                    <div class="lab-icon">🧪</div>
+                    <h3 class="lab-title">Laboratorio de IA Creativa</h3>
+                    <p class="lab-description">Desarrollamos soluciones de IA personalizadas para tu negocio. Si lo imaginas, lo creamos.</p>
+                    <div class="lab-services">
+                        <span class="lab-tag">Modelos Personalizados</span>
+                        <span class="lab-tag">Consultoría IA</span>
+                        <span class="lab-tag">Workshops</span>
+                        <span class="lab-tag">Implementación</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portafolio Section -->
+    <section class="section portfolio" id="portafolio">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Portafolio</span>
+                <h2 class="section-title">Lo que hemos <span class="gradient-text">creado</span></h2>
+                <p class="section-description">Una muestra de proyectos que demuestran nuestra capacidad.</p>
+            </div>
+
+            <div class="portfolio-filters">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="social">Social Media</button>
+                <button class="filter-btn" data-filter="automation">Automatización</button>
+                <button class="filter-btn" data-filter="content">Contenido</button>
+                <button class="filter-btn" data-filter="strategy">Estrategia</button>
+            </div>
+
+            <div class="portfolio-grid" id="portfolioGrid">
+                <!-- Los items se cargan dinámicamente desde el admin -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Precios Section -->
+    <section class="section pricing" id="precios">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Precios</span>
+                <h2 class="section-title">Planes para cada <span class="gradient-text">etapa</span></h2>
+                <p class="section-description">Precios transparentes, sin sorpresas. Escala según tu crecimiento.</p>
+            </div>
+
+            <div class="pricing-toggle">
+                <span class="toggle-label active" data-period="monthly">Mensual</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="pricingToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label" data-period="annual">Anual <span class="save-badge">-20%</span></span>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Starter -->
+                <div class="pricing-card" data-aos="fade-up">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Starter</h3>
+                        <p class="pricing-description">Para emprendedores que inician</p>
+                    </div>
+                    <div class="pricing-price">
+                        <span class="currency">$</span>
+                        <span class="amount" data-monthly="500" data-annual="400">500</span>
+                        <span class="period">/mes</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><span class="check">✓</span> 2 redes sociales</li>
+                        <li><span class="check">✓</span> 12 publicaciones/mes</li>
+                        <li><span class="check">✓</span> Community management básico</li>
+                        <li><span class="check">✓</span> Reporte mensual</li>
+                        <li><span class="check">✓</span> 1 automatización</li>
+                        <li class="disabled"><span class="x">✕</span> Chatbot IA</li>
+                        <li class="disabled"><span class="x">✕</span> Consultoría</li>
+                    </ul>
+                    <a href="#contacto" class="btn btn-outline btn-full">Comenzar</a>
+                </div>
+
+                <!-- Growth -->
+                <div class="pricing-card featured" data-aos="fade-up" data-aos-delay="100">
+                    <div class="pricing-badge">Más Popular</div>
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Growth</h3>
+                        <p class="pricing-description">Para PyMEs en crecimiento</p>
+                    </div>
+                    <div class="pricing-price">
+                        <span class="currency">$</span>
+                        <span class="amount" data-monthly="1500" data-annual="1200">1,500</span>
+                        <span class="period">/mes</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><span class="check">✓</span> 4 redes sociales</li>
+                        <li><span class="check">✓</span> 20 publicaciones/mes</li>
+                        <li><span class="check">✓</span> Contenido multimedia</li>
+                        <li><span class="check">✓</span> Pauta publicitaria gestionada</li>
+                        <li><span class="check">✓</span> 3 automatizaciones</li>
+                        <li><span class="check">✓</span> Email marketing</li>
+                        <li><span class="check">✓</span> Reportes semanales</li>
+                    </ul>
+                    <a href="#contacto" class="btn btn-primary btn-full">Comenzar</a>
+                </div>
+
+                <!-- Scale -->
+                <div class="pricing-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Scale</h3>
+                        <p class="pricing-description">Para empresas medianas</p>
+                    </div>
+                    <div class="pricing-price">
+                        <span class="currency">$</span>
+                        <span class="amount" data-monthly="3500" data-annual="2800">3,500</span>
+                        <span class="period">/mes</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><span class="check">✓</span> Redes ilimitadas</li>
+                        <li><span class="check">✓</span> Contenido ilimitado</li>
+                        <li><span class="check">✓</span> Producción audiovisual</li>
+                        <li><span class="check">✓</span> Chatbot IA personalizado</li>
+                        <li><span class="check">✓</span> CRM automatizado</li>
+                        <li><span class="check">✓</span> Consultoría mensual</li>
+                        <li><span class="check">✓</span> Equipo dedicado</li>
+                    </ul>
+                    <a href="#contacto" class="btn btn-outline btn-full">Comenzar</a>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="pricing-card enterprise" data-aos="fade-up" data-aos-delay="300">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Enterprise</h3>
+                        <p class="pricing-description">Soluciones corporativas a medida</p>
+                    </div>
+                    <div class="pricing-price custom">
+                        <span class="custom-text">Personalizado</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><span class="check">✓</span> Todo de Scale +</li>
+                        <li><span class="check">✓</span> Solución 360° personalizada</li>
+                        <li><span class="check">✓</span> Desarrollo IA a medida</li>
+                        <li><span class="check">✓</span> Integración de sistemas</li>
+                        <li><span class="check">✓</span> Capacitaciones</li>
+                        <li><span class="check">✓</span> SLA garantizado</li>
+                        <li><span class="check">✓</span> Account manager dedicado</li>
+                    </ul>
+                    <a href="#contacto" class="btn btn-outline btn-full">Contactar</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section cta-section">
+        <div class="container">
+            <div class="cta-box">
+                <div class="cta-content">
+                    <h2 class="cta-title">¿Listo para potenciar tu marketing con IA?</h2>
+                    <p class="cta-description">Agenda una llamada gratuita de 30 minutos y descubre cómo podemos ayudarte.</p>
+                </div>
+                <div class="cta-actions">
+                    <a href="#contacto" class="btn btn-primary btn-lg">
+                        <span class="btn-text">Agendar Llamada</span>
+                        <span class="btn-icon">→</span>
+                    </a>
+                    <a href="https://wa.me/17863954654" class="btn btn-whatsapp btn-lg" target="_blank">
+                        <span class="btn-icon">💬</span>
+                        <span class="btn-text">WhatsApp</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto Section -->
+    <section class="section contact" id="contacto">
+        <div class="container">
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <span class="section-tag">Contacto</span>
+                    <h2 class="section-title">Hablemos de tu <span class="gradient-text">proyecto</span></h2>
+                    <p class="contact-description">Cuéntanos qué necesitas y te preparamos una propuesta personalizada en 24 horas.</p>
+
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <div class="method-icon">📧</div>
+                            <div class="method-info">
+                                <span class="method-label">Email</span>
+                                <a href="mailto:contacto@cactuscomunidadcreativa.com" class="method-value">contacto@cactuscomunidadcreativa.com</a>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <div class="method-icon">💬</div>
+                            <div class="method-info">
+                                <span class="method-label">WhatsApp</span>
+                                <a href="https://wa.me/17863954654" class="method-value">+1 (786) 395-4654</a>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <div class="method-icon">📍</div>
+                            <div class="method-info">
+                                <span class="method-label">Ubicación</span>
+                                <span class="method-value">100% Remoto - Global</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="social-links">
+                        <a href="#" class="social-link" aria-label="Instagram">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        </a>
+                        <a href="#" class="social-link" aria-label="TikTok">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="contact-form-wrapper">
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Nombre</label>
+                            <input type="text" id="name" name="name" required placeholder="Tu nombre completo">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required placeholder="tu@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Empresa</label>
+                            <input type="text" id="company" name="company" placeholder="Nombre de tu empresa">
+                        </div>
+                        <div class="form-group">
+                            <label for="service">Servicio de interés</label>
+                            <select id="service" name="service">
+                                <option value="">Selecciona un servicio</option>
+                                <option value="social">Social Media Management</option>
+                                <option value="content">Creación de Contenido</option>
+                                <option value="automation">Automatización Marketing</option>
+                                <option value="ads">Publicidad Digital</option>
+                                <option value="strategy">Estrategia & Consultoría</option>
+                                <option value="programs">Programas (ROWI/SCA)</option>
+                                <option value="enterprise">Solución Enterprise</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget">Presupuesto mensual estimado</label>
+                            <select id="budget" name="budget">
+                                <option value="">Selecciona un rango</option>
+                                <option value="500-1500">$500 - $1,500</option>
+                                <option value="1500-3500">$1,500 - $3,500</option>
+                                <option value="3500-7000">$3,500 - $7,000</option>
+                                <option value="7000+">$7,000+</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="message">Cuéntanos sobre tu proyecto</label>
+                            <textarea id="message" name="message" rows="4" placeholder="¿Qué quieres lograr?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <span class="btn-text">Enviar Mensaje</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <span class="logo-icon">🌵</span>
+                        <span class="logo-text">CACTUS</span>
+                    </a>
+                    <p class="footer-tagline">Creatividad Colectiva + IA</p>
+                    <p class="footer-description">Transformamos el marketing de empresas con inteligencia artificial y el mejor talento global.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li><a href="#servicios">Social Media</a></li>
+                        <li><a href="#servicios">Creación de Contenido</a></li>
+                        <li><a href="#servicios">Automatización</a></li>
+                        <li><a href="#servicios">Publicidad Digital</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Apps</h4>
+                    <ul>
+                        <li><a href="#apps">ROWI</a></li>
+                        <li><a href="#apps">CAARD</a></li>
+                        <li><a href="#apps">TaskFlow</a></li>
+                        <li><a href="#apps">Ver Todas</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Empresa</h4>
+                    <ul>
+                        <li><a href="#portafolio">Portafolio</a></li>
+                        <li><a href="#precios">Precios</a></li>
+                        <li><a href="#contacto">Contacto</a></li>
+                        <li><a href="admin.html" class="admin-link">Ingresar</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2024 Cactus Comunidad Creativa. Todos los derechos reservados.</p>
+                <div class="footer-legal">
+                    <a href="#">Política de Privacidad</a>
+                    <a href="#">Términos de Servicio</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chatbot IA -->
+    <div class="chatbot-container" id="chatbot">
+        <button class="chatbot-toggle" id="chatbotToggle">
+            <span class="chatbot-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </span>
+            <span class="chatbot-close">✕</span>
+            <span class="chatbot-pulse"></span>
+        </button>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <div class="chatbot-avatar">
+                    <span>🌵</span>
+                </div>
+                <div class="chatbot-info">
+                    <span class="chatbot-name">Cactus AI</span>
+                    <span class="chatbot-status">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Online</span>
+                    </span>
+                </div>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot">
+                    <div class="message-avatar">🌵</div>
+                    <div class="message-content">
+                        <p>¡Hola! 👋 Soy el asistente de Cactus. Estoy aquí para ayudarte con información sobre nuestros servicios de marketing y IA.</p>
+                        <p>¿En qué puedo ayudarte hoy?</p>
+                    </div>
+                </div>
+                <div class="quick-replies">
+                    <button class="quick-reply" data-message="¿Qué servicios ofrecen?">Servicios</button>
+                    <button class="quick-reply" data-message="¿Cuáles son los precios?">Precios</button>
+                    <button class="quick-reply" data-message="¿Qué es ROWI?">ROWI</button>
+                    <button class="quick-reply" data-message="Quiero una propuesta">Propuesta</button>
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatInput" placeholder="Escribe tu mensaje...">
+                <button class="send-btn" id="sendMessage">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="chatbot.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
