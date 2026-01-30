@@ -1119,9 +1119,14 @@ textarea {
    =================================== */
 .presenter-screen {
     min-height: 100vh;
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-    color: white;
+    background: linear-gradient(135deg, #1E293B 0%, #334155 100%) !important;
+    color: white !important;
     padding: 40px;
+}
+
+/* Ensure presenter content is visible */
+.presenter-screen * {
+    color: inherit;
 }
 
 .presenter-header {
