@@ -107,6 +107,17 @@ const GLOBAL_DATA = {
             status: "live"
         },
         {
+            id: "weekflow",
+            icon: "🌊",
+            color: "#6366F1",
+            url: "./weekflow/",
+            category: "productivity",
+            price: 0.99,
+            freeTrial: 30,
+            hasCoupon: true, // Con cupón = GRATIS
+            status: "live"
+        },
+        {
             id: "taskflow",
             icon: "✅",
             color: "#10B981",
@@ -315,6 +326,7 @@ const TRANSLATIONS = {
             items: [
                 { id: "rowi", name: "ROWI", tagline: "IA Companion Emocional", description: "Tu compañero de inteligencia artificial para desarrollar tu inteligencia emocional con coaching y bienestar." },
                 { id: "caard", name: "CAARD", tagline: "Sistema de Control de Arbitrajes", description: "Plataforma de gestión de arbitrajes institucionales optimizada con IA, portal de clientes y calculadora." },
+                { id: "weekflow", name: "WeekFlow", tagline: "Check-ins de Equipo", description: "Reuniones semanales simples y divertidas. Seguimiento de tareas, mood del equipo y presentación para compartir pantalla." },
                 { id: "taskflow", name: "TaskFlow", tagline: "Gestor de Tareas IA", description: "Organiza tus tareas con priorización inteligente y sugerencias automáticas." },
                 { id: "notesai", name: "NotesAI", tagline: "Notas Inteligentes", description: "Toma notas que se organizan solas. Resúmenes automáticos y búsqueda semántica." },
                 { id: "calendariq", name: "CalendarIQ", tagline: "Calendario Inteligente", description: "Planifica tu tiempo con IA. Sugerencias de horarios y bloques de enfoque." },
@@ -624,6 +636,7 @@ const TRANSLATIONS = {
             items: [
                 { id: "rowi", name: "ROWI", tagline: "Emotional AI Companion", description: "Your AI companion for developing emotional intelligence with personalized coaching and wellness." },
                 { id: "caard", name: "CAARD", tagline: "Arbitration Control System", description: "AI-optimized institutional arbitration management platform with client portal and calculator." },
+                { id: "weekflow", name: "WeekFlow", tagline: "Team Check-ins", description: "Simple and fun weekly meetings. Task tracking, team mood, and presenter mode for screen sharing." },
                 { id: "taskflow", name: "TaskFlow", tagline: "AI Task Manager", description: "Organize your tasks with smart prioritization and automatic suggestions." },
                 { id: "notesai", name: "NotesAI", tagline: "Smart Notes", description: "Take notes that organize themselves. Automatic summaries and semantic search." },
                 { id: "calendariq", name: "CalendarIQ", tagline: "Smart Calendar", description: "Plan your time with AI. Schedule suggestions and focus blocks." },
@@ -927,6 +940,7 @@ const TRANSLATIONS = {
             items: [
                 { id: "rowi", name: "ROWI", tagline: "IA Companion Emocional", description: "Seu companheiro de IA para desenvolver sua inteligência emocional com coaching e bem-estar personalizados." },
                 { id: "caard", name: "CAARD", tagline: "Sistema de Controle de Arbitragens", description: "Plataforma de gestão de arbitragens institucionais otimizada com IA, portal de clientes e calculadora." },
+                { id: "weekflow", name: "WeekFlow", tagline: "Check-ins de Equipe", description: "Reuniões semanais simples e divertidas. Acompanhamento de tarefas, humor da equipe e modo apresentador para compartilhamento de tela." },
                 { id: "taskflow", name: "TaskFlow", tagline: "Gerenciador de Tarefas IA", description: "Organize suas tarefas com priorização inteligente e sugestões automáticas." },
                 { id: "notesai", name: "NotesAI", tagline: "Notas Inteligentes", description: "Faça anotações que se organizam sozinhas. Resumos automáticos e busca semântica." },
                 { id: "calendariq", name: "CalendarIQ", tagline: "Calendário Inteligente", description: "Planeje seu tempo com IA. Sugestões de horários e blocos de foco." },
