@@ -1,5 +1,7 @@
 const pool = require('./db');
 
+const MAX_TEAMS_LIMIT = 50; // Maximum number of teams allowed
+
 function generateId() {
   return Math.random().toString(36).substring(2, 10);
 }
@@ -51,6 +53,16 @@ module.exports = async (req, res) => {
 
       if (!name || !creatorName) {
         return res.status(400).json({ error: 'Name and creator name required' });
+      }
+
+      // Check team limit
+      const countResult = await pool.query('SELECT COUNT(*) as count FROM teams');
+      const teamCount = parseInt(countResult.rows[0].count);
+      if (teamCount >= MAX_TEAMS_LIMIT) {
+        return res.status(400).json({
+          error: 'Team limit reached',
+          message: `Maximum ${MAX_TEAMS_LIMIT} teams allowed. Contact admin to delete old teams.`
+        });
       }
 
       const teamId = generateId();

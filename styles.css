@@ -260,6 +260,22 @@ body {
     transition: all var(--transition-fast);
 }
 
+/* Nav Buttons Group */
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-user {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.nav-user .btn-icon {
+    font-size: 14px;
+}
+
 /* Buttons */
 .btn {
     display: inline-flex;

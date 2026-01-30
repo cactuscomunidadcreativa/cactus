@@ -81,6 +81,89 @@ function checkUrlParams() {
             document.getElementById('userName').value = inviteName;
         }
     }
+
+    // Load saved email
+    const savedEmail = localStorage.getItem('weekflow_email');
+    if (savedEmail) {
+        document.getElementById('userEmail').value = savedEmail;
+        checkUserTeams();
+    }
+}
+
+// ===================================
+// Email Lookup - Find user's teams
+// ===================================
+async function checkUserTeams() {
+    const email = document.getElementById('userEmail').value.trim().toLowerCase();
+    const container = document.getElementById('userTeamsContainer');
+    const list = document.getElementById('userTeamsList');
+
+    if (!email || !email.includes('@')) {
+        container.classList.add('hidden');
+        return;
+    }
+
+    // Save email for next time
+    localStorage.setItem('weekflow_email', email);
+
+    try {
+        const teams = await apiCall(`/members?email=${encodeURIComponent(email)}`);
+
+        if (teams.length === 0) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        container.classList.remove('hidden');
+        list.innerHTML = teams.map(team => `
+            <button class="user-team-btn" onclick="enterTeamFromEmail('${team.team_id}', '${team.member_id}')">
+                <div class="user-team-info">
+                    <span class="user-team-name">${team.team_name}</span>
+                    <span class="user-team-role">${team.role === 'admin' ? '👑 Admin' : '👤 Member'}</span>
+                </div>
+                <span class="user-team-arrow">→</span>
+            </button>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error checking teams:', error);
+        container.classList.add('hidden');
+    }
+}
+
+async function enterTeamFromEmail(teamId, memberId) {
+    showLoading(true);
+
+    try {
+        // Get team and member data
+        const team = await apiCall(`/teams?id=${teamId}`);
+        const members = await apiCall(`/members?teamId=${teamId}`);
+        const member = members.find(m => m.id === memberId);
+
+        if (team && member) {
+            state.currentTeam = {
+                id: team.id,
+                name: team.name,
+                code: team.code
+            };
+            state.currentUser = member;
+            state.isAdmin = member.role === 'admin';
+
+            // Save session
+            localStorage.setItem('weekflow_session', JSON.stringify({
+                teamId: team.id,
+                teamCode: team.code,
+                memberId: member.id
+            }));
+
+            await loadTeamData();
+            showMainScreen();
+        }
+    } catch (error) {
+        alert('Error entering team: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
 }
 
 // ===================================
@@ -93,6 +176,8 @@ function showCreateTeam() {
 async function createTeam() {
     const teamName = document.getElementById('newTeamName').value.trim();
     const adminName = document.getElementById('adminName').value.trim();
+    const adminEmail = document.getElementById('adminEmail')?.value.trim().toLowerCase() ||
+                       document.getElementById('userEmail')?.value.trim().toLowerCase();
 
     if (!teamName || !adminName) {
         alert('Please fill in all fields');
@@ -104,8 +189,14 @@ async function createTeam() {
     try {
         const result = await apiCall('/teams', 'POST', {
             name: teamName,
-            creatorName: adminName
+            creatorName: adminName,
+            creatorEmail: adminEmail || null
         });
+
+        // Save email for future lookups
+        if (adminEmail) {
+            localStorage.setItem('weekflow_email', adminEmail);
+        }
 
         state.currentTeam = {
             id: result.team.id,
@@ -136,6 +227,7 @@ async function createTeam() {
 async function joinTeam() {
     const teamCode = document.getElementById('teamCode').value.trim().toUpperCase();
     const userName = document.getElementById('userName').value.trim();
+    const userEmail = document.getElementById('userEmail').value.trim().toLowerCase();
 
     if (!teamCode || !userName) {
         alert('Please fill in all fields');
@@ -151,15 +243,31 @@ async function joinTeam() {
         // Get existing members
         const members = await apiCall(`/members?teamId=${team.id}`);
 
-        // Check if user already exists
-        let member = members.find(m => m.name.toLowerCase() === userName.toLowerCase());
+        // Check if user already exists (by name or email)
+        let member = members.find(m =>
+            m.name.toLowerCase() === userName.toLowerCase() ||
+            (userEmail && m.email && m.email.toLowerCase() === userEmail)
+        );
 
         if (!member) {
-            // Create new member
+            // Create new member with email
             member = await apiCall('/members', 'POST', {
                 teamId: team.id,
-                name: userName
+                name: userName,
+                email: userEmail || null
             });
+        } else if (userEmail && !member.email) {
+            // Update existing member with email if they didn't have one
+            await apiCall('/members', 'PUT', {
+                id: member.id,
+                email: userEmail
+            });
+            member.email = userEmail;
+        }
+
+        // Save email for future lookups
+        if (userEmail) {
+            localStorage.setItem('weekflow_email', userEmail);
         }
 
         state.currentTeam = {
@@ -245,10 +353,20 @@ async function showMainScreen() {
     if (headerSelect) headerSelect.value = currentLang;
     if (settingsSelect) settingsSelect.value = currentLang;
 
-    // Show admin badge and presenter button
+    // Show admin badge if admin
     if (state.isAdmin) {
         document.getElementById('adminBadge').classList.remove('hidden');
-        document.getElementById('presenterBtn').classList.remove('hidden');
+    }
+
+    // Switch between admin and member view
+    if (state.isAdmin) {
+        document.getElementById('adminView').classList.remove('hidden');
+        document.getElementById('memberView').classList.add('hidden');
+        document.getElementById('teamMembersSection').classList.remove('hidden');
+    } else {
+        document.getElementById('adminView').classList.add('hidden');
+        document.getElementById('memberView').classList.remove('hidden');
+        document.getElementById('memberWeekLabel').textContent = getWeekLabel();
     }
 
     // Update mood
@@ -263,10 +381,65 @@ async function showMainScreen() {
 
 async function refreshData() {
     await loadTeamData();
-    loadSections();
-    loadMembers();
+
+    if (state.isAdmin) {
+        loadSections();
+        loadMembers();
+        loadCarryover();
+    } else {
+        loadMyContributions();
+    }
+
     loadMyTasks();
-    loadCarryover();
+}
+
+// ===================================
+// Member View - My Contributions
+// ===================================
+function loadMyContributions() {
+    const weekStart = getWeekStart();
+    const container = document.getElementById('contributionsList');
+
+    if (!container) return;
+
+    // Get my contributions to shared sections
+    const myItems = (state.tasks || []).filter(t =>
+        t.member_id === state.currentUser.id &&
+        t.week_start === weekStart &&
+        ['show_and_tell', 'to_discuss', 'focus'].includes(t.section)
+    );
+
+    const sectionIcons = {
+        show_and_tell: '📢',
+        to_discuss: '💬',
+        focus: '🎯'
+    };
+
+    const sectionNames = {
+        show_and_tell: wft('sections.showAndTell'),
+        to_discuss: wft('sections.toDiscuss'),
+        focus: wft('sections.focus')
+    };
+
+    if (myItems.length === 0) {
+        container.innerHTML = `
+            <div class="no-contributions">
+                <span>📝</span>
+                <p>Aún no has compartido nada esta semana</p>
+                <p style="font-size: 12px; margin-top: 8px;">Usa los botones arriba para agregar algo</p>
+            </div>
+        `;
+    } else {
+        container.innerHTML = myItems.map(item => `
+            <div class="contribution-item">
+                <span class="contribution-icon">${sectionIcons[item.section]}</span>
+                <div class="contribution-content">
+                    <div class="contribution-text">${item.text}</div>
+                    <div class="contribution-section">${sectionNames[item.section]}</div>
+                </div>
+            </div>
+        `).join('');
+    }
 }
 
 function updateMoodDisplay() {
@@ -674,6 +847,9 @@ function togglePresenterMode() {
     document.getElementById('mainScreen').classList.add('hidden');
     document.getElementById('presenterScreen').classList.remove('hidden');
 
+    // Hide tasks panel when presenting
+    document.getElementById('tasksPanel').classList.add('hidden');
+
     document.getElementById('presenterTeamName').textContent = state.currentTeam.name;
     document.getElementById('presenterWeek').textContent = getWeekLabel();
 
@@ -684,6 +860,13 @@ function exitPresenterMode() {
     state.presenterMode = false;
     document.getElementById('presenterScreen').classList.add('hidden');
     document.getElementById('mainScreen').classList.remove('hidden');
+
+    // Show tasks panel again
+    document.getElementById('tasksPanel').classList.remove('hidden');
+}
+
+function addItemPresenter(section) {
+    addItem(section);
 }
 
 function updatePresenterView() {
@@ -751,6 +934,68 @@ function updatePresenterView() {
 // ===================================
 function openSettings() {
     document.getElementById('settingsModal').classList.remove('hidden');
+
+    // Show admin-only sections
+    if (state.isAdmin) {
+        document.querySelectorAll('.admin-only-section').forEach(el => {
+            el.classList.remove('hidden');
+        });
+    }
+}
+
+// ===================================
+// Role Management (Admin Only)
+// ===================================
+function openManageRoles() {
+    if (!state.isAdmin) return;
+
+    const container = document.getElementById('memberRolesList');
+
+    container.innerHTML = (state.members || []).map(member => `
+        <div class="member-role-item">
+            <div class="member-role-info">
+                <div class="member-role-avatar">${member.avatar || getInitials(member.name)}</div>
+                <div>
+                    <div class="member-role-name">${member.name}</div>
+                    <div class="member-role-email">${member.email || 'Sin email'}</div>
+                </div>
+            </div>
+            <div class="role-toggle">
+                <button class="role-btn ${member.role === 'member' ? 'active' : ''}"
+                        onclick="changeRole('${member.id}', 'member')"
+                        ${member.id === state.currentUser.id ? 'disabled' : ''}>
+                    👤 Member
+                </button>
+                <button class="role-btn admin-btn ${member.role === 'admin' ? 'active' : ''}"
+                        onclick="changeRole('${member.id}', 'admin')"
+                        ${member.id === state.currentUser.id ? 'disabled' : ''}>
+                    👑 Admin
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('manageRolesModal').classList.remove('hidden');
+}
+
+async function changeRole(memberId, newRole) {
+    if (!state.isAdmin) return;
+
+    try {
+        await apiCall('/members', 'PUT', {
+            id: memberId,
+            role: newRole
+        });
+
+        // Refresh data
+        await refreshData();
+
+        // Refresh the modal
+        openManageRoles();
+
+    } catch (error) {
+        alert('Error changing role: ' + error.message);
+    }
 }
 
 function changeLanguage(lang) {
@@ -840,16 +1085,51 @@ function exportToDoc() {
 }
 
 // ===================================
-// Google Docs Export
+// Google Docs Setup & Export
 // ===================================
+async function openGoogleDocSetup() {
+    try {
+        const integrations = await apiCall(`/integrations?teamId=${state.currentTeam.id}&type=googledoc`);
+        const settings = integrations[0]?.settings || {};
+        document.getElementById('googleDocUrl').value = settings.docUrl || '';
+    } catch (e) {
+        console.error('Error loading Google Doc settings:', e);
+    }
+    document.getElementById('googleDocSetupModal').classList.remove('hidden');
+}
+
+async function saveGoogleDocUrl() {
+    const docUrl = document.getElementById('googleDocUrl').value.trim();
+
+    try {
+        await apiCall('/integrations', 'POST', {
+            teamId: state.currentTeam.id,
+            type: 'googledoc',
+            settings: { docUrl: docUrl },
+            enabled: true
+        });
+
+        closeModal('googleDocSetupModal');
+        alert(wft('messages.saved') || 'Saved!');
+    } catch (error) {
+        alert('Error saving: ' + error.message);
+    }
+}
+
 function exportToGoogleDocs() {
     const moods = ['😫', '😕', '😐', '😊', '😄'];
     const weekStart = getWeekStart();
     const sectionMap = { showAndTell: 'show_and_tell', toDiscuss: 'to_discuss', focus: 'focus' };
 
-    let content = `${state.currentTeam.name} - ${wft('export.title')}\n`;
-    content += `${'='.repeat(50)}\n`;
-    content += `${wft('export.generated')}: ${new Date().toLocaleDateString()}\n\n`;
+    // Create invite link with team code
+    const inviteLink = `${window.location.origin}${window.location.pathname}?team=${state.currentTeam.code}`;
+
+    let content = `🌊 ${state.currentTeam.name} - WeekFlow\n`;
+    content += `${'═'.repeat(50)}\n`;
+    content += `📅 ${wft('export.generated')}: ${new Date().toLocaleDateString()}\n`;
+    content += `🔑 Team Code: ${state.currentTeam.code}\n`;
+    content += `🔗 Join Link: ${inviteLink}\n`;
+    content += `${'═'.repeat(50)}\n\n`;
 
     const sectionIcons = { showAndTell: '📢', toDiscuss: '💬', focus: '🎯' };
     const getMemberName = (id) => state.members?.find(m => m.id === id)?.name || 'Unknown';
@@ -878,7 +1158,7 @@ function exportToGoogleDocs() {
 
     // Team tasks
     content += `👥 ${wft('sections.team')}\n`;
-    content += `${'='.repeat(50)}\n\n`;
+    content += `${'═'.repeat(50)}\n\n`;
 
     (state.members || []).forEach(member => {
         const memberTasks = (state.tasks || []).filter(t =>
@@ -911,8 +1191,24 @@ function copyExportContent() {
     alert(wft('messages.contentCopied'));
 }
 
-function openGoogleDocs() {
-    window.open('https://docs.google.com/document/create', '_blank');
+async function openGoogleDocs() {
+    // Try to get saved Google Doc URL
+    try {
+        const integrations = await apiCall(`/integrations?teamId=${state.currentTeam.id}&type=googledoc`);
+        const settings = integrations[0]?.settings || {};
+
+        if (settings.docUrl) {
+            // Open the configured Google Doc
+            window.open(settings.docUrl, '_blank');
+        } else {
+            // No doc configured, create a new one
+            window.open('https://docs.google.com/document/create', '_blank');
+            alert('Tip: Configure your team\'s Google Doc in Settings to always open the same document.');
+        }
+    } catch (e) {
+        // Fallback to creating new doc
+        window.open('https://docs.google.com/document/create', '_blank');
+    }
 }
 
 // ===================================

@@ -21,9 +21,30 @@
                 </div>
 
                 <div class="login-form">
+                    <!-- Email lookup for returning users -->
+                    <div class="form-group">
+                        <label data-i18n="login.yourEmail">Your Email</label>
+                        <input type="email" id="userEmail" placeholder="tu@email.com" class="input" onchange="checkUserTeams()">
+                        <small class="form-help" data-i18n="login.emailHelp" style="color: var(--text-muted); font-size: 11px;">
+                            Enter your email to see your teams
+                        </small>
+                    </div>
+
+                    <!-- User's teams (shown after email lookup) -->
+                    <div id="userTeamsContainer" class="hidden" style="margin-bottom: 16px;">
+                        <label style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; display: block;">
+                            <span data-i18n="login.yourTeams">Your Teams</span>:
+                        </label>
+                        <div id="userTeamsList" class="user-teams-list"></div>
+                    </div>
+
+                    <div class="divider">
+                        <span data-i18n="login.or">or join with code</span>
+                    </div>
+
                     <div class="form-group">
                         <label data-i18n="login.teamCode">Team Code</label>
-                        <input type="text" id="teamCode" placeholder="Enter team code..." class="input">
+                        <input type="text" id="teamCode" placeholder="ABC123" class="input" style="text-transform: uppercase;">
                     </div>
                     <div class="form-group">
                         <label data-i18n="login.yourName">Your Name</label>
@@ -53,6 +74,12 @@
                     <button class="lang-btn" data-lang="ko">한국어</button>
                     <button class="lang-btn" data-lang="ar">عربي</button>
                 </div>
+
+                <div class="admin-link" style="margin-top: 24px; text-align: center;">
+                    <a href="/weekflow/admin.html" style="color: var(--text-muted); font-size: 12px; text-decoration: none;">
+                        🌵 Admin Panel
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -70,6 +97,13 @@
                 <div class="form-group">
                     <label data-i18n="createTeam.yourName">Your Name (Admin)</label>
                     <input type="text" id="adminName" class="input" placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="createTeam.yourEmail">Your Email</label>
+                    <input type="email" id="adminEmail" class="input" placeholder="tu@email.com">
+                    <small class="form-help" style="color: var(--text-muted); font-size: 11px;">
+                        Para poder volver a ver tus equipos después
+                    </small>
                 </div>
                 <button class="btn btn-primary btn-block" onclick="createTeam()" data-i18n="createTeam.create">Create Team</button>
             </div>
@@ -97,7 +131,8 @@
                         <option value="ko">🇰🇷 한국어</option>
                         <option value="ar">🇸🇦 عربي</option>
                     </select>
-                    <button class="btn btn-presenter hidden" id="presenterBtn" onclick="togglePresenterMode()">
+                    <!-- Anyone can present -->
+                    <button class="btn btn-presenter" id="presenterBtn" onclick="togglePresenterMode()">
                         <span>📺</span>
                         <span data-i18n="actions.present">Present</span>
                     </button>
@@ -112,60 +147,95 @@
                 </div>
             </header>
 
-            <!-- Main Content -->
+            <!-- Main Content - Admin View -->
             <main class="main-content" id="mainContent">
-                <!-- Team Sections (Show & Tell, To Discuss, Focus) -->
-                <div class="team-sections">
-                    <div class="section-card" data-section="showAndTell">
-                        <div class="section-header">
-                            <span class="section-icon">📢</span>
-                            <h3 data-i18n="sections.showAndTell">Show & Tell</h3>
-                            <button class="btn-add" onclick="addItem('showAndTell')">+</button>
+                <!-- Admin View: Full team sections -->
+                <div id="adminView">
+                    <!-- Team Sections (Show & Tell, To Discuss, Focus) -->
+                    <div class="team-sections">
+                        <div class="section-card" data-section="showAndTell">
+                            <div class="section-header">
+                                <span class="section-icon">📢</span>
+                                <h3 data-i18n="sections.showAndTell">Show & Tell</h3>
+                                <button class="btn-add" onclick="addItem('showAndTell')">+</button>
+                            </div>
+                            <div class="section-items" id="showAndTellItems"></div>
                         </div>
-                        <div class="section-items" id="showAndTellItems"></div>
+
+                        <div class="section-card" data-section="toDiscuss">
+                            <div class="section-header">
+                                <span class="section-icon">💬</span>
+                                <h3 data-i18n="sections.toDiscuss">To Discuss</h3>
+                                <button class="btn-add" onclick="addItem('toDiscuss')">+</button>
+                            </div>
+                            <div class="section-items" id="toDiscussItems"></div>
+                        </div>
+
+                        <div class="section-card" data-section="focus">
+                            <div class="section-header">
+                                <span class="section-icon">🎯</span>
+                                <h3 data-i18n="sections.focus">Focus</h3>
+                                <button class="btn-add" onclick="addItem('focus')">+</button>
+                            </div>
+                            <div class="section-items" id="focusItems"></div>
+                        </div>
                     </div>
 
-                    <div class="section-card" data-section="toDiscuss">
-                        <div class="section-header">
-                            <span class="section-icon">💬</span>
-                            <h3 data-i18n="sections.toDiscuss">To Discuss</h3>
-                            <button class="btn-add" onclick="addItem('toDiscuss')">+</button>
+                    <!-- Team Members (Admin only) -->
+                    <div class="team-members-section" id="teamMembersSection">
+                        <div class="section-header-row">
+                            <h3 data-i18n="sections.team">Team</h3>
+                            <div class="team-pulse" id="teamPulse">
+                                <span class="pulse-label" data-i18n="pulse.team">Team Pulse:</span>
+                                <span class="pulse-value" id="pulseValue">😊 4.2</span>
+                            </div>
                         </div>
-                        <div class="section-items" id="toDiscussItems"></div>
+                        <div class="members-grid" id="membersGrid"></div>
                     </div>
 
-                    <div class="section-card" data-section="focus">
-                        <div class="section-header">
-                            <span class="section-icon">🎯</span>
-                            <h3 data-i18n="sections.focus">Focus</h3>
-                            <button class="btn-add" onclick="addItem('focus')">+</button>
+                    <!-- Carryover (Admin only) -->
+                    <div class="carryover-section hidden" id="carryoverSection">
+                        <div class="section-header-row">
+                            <h3>
+                                <span>⚠️</span>
+                                <span data-i18n="sections.carryover">Pending from Last Week</span>
+                                <span class="count-badge" id="carryoverCount">0</span>
+                            </h3>
                         </div>
-                        <div class="section-items" id="focusItems"></div>
+                        <div class="carryover-items" id="carryoverItems"></div>
                     </div>
                 </div>
 
-                <!-- Team Members -->
-                <div class="team-members-section">
-                    <div class="section-header-row">
-                        <h3 data-i18n="sections.team">Team</h3>
-                        <div class="team-pulse" id="teamPulse">
-                            <span class="pulse-label" data-i18n="pulse.team">Team Pulse:</span>
-                            <span class="pulse-value" id="pulseValue">😊 4.2</span>
+                <!-- Member View: Personal sheet only -->
+                <div id="memberView" class="hidden">
+                    <div class="member-personal-sheet">
+                        <div class="sheet-header">
+                            <h2>🌊 <span data-i18n="member.mySheet">Mi Hojita</span></h2>
+                            <span class="week-badge" id="memberWeekLabel">Week of Jan 27</span>
+                        </div>
+
+                        <!-- Quick add buttons for sections -->
+                        <div class="quick-add-buttons">
+                            <button class="quick-add-btn" onclick="addItem('showAndTell')">
+                                <span>📢</span>
+                                <span data-i18n="sections.showAndTell">Show & Tell</span>
+                            </button>
+                            <button class="quick-add-btn" onclick="addItem('toDiscuss')">
+                                <span>💬</span>
+                                <span data-i18n="sections.toDiscuss">To Discuss</span>
+                            </button>
+                            <button class="quick-add-btn" onclick="addItem('focus')">
+                                <span>🎯</span>
+                                <span data-i18n="sections.focus">Focus</span>
+                            </button>
+                        </div>
+
+                        <!-- My contributions this week -->
+                        <div class="my-contributions" id="myContributions">
+                            <h4 data-i18n="member.myContributions">Lo que compartí esta semana</h4>
+                            <div class="contributions-list" id="contributionsList"></div>
                         </div>
                     </div>
-                    <div class="members-grid" id="membersGrid"></div>
-                </div>
-
-                <!-- Carryover (Admin only) -->
-                <div class="carryover-section hidden" id="carryoverSection">
-                    <div class="section-header-row">
-                        <h3>
-                            <span>⚠️</span>
-                            <span data-i18n="sections.carryover">Pending from Last Week</span>
-                            <span class="count-badge" id="carryoverCount">0</span>
-                        </h3>
-                    </div>
-                    <div class="carryover-items" id="carryoverItems"></div>
                 </div>
             </main>
 
@@ -218,6 +288,7 @@
                         <div class="presenter-section-header">
                             <span>📢</span>
                             <h2 data-i18n="sections.showAndTell">Show & Tell</h2>
+                            <button class="btn-add presenter-add" onclick="addItemPresenter('showAndTell')">+</button>
                         </div>
                         <div class="presenter-items" id="presenterShowAndTell"></div>
                     </div>
@@ -226,6 +297,7 @@
                         <div class="presenter-section-header">
                             <span>💬</span>
                             <h2 data-i18n="sections.toDiscuss">To Discuss</h2>
+                            <button class="btn-add presenter-add" onclick="addItemPresenter('toDiscuss')">+</button>
                         </div>
                         <div class="presenter-items" id="presenterToDiscuss"></div>
                     </div>
@@ -234,6 +306,7 @@
                         <div class="presenter-section-header">
                             <span>🎯</span>
                             <h2 data-i18n="sections.focus">Focus</h2>
+                            <button class="btn-add presenter-add" onclick="addItemPresenter('focus')">+</button>
                         </div>
                         <div class="presenter-items" id="presenterFocus"></div>
                     </div>
@@ -319,6 +392,21 @@
                         </button>
                     </div>
 
+                    <!-- Team Management (Admin only) -->
+                    <div class="settings-section admin-only-section hidden" id="adminSection">
+                        <h4 data-i18n="settings.teamManagement">Team Management</h4>
+                    </div>
+
+                    <div class="setting-item admin-only-section hidden" id="manageRolesItem">
+                        <label>
+                            <span class="integration-icon">👥</span>
+                            <span data-i18n="settings.manageRoles">Manage Team Roles</span>
+                        </label>
+                        <button class="btn btn-sm btn-outline" onclick="openManageRoles()">
+                            <span data-i18n="actions.manage">Manage</span>
+                        </button>
+                    </div>
+
                     <!-- Integrations -->
                     <div class="settings-section">
                         <h4 data-i18n="settings.integrations">Integrations</h4>
@@ -337,7 +425,16 @@
                     <div class="setting-item">
                         <label>
                             <span class="integration-icon">📄</span>
-                            <span data-i18n="settings.googleDocs">Export to Google Docs</span>
+                            <span data-i18n="settings.googleDocs">Google Doc Link</span>
+                        </label>
+                        <button class="btn btn-sm btn-outline" onclick="openGoogleDocSetup()">
+                            <span data-i18n="actions.setup">Setup</span>
+                        </button>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <span class="integration-icon">📤</span>
+                            <span data-i18n="settings.exportWeek">Export This Week</span>
                         </label>
                         <button class="btn btn-sm btn-outline" onclick="exportToGoogleDocs()">
                             <span data-i18n="actions.export">Export</span>
@@ -432,6 +529,45 @@
             </div>
         </div>
 
+        <!-- Google Doc Setup Modal -->
+        <div class="modal hidden" id="googleDocSetupModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📄 Google Doc Setup</h3>
+                    <button class="btn-close" onclick="closeModal('googleDocSetupModal')">×</button>
+                </div>
+                <p class="modal-description">
+                    Paste the link to your team's Google Doc. All weekly exports will be copied here.
+                </p>
+                <div class="form-group">
+                    <label>Google Doc URL</label>
+                    <input type="text" id="googleDocUrl" class="input" placeholder="https://docs.google.com/document/d/...">
+                    <small class="form-help">
+                        Create a Google Doc and paste the link here. Make sure it's shared with your team.
+                    </small>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveGoogleDocUrl()">
+                    <span data-i18n="actions.save">Save</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Manage Roles Modal -->
+        <div class="modal hidden" id="manageRolesModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>👥 Gestionar Roles del Equipo</h3>
+                    <button class="btn-close" onclick="closeModal('manageRolesModal')">×</button>
+                </div>
+                <p class="modal-description">
+                    Los admins pueden presentar y ver todos los datos del equipo.
+                </p>
+                <div id="memberRolesList" class="member-roles-list">
+                    <!-- Members will be loaded here -->
+                </div>
+            </div>
+        </div>
+
         <!-- Google Docs Export Modal -->
         <div class="modal hidden" id="googleDocsModal">
             <div class="modal-content">
@@ -440,8 +576,11 @@
                     <button class="btn-close" onclick="closeModal('googleDocsModal')">×</button>
                 </div>
                 <p class="modal-description">
-                    Your weekly summary is ready to be copied to Google Docs.
+                    Your weekly summary is ready. Copy and paste into your team's Google Doc.
                 </p>
+                <div class="export-info" id="exportInfo">
+                    <!-- Team code and invite link shown here -->
+                </div>
                 <div class="export-preview" id="exportPreview">
                     <!-- Preview content -->
                 </div>
@@ -450,7 +589,7 @@
                         📋 <span data-i18n="actions.copyContent">Copy Content</span>
                     </button>
                     <button class="btn btn-primary" onclick="openGoogleDocs()">
-                        📄 <span data-i18n="actions.openGoogleDocs">Open Google Docs</span>
+                        📄 <span data-i18n="actions.openGoogleDocs">Open Google Doc</span>
                     </button>
                 </div>
             </div>

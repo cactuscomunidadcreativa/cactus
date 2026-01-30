@@ -207,6 +207,283 @@ textarea {
     background: rgba(99, 102, 241, 0.1);
 }
 
+/* User Teams List */
+.user-teams-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.user-team-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: left;
+}
+
+.user-team-btn:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.user-team-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-team-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.user-team-role {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.user-team-arrow {
+    color: var(--primary);
+    font-size: 18px;
+}
+
+/* ===================================
+   Member Personal Sheet View
+   =================================== */
+.member-personal-sheet {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--primary);
+}
+
+.sheet-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.week-badge {
+    background: var(--primary);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Quick Add Buttons */
+.quick-add-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.quick-add-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 16px;
+    background: var(--bg-card);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.quick-add-btn span:first-child {
+    font-size: 28px;
+}
+
+.quick-add-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+    transform: translateY(-2px);
+}
+
+/* My Contributions */
+.my-contributions {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.my-contributions h4 {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.contributions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contribution-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-sm);
+}
+
+.contribution-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.contribution-content {
+    flex: 1;
+}
+
+.contribution-text {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.contribution-section {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.no-contributions {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.no-contributions span {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 12px;
+}
+
+/* ===================================
+   Member Roles Management
+   =================================== */
+.member-roles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.member-role-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-sm);
+}
+
+.member-role-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.member-role-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.member-role-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.member-role-email {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.role-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.role-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.role-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.role-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.role-btn.admin-btn.active {
+    background: var(--warning);
+    border-color: var(--warning);
+}
+
+/* Responsive Member View */
+@media (max-width: 640px) {
+    .quick-add-buttons {
+        flex-direction: column;
+    }
+
+    .quick-add-btn {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 16px;
+    }
+
+    .quick-add-btn span:first-child {
+        font-size: 24px;
+    }
+}
+
 /* Header Language Select */
 .lang-select {
     padding: 6px 10px;
@@ -1214,6 +1491,10 @@ textarea {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.presenter-section-header {
+    flex: 1;
+}
+
 .presenter-section-header span {
     font-size: 24px;
 }
@@ -1221,6 +1502,20 @@ textarea {
 .presenter-section-header h2 {
     font-size: 18px;
     font-weight: 600;
+    flex: 1;
+}
+
+.presenter-add {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 32px;
+    height: 32px;
+}
+
+.presenter-add:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .presenter-items {

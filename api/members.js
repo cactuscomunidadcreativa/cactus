@@ -14,12 +14,32 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // GET - Get members by team
+    // GET - Get members by team OR lookup by email
     if (req.method === 'GET') {
-      const { teamId } = req.query;
+      const { teamId, email } = req.query;
+
+      // Lookup all teams for an email
+      if (email) {
+        const result = await pool.query(`
+          SELECT
+            m.id as member_id,
+            m.name as member_name,
+            m.role,
+            m.avatar,
+            t.id as team_id,
+            t.name as team_name,
+            t.code as team_code
+          FROM members m
+          JOIN teams t ON t.id = m.team_id
+          WHERE LOWER(m.email) = LOWER($1)
+          ORDER BY m.joined_at DESC
+        `, [email]);
+
+        return res.json(result.rows);
+      }
 
       if (!teamId) {
-        return res.status(400).json({ error: 'teamId required' });
+        return res.status(400).json({ error: 'teamId or email required' });
       }
 
       const result = await pool.query(
