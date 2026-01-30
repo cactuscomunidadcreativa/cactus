@@ -492,15 +492,7 @@ class PlutchikWheel {
     }
 }
 
-// Global instance for use in WeekFlow
-let plutchikWheel = null;
-
-function initPlutchikWheel(containerId, options) {
-    plutchikWheel = new PlutchikWheel(containerId, options);
-    return plutchikWheel;
-}
-
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { PlutchikWheel, initPlutchikWheel, EMOTION_TRANSLATIONS, DEFAULT_EMOTIONS };
+    module.exports = { PlutchikWheel, EMOTION_TRANSLATIONS, DEFAULT_EMOTIONS };
 }
