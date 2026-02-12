@@ -1,0 +1,26 @@
+{
+  "whatsapp": {
+    "title": "WhatsApp Central",
+    "linkPhone": "Vincular teléfono",
+    "phonePlaceholder": "+52 1234567890",
+    "verifyCode": "Código de verificación",
+    "codePlaceholder": "123456",
+    "sendCode": "Enviar código",
+    "verify": "Verificar",
+    "linked": "Teléfono vinculado",
+    "unlink": "Desvincular",
+    "notLinked": "Sin teléfono vinculado",
+    "linkDescription": "Vincula tu WhatsApp para controlar tus apps desde allí",
+    "tester": {
+      "title": "WhatsApp Tester",
+      "description": "Simula mensajes de WhatsApp para probar el sistema",
+      "phone": "Teléfono",
+      "message": "Mensaje",
+      "send": "Enviar",
+      "response": "Respuesta",
+      "noMessages": "Sin mensajes aún",
+      "inbound": "Entrante",
+      "outbound": "Saliente"
+    }
+  }
+}

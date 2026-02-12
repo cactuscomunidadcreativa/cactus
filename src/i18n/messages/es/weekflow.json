@@ -1,0 +1,241 @@
+{
+  "weekflow": {
+    "title": "WeekFlow",
+    "subtitle": "Check-ins y reuniones de equipo",
+    "noTeam": "No estás en un equipo todavía",
+    "createOrJoin": "Crea un equipo nuevo o únete con un código",
+    "noAccess": "Necesitas una suscripción",
+    "noAccessDescription": "Suscríbete a WeekFlow en el marketplace para acceder a esta app.",
+    "goToMarketplace": "Ir al Marketplace",
+    "weekOf": "Semana del {date}",
+    "sections": {
+      "personal": "Personal",
+      "personalDesc": "Tus tareas personales para esta semana",
+      "showAndTell": "Show & Tell",
+      "showAndTellDesc": "Comparte logros y cosas interesantes",
+      "toDiscuss": "Por Discutir",
+      "toDiscussDesc": "Temas para hablar en equipo",
+      "focus": "Foco",
+      "focusDesc": "Prioridades principales de la semana"
+    },
+    "tasks": {
+      "add": "Agregar tarea",
+      "placeholder": "Escribe una tarea...",
+      "empty": "Sin tareas todavía",
+      "completed": "completada",
+      "pending": "pendiente",
+      "total": "{count} tareas",
+      "done": "{count} completadas",
+      "priority": {
+        "normal": "Normal",
+        "important": "Importante",
+        "urgent": "Urgente"
+      },
+      "fromPrevious": "De semanas anteriores",
+      "deleteConfirm": "Eliminar esta tarea?",
+      "dueDate": "Cierre",
+      "startDate": "Inicio",
+      "private": "Privado",
+      "shared": "Compartido",
+      "assignTo": "Asignar a",
+      "mentionHint": "(@mencionar para asignar)"
+    },
+    "week": {
+      "previous": "Semana anterior",
+      "next": "Semana siguiente",
+      "today": "Hoy"
+    },
+    "export": {
+      "download": "Exportar CSV",
+      "saveToDrive": "Guardar en Drive"
+    },
+    "mood": {
+      "title": "Check-in de ánimo",
+      "howFeeling": "Cómo te sientes esta semana?",
+      "energy": "Nivel de energía",
+      "moodLabel": "Estado de ánimo",
+      "low": "Bajo",
+      "high": "Alto",
+      "save": "Guardar check-in",
+      "saving": "Guardando...",
+      "saved": "Check-in guardado",
+      "saveError": "Error al guardar",
+      "emotion": "Emoción",
+      "selectEmotion": "Selecciona una emoción",
+      "wheelPlutchik": "Emociones",
+      "wheelPlutchikDesc": "Rueda de Plutchik — Selecciona la emoción que mejor describe cómo te sientes",
+      "wheelSixSeconds": "Sentimientos",
+      "wheelSixSecondsDesc": "Rueda de Emociones y Sentimientos — Selecciona una familia de emociones, luego un sentimiento específico",
+      "levels": {
+        "1": "Mal",
+        "2": "Regular",
+        "3": "Normal",
+        "4": "Bien",
+        "5": "Excelente"
+      }
+    },
+    "pulse": {
+      "title": "Pulso del Equipo",
+      "avgMood": "Ánimo promedio",
+      "avgEnergy": "Energía promedio",
+      "checkins": "{count} check-ins",
+      "noData": "Sin datos de check-in aún"
+    },
+    "team": {
+      "create": "Crear equipo",
+      "join": "Unirse a equipo",
+      "teamName": "Nombre del equipo",
+      "teamNamePlaceholder": "Mi equipo increíble",
+      "teamCode": "Código de equipo",
+      "teamCodePlaceholder": "Ingresa el código de 6 caracteres",
+      "creating": "Creando...",
+      "joining": "Uniéndose...",
+      "shareCode": "Comparte este enlace para que otros se unan",
+      "copyLink": "Copiar enlace",
+      "members": "Miembros",
+      "member": "Miembro",
+      "admin": "Admin",
+      "role": "Rol",
+      "changeRole": "Cambiar rol",
+      "removeMember": "Remover miembro",
+      "removeConfirm": "Remover a {name} del equipo?",
+      "settings": "Configuración del equipo",
+      "dangerZone": "Zona de peligro",
+      "leaveTeam": "Dejar equipo",
+      "leaveConfirm": "Estás seguro de que quieres dejar el equipo?"
+    },
+    "presenter": {
+      "title": "Modo Presentador",
+      "start": "Iniciar presentación",
+      "stop": "Detener",
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "currentSpeaker": "Presentando ahora",
+      "overview": "Vista general",
+      "allDone": "Todos han presentado!",
+      "skipEmpty": "Saltar vacíos",
+      "viewAll": "Todos",
+      "viewOne": "Uno por uno"
+    },
+    "plutchik": {
+      "title": "Rueda de Emociones",
+      "instructions": "Selecciona la emoción que mejor describe cómo te sientes",
+      "emotions": {
+        "joy": "Alegría",
+        "trust": "Confianza",
+        "fear": "Miedo",
+        "surprise": "Sorpresa",
+        "sadness": "Tristeza",
+        "disgust": "Aversión",
+        "anger": "Enojo",
+        "anticipation": "Anticipación"
+      },
+      "intensities": {
+        "joy": { "low": "Serenidad", "mid": "Alegría", "high": "Éxtasis" },
+        "trust": { "low": "Aceptación", "mid": "Confianza", "high": "Admiración" },
+        "fear": { "low": "Aprensión", "mid": "Miedo", "high": "Terror" },
+        "surprise": { "low": "Distracción", "mid": "Sorpresa", "high": "Asombro" },
+        "sadness": { "low": "Melancolía", "mid": "Tristeza", "high": "Duelo" },
+        "disgust": { "low": "Aburrimiento", "mid": "Aversión", "high": "Repugnancia" },
+        "anger": { "low": "Molestia", "mid": "Enojo", "high": "Furia" },
+        "anticipation": { "low": "Interés", "mid": "Anticipación", "high": "Vigilancia" }
+      },
+      "dyads": {
+        "love": "Amor",
+        "submission": "Sumisión",
+        "awe": "Asombro",
+        "disapproval": "Desaprobación",
+        "remorse": "Remordimiento",
+        "contempt": "Desprecio",
+        "aggressiveness": "Agresividad",
+        "optimism": "Optimismo"
+      }
+    },
+    "sixSeconds": {
+      "title": "Rueda de Sentimientos",
+      "instructions": "Selecciona el sentimiento que mejor describe tu estado actual",
+      "groups": {
+        "joyful": "Alegre",
+        "powerful": "Poderoso",
+        "peaceful": "En paz",
+        "sad": "Triste",
+        "scared": "Asustado",
+        "angry": "Enojado",
+        "disgusted": "Asqueado",
+        "surprised": "Sorprendido"
+      },
+      "feelings": {
+        "joyful": {
+          "happy": "Feliz",
+          "excited": "Emocionado",
+          "grateful": "Agradecido",
+          "playful": "Juguetón",
+          "content": "Satisfecho",
+          "proud": "Orgulloso"
+        },
+        "powerful": {
+          "confident": "Seguro",
+          "courageous": "Valiente",
+          "creative": "Creativo",
+          "hopeful": "Esperanzado",
+          "respected": "Respetado",
+          "valued": "Valorado"
+        },
+        "peaceful": {
+          "calm": "Calmado",
+          "relaxed": "Relajado",
+          "loving": "Amoroso",
+          "thankful": "Agradecido",
+          "trusting": "Confiado",
+          "comfortable": "Cómodo"
+        },
+        "sad": {
+          "lonely": "Solo",
+          "hurt": "Herido",
+          "guilty": "Culpable",
+          "depressed": "Deprimido",
+          "ashamed": "Avergonzado",
+          "disappointed": "Decepcionado"
+        },
+        "scared": {
+          "anxious": "Ansioso",
+          "insecure": "Inseguro",
+          "helpless": "Indefenso",
+          "overwhelmed": "Abrumado",
+          "worried": "Preocupado",
+          "frightened": "Asustado"
+        },
+        "angry": {
+          "frustrated": "Frustrado",
+          "critical": "Crítico",
+          "resentful": "Resentido",
+          "furious": "Furioso",
+          "jealous": "Celoso",
+          "hostile": "Hostil"
+        },
+        "disgusted": {
+          "disapproving": "Desaprobador",
+          "judgmental": "Prejuicioso",
+          "embarrassed": "Avergonzado",
+          "repelled": "Repelido",
+          "hesitant": "Vacilante",
+          "revolted": "Asqueado"
+        },
+        "surprised": {
+          "amazed": "Asombrado",
+          "confused": "Confundido",
+          "stunned": "Atónito",
+          "shocked": "Impactado",
+          "startled": "Sobresaltado",
+          "perplexed": "Perplejo"
+        }
+      }
+    },
+    "tabs": {
+      "board": "Tablero",
+      "mood": "Ánimo",
+      "pulse": "Pulso",
+      "team": "Equipo"
+    }
+  }
+}

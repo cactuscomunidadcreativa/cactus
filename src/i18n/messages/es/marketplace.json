@@ -1,0 +1,37 @@
+{
+  "marketplace": {
+    "title": "Marketplace",
+    "subtitle": "Herramientas inteligentes para tu negocio",
+    "searchPlaceholder": "Buscar apps...",
+    "noResults": "No se encontraron apps con ese filtro",
+    "categories": {
+      "all": "Todas",
+      "productivity": "Productividad",
+      "marketing": "Marketing",
+      "wellness": "Bienestar",
+      "legal": "Legal",
+      "analytics": "Analytics",
+      "communication": "Comunicación"
+    },
+    "appCard": {
+      "subscribe": "Suscribirse",
+      "subscribed": "Suscrito",
+      "startTrial": "Iniciar prueba gratis",
+      "trialDays": "{days} días de prueba",
+      "from": "Desde",
+      "viewDetails": "Ver detalles",
+      "active": "Activo",
+      "manage": "Gestionar"
+    },
+    "pricing": {
+      "monthly": "Mensual",
+      "yearly": "Anual",
+      "savePercent": "Ahorra {percent}%",
+      "features": "Características",
+      "mostPopular": "Más popular",
+      "currentPlan": "Plan actual",
+      "choosePlan": "Elegir plan",
+      "freeTrial": "Prueba gratis por {days} días"
+    }
+  }
+}

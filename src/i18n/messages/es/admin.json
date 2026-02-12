@@ -1,0 +1,83 @@
+{
+  "admin": {
+    "title": "Panel de Administración",
+    "tabs": {
+      "config": "Configuración",
+      "users": "Usuarios",
+      "analytics": "Analíticas",
+      "audit": "Auditoría"
+    },
+    "config": {
+      "title": "Configuración de la plataforma",
+      "apiKeys": "Claves API",
+      "aiSettings": "Configuración de IA",
+      "anthropicKey": "Clave API de Anthropic (Claude)",
+      "openaiKey": "Clave API de OpenAI",
+      "defaultProvider": "Proveedor por defecto",
+      "fallbackEnabled": "Fallback activado",
+      "globalTokenLimit": "Límite global mensual de tokens",
+      "globalGenLimit": "Límite global mensual de generaciones",
+      "unlimited": "Ilimitado",
+      "save": "Guardar",
+      "saved": "¡Guardado!",
+      "testConnection": "Probar conexión",
+      "connected": "Conectado",
+      "notConnected": "No conectado",
+      "showKey": "Mostrar",
+      "hideKey": "Ocultar",
+      "placeholder": "Ingresa la clave API...",
+      "keyConfigured": "Clave configurada (ingresa una nueva para reemplazar)",
+      "description": "Las claves se almacenan encriptadas en la base de datos",
+      "whatsappConfig": "WhatsApp / Twilio",
+      "whatsappDescription": "Credenciales para la integración de WhatsApp Business",
+      "twilioSid": "Twilio Account SID",
+      "twilioToken": "Twilio Auth Token",
+      "twilioPhone": "Número de teléfono Twilio",
+      "waVerifyToken": "WhatsApp Verify Token"
+    },
+    "users": {
+      "title": "Gestión de usuarios",
+      "search": "Buscar usuario...",
+      "name": "Nombre",
+      "email": "Email",
+      "role": "Rol",
+      "tokensUsed": "Tokens usados",
+      "generationsUsed": "Generaciones",
+      "tokenLimit": "Límite de tokens",
+      "genLimit": "Límite de generaciones",
+      "editBudget": "Editar límites",
+      "saveBudget": "Guardar límites",
+      "cancel": "Cancelar",
+      "noUsers": "No hay usuarios registrados",
+      "unlimited": "Ilimitado",
+      "perMonth": "/mes",
+      "budgetUpdated": "Límites actualizados"
+    },
+    "analytics": {
+      "title": "Analíticas de uso",
+      "thisMonth": "Este mes",
+      "totalGenerations": "Generaciones totales",
+      "totalTokens": "Tokens totales",
+      "totalUsers": "Usuarios activos",
+      "byApp": "Por aplicación",
+      "topUsers": "Top usuarios",
+      "noData": "Sin datos este mes",
+      "generations": "generaciones",
+      "tokens": "tokens"
+    },
+    "audit": {
+      "title": "Registro de auditoría",
+      "action": "Acción",
+      "admin": "Administrador",
+      "target": "Objetivo",
+      "details": "Detalles",
+      "date": "Fecha",
+      "noEntries": "Sin entradas de auditoría",
+      "actions": {
+        "config_updated": "Configuración actualizada",
+        "budget_updated": "Presupuesto actualizado",
+        "user_role_changed": "Rol cambiado"
+      }
+    }
+  }
+}

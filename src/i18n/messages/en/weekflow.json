@@ -1,0 +1,241 @@
+{
+  "weekflow": {
+    "title": "WeekFlow",
+    "subtitle": "Team check-ins & weekly meetings",
+    "noTeam": "You're not in a team yet",
+    "createOrJoin": "Create a new team or join with a code",
+    "noAccess": "Subscription required",
+    "noAccessDescription": "Subscribe to WeekFlow in the marketplace to access this app.",
+    "goToMarketplace": "Go to Marketplace",
+    "weekOf": "Week of {date}",
+    "sections": {
+      "personal": "Personal",
+      "personalDesc": "Your personal tasks for this week",
+      "showAndTell": "Show & Tell",
+      "showAndTellDesc": "Share achievements and interesting things",
+      "toDiscuss": "To Discuss",
+      "toDiscussDesc": "Topics to talk about as a team",
+      "focus": "Focus",
+      "focusDesc": "Main priorities for the week"
+    },
+    "tasks": {
+      "add": "Add task",
+      "placeholder": "Write a task...",
+      "empty": "No tasks yet",
+      "completed": "completed",
+      "pending": "pending",
+      "total": "{count} tasks",
+      "done": "{count} completed",
+      "priority": {
+        "normal": "Normal",
+        "important": "Important",
+        "urgent": "Urgent"
+      },
+      "fromPrevious": "From previous weeks",
+      "deleteConfirm": "Delete this task?",
+      "dueDate": "Due",
+      "startDate": "Start",
+      "private": "Private",
+      "shared": "Shared",
+      "assignTo": "Assign to",
+      "mentionHint": "(@mention to assign)"
+    },
+    "week": {
+      "previous": "Previous week",
+      "next": "Next week",
+      "today": "Today"
+    },
+    "export": {
+      "download": "Export CSV",
+      "saveToDrive": "Save to Drive"
+    },
+    "mood": {
+      "title": "Mood Check-in",
+      "howFeeling": "How are you feeling this week?",
+      "energy": "Energy level",
+      "moodLabel": "Mood",
+      "low": "Low",
+      "high": "High",
+      "save": "Save check-in",
+      "saving": "Saving...",
+      "saved": "Check-in saved",
+      "saveError": "Error saving",
+      "emotion": "Emotion",
+      "selectEmotion": "Select an emotion",
+      "wheelPlutchik": "Emotions",
+      "wheelPlutchikDesc": "Plutchik's Wheel — Select the emotion that best describes how you feel",
+      "wheelSixSeconds": "Feelings",
+      "wheelSixSecondsDesc": "Emotions & Feelings Wheel — Select a feeling family, then a specific feeling",
+      "levels": {
+        "1": "Bad",
+        "2": "Meh",
+        "3": "Okay",
+        "4": "Good",
+        "5": "Great"
+      }
+    },
+    "pulse": {
+      "title": "Team Pulse",
+      "avgMood": "Average mood",
+      "avgEnergy": "Average energy",
+      "checkins": "{count} check-ins",
+      "noData": "No check-in data yet"
+    },
+    "team": {
+      "create": "Create team",
+      "join": "Join team",
+      "teamName": "Team name",
+      "teamNamePlaceholder": "My awesome team",
+      "teamCode": "Team code",
+      "teamCodePlaceholder": "Enter the 6-character code",
+      "creating": "Creating...",
+      "joining": "Joining...",
+      "shareCode": "Share this link so others can join",
+      "copyLink": "Copy link",
+      "members": "Members",
+      "member": "Member",
+      "admin": "Admin",
+      "role": "Role",
+      "changeRole": "Change role",
+      "removeMember": "Remove member",
+      "removeConfirm": "Remove {name} from the team?",
+      "settings": "Team settings",
+      "dangerZone": "Danger zone",
+      "leaveTeam": "Leave team",
+      "leaveConfirm": "Are you sure you want to leave the team?"
+    },
+    "presenter": {
+      "title": "Presenter Mode",
+      "start": "Start presentation",
+      "stop": "Stop",
+      "next": "Next",
+      "previous": "Previous",
+      "currentSpeaker": "Presenting now",
+      "overview": "Overview",
+      "allDone": "Everyone has presented!",
+      "skipEmpty": "Skip empty",
+      "viewAll": "All",
+      "viewOne": "One by one"
+    },
+    "plutchik": {
+      "title": "Emotion Wheel",
+      "instructions": "Select the emotion that best describes how you feel",
+      "emotions": {
+        "joy": "Joy",
+        "trust": "Trust",
+        "fear": "Fear",
+        "surprise": "Surprise",
+        "sadness": "Sadness",
+        "disgust": "Disgust",
+        "anger": "Anger",
+        "anticipation": "Anticipation"
+      },
+      "intensities": {
+        "joy": { "low": "Serenity", "mid": "Joy", "high": "Ecstasy" },
+        "trust": { "low": "Acceptance", "mid": "Trust", "high": "Admiration" },
+        "fear": { "low": "Apprehension", "mid": "Fear", "high": "Terror" },
+        "surprise": { "low": "Distraction", "mid": "Surprise", "high": "Amazement" },
+        "sadness": { "low": "Pensiveness", "mid": "Sadness", "high": "Grief" },
+        "disgust": { "low": "Boredom", "mid": "Disgust", "high": "Loathing" },
+        "anger": { "low": "Annoyance", "mid": "Anger", "high": "Rage" },
+        "anticipation": { "low": "Interest", "mid": "Anticipation", "high": "Vigilance" }
+      },
+      "dyads": {
+        "love": "Love",
+        "submission": "Submission",
+        "awe": "Awe",
+        "disapproval": "Disapproval",
+        "remorse": "Remorse",
+        "contempt": "Contempt",
+        "aggressiveness": "Aggressiveness",
+        "optimism": "Optimism"
+      }
+    },
+    "sixSeconds": {
+      "title": "Feelings Wheel",
+      "instructions": "Select the feeling that best describes your current state",
+      "groups": {
+        "joyful": "Joyful",
+        "powerful": "Powerful",
+        "peaceful": "Peaceful",
+        "sad": "Sad",
+        "scared": "Scared",
+        "angry": "Angry",
+        "disgusted": "Disgusted",
+        "surprised": "Surprised"
+      },
+      "feelings": {
+        "joyful": {
+          "happy": "Happy",
+          "excited": "Excited",
+          "grateful": "Grateful",
+          "playful": "Playful",
+          "content": "Content",
+          "proud": "Proud"
+        },
+        "powerful": {
+          "confident": "Confident",
+          "courageous": "Courageous",
+          "creative": "Creative",
+          "hopeful": "Hopeful",
+          "respected": "Respected",
+          "valued": "Valued"
+        },
+        "peaceful": {
+          "calm": "Calm",
+          "relaxed": "Relaxed",
+          "loving": "Loving",
+          "thankful": "Thankful",
+          "trusting": "Trusting",
+          "comfortable": "Comfortable"
+        },
+        "sad": {
+          "lonely": "Lonely",
+          "hurt": "Hurt",
+          "guilty": "Guilty",
+          "depressed": "Depressed",
+          "ashamed": "Ashamed",
+          "disappointed": "Disappointed"
+        },
+        "scared": {
+          "anxious": "Anxious",
+          "insecure": "Insecure",
+          "helpless": "Helpless",
+          "overwhelmed": "Overwhelmed",
+          "worried": "Worried",
+          "frightened": "Frightened"
+        },
+        "angry": {
+          "frustrated": "Frustrated",
+          "critical": "Critical",
+          "resentful": "Resentful",
+          "furious": "Furious",
+          "jealous": "Jealous",
+          "hostile": "Hostile"
+        },
+        "disgusted": {
+          "disapproving": "Disapproving",
+          "judgmental": "Judgmental",
+          "embarrassed": "Embarrassed",
+          "repelled": "Repelled",
+          "hesitant": "Hesitant",
+          "revolted": "Revolted"
+        },
+        "surprised": {
+          "amazed": "Amazed",
+          "confused": "Confused",
+          "stunned": "Stunned",
+          "shocked": "Shocked",
+          "startled": "Startled",
+          "perplexed": "Perplexed"
+        }
+      }
+    },
+    "tabs": {
+      "board": "Board",
+      "mood": "Mood",
+      "pulse": "Pulse",
+      "team": "Team"
+    }
+  }
+}

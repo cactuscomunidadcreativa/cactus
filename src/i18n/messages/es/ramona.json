@@ -1,0 +1,449 @@
+{
+  "ramona": {
+    "title": "Ramona Social",
+    "subtitle": "Tu departamento de marketing con IA",
+    "noAccess": "Necesitas una suscripción",
+    "noAccessDescription": "Suscríbete a Ramona Social en el marketplace para acceder.",
+    "goToMarketplace": "Ir al Marketplace",
+
+    "tabs": {
+      "studio": "Studio",
+      "kanban": "Pipeline",
+      "calendar": "Calendario"
+    },
+
+    "onboarding": {
+      "title": "Configura tu marca",
+      "subtitle": "Creemos el perfil de voz de tu marca para que la IA genere contenido auténtico",
+      "step": "Paso {current} de {total}",
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "finish": "Crear marca",
+      "creating": "Creando...",
+      "skipForNow": "Saltar por ahora",
+
+      "sourceSelection": {
+        "subtitle": "Elige cómo quieres comenzar a construir tu perfil de marca",
+        "existing": {
+          "title": "Ya tengo una marca",
+          "description": "Analizo tu sitio web y redes sociales para extraer tu identidad de marca automáticamente",
+          "feature1": "Analiza sitio web, Instagram, Facebook, LinkedIn, TikTok",
+          "feature2": "Extrae colores, tono, propuesta de valor",
+          "feature3": "Pre-llena todos los campos automáticamente"
+        },
+        "referents": {
+          "title": "Quiero inspirarme en referentes",
+          "description": "Analizo marcas que admiras y te ayudo a crear tu propia identidad combinando lo mejor de cada una",
+          "feature1": "Analiza hasta 5 marcas referentes",
+          "feature2": "Identifica qué funciona de cada una",
+          "feature3": "Sugiere cómo diferenciarte"
+        },
+        "scratch": {
+          "title": "Crear marca desde cero",
+          "description": "Te guío paso a paso para definir tu marca con preguntas simples y sugerencias inteligentes",
+          "feature1": "Cuestionario guiado paso a paso",
+          "feature2": "Sugerencias basadas en tu industria",
+          "feature3": "Generación de propuesta de valor con IA"
+        }
+      },
+
+      "urlImport": {
+        "subtitle": "Agrega las URLs de tu sitio web y perfiles de redes sociales",
+        "addedUrls": "{count} fuente(s) agregada(s)",
+        "analyzing": "Analizando tus fuentes...",
+        "analyzeButton": "Analizar mi marca",
+        "analysisComplete": "¡Análisis completado!",
+        "reviewBelow": "Revisa los datos extraídos y ajusta si es necesario",
+        "emptyState": "Agrega al menos una URL para comenzar"
+      },
+
+      "referents": {
+        "subtitle": "Agrega URLs de marcas que admiras o que son tu competencia",
+        "inputLabel": "URL del referente",
+        "placeholder": "https://marcaqueadmiras.com",
+        "maxHint": "{current} de {max} referentes agregados",
+        "analyzing": "Analizando referentes...",
+        "analyzeButton": "Analizar referentes",
+        "strengths": "Fortalezas",
+        "takeaways": "Para tu marca",
+        "error": "Error al analizar",
+        "recommendationsTitle": "Recomendaciones para tu marca",
+        "combinedStrengths": "Mejores prácticas identificadas",
+        "suggestedApproach": "Enfoque sugerido",
+        "differentiation": "Oportunidades de diferenciación",
+        "emptyState": "Agrega URLs de marcas que admiras",
+        "emptyHint": "Pueden ser competidores o marcas de cualquier industria",
+        "suggestions": "Ideas de qué agregar:",
+        "suggestion1": "Competidores directos en tu industria",
+        "suggestion2": "Marcas con el tono que te gustaría tener",
+        "suggestion3": "Cuentas de redes sociales que admiras"
+      },
+
+      "audienceUrls": {
+        "title": "Define tu audiencia ideal",
+        "subtitle": "Comparte perfiles de redes sociales de personas que representan a tu cliente ideal",
+        "hint": "Ramona analizará estos perfiles para entender mejor a quién quieres llegar",
+        "inputLabel": "URL del perfil",
+        "placeholder": "instagram.com/usuario o @usuario",
+        "examples": "Ej: instagram.com/clienteideal, twitter.com/usuario",
+        "addedProfiles": "{count} perfil(es) agregado(s)",
+        "analyzing": "Analizando perfiles de audiencia...",
+        "analyzeButton": "Analizar audiencia",
+        "analysisTitle": "Perfil de tu audiencia ideal",
+        "confidence": {
+          "high": "Alta confianza",
+          "medium": "Confianza media",
+          "low": "Baja confianza"
+        },
+        "ageRange": "Rango de edad",
+        "gender": "Género",
+        "interests": "Intereses",
+        "painPoints": "Problemas que enfrentan",
+        "preferredTone": "Tono que prefieren",
+        "emptyState": "Opcional: agrega perfiles de tu cliente ideal",
+        "emptyHint": "Si no tienes perfiles, puedes describir tu audiencia manualmente",
+        "skipNote": "Este paso es opcional. Puedes definir tu audiencia manualmente en el siguiente paso."
+      },
+
+      "basics": {
+        "title": "Datos básicos",
+        "name": "Nombre de la marca",
+        "namePlaceholder": "Mi Marca",
+        "industry": "Industria",
+        "industryPlaceholder": "Selecciona una industria",
+        "industries": {
+          "technology": "Tecnología",
+          "ecommerce": "E-commerce",
+          "food": "Alimentos y bebidas",
+          "health": "Salud",
+          "fitness": "Fitness",
+          "education": "Educación",
+          "fashion": "Moda",
+          "beauty": "Belleza",
+          "travel": "Viajes",
+          "finance": "Finanzas",
+          "real_estate": "Inmobiliaria",
+          "entertainment": "Entretenimiento",
+          "sports": "Deportes",
+          "automotive": "Automotriz",
+          "nonprofit": "Sin fines de lucro",
+          "consulting": "Consultoría",
+          "agency": "Agencia",
+          "saas": "SaaS",
+          "retail": "Retail",
+          "other": "Otro"
+        }
+      },
+      "voice": {
+        "title": "Voz y tono",
+        "toneLabel": "¿Cómo habla tu marca?",
+        "toneHint": "Selecciona uno o más tonos",
+        "tones": {
+          "professional": "Profesional",
+          "friendly": "Cercano",
+          "funny": "Divertido",
+          "inspiring": "Inspirador",
+          "formal": "Formal",
+          "casual": "Casual",
+          "educational": "Educativo",
+          "provocative": "Provocador"
+        },
+        "keywords": "Palabras clave",
+        "keywordsPlaceholder": "Palabras que tu marca usa frecuentemente (separadas por coma)",
+        "forbidden": "Palabras prohibidas",
+        "forbiddenPlaceholder": "Palabras que tu marca nunca usa (separadas por coma)"
+      },
+      "audience": {
+        "title": "Audiencia y propuesta",
+        "ageRange": "Rango de edad",
+        "ageRangePlaceholder": "Ej: 25-45",
+        "gender": "Género principal",
+        "genderOptions": {
+          "all": "Todos",
+          "female": "Femenino",
+          "male": "Masculino",
+          "nonbinary": "No binario"
+        },
+        "interests": "Intereses",
+        "interestsPlaceholder": "¿Qué le interesa a tu audiencia?",
+        "painPoints": "Puntos de dolor",
+        "painPointsPlaceholder": "¿Qué problemas tiene tu audiencia?",
+        "valueProp": "Propuesta de valor",
+        "valuePropPlaceholder": "¿Qué te hace único?"
+      },
+      "platforms": {
+        "title": "Plataformas y competencia",
+        "select": "¿Dónde publicas contenido?",
+        "competitors": "Competidores",
+        "competitorsPlaceholder": "Nombres o URLs de competidores (uno por línea)",
+        "exampleContent": "Contenido de ejemplo",
+        "exampleContentPlaceholder": "URLs o texto de contenido que te gusta (uno por línea)"
+      },
+      "review": {
+        "title": "Revisa tu perfil",
+        "edit": "Editar",
+        "looksGood": "¡Todo listo!",
+        "section": {
+          "basics": "Datos básicos",
+          "voice": "Voz y tono",
+          "audience": "Audiencia",
+          "platforms": "Plataformas"
+        }
+      }
+    },
+
+    "brand": {
+      "select": "Seleccionar marca",
+      "addNew": "Agregar marca",
+      "settings": "Configuración de marca",
+      "limitReached": "Límite de marcas alcanzado para tu plan",
+      "edit": "Editar marca",
+      "delete": "Eliminar marca",
+      "deleteConfirm": "¿Eliminar esta marca y todo su contenido?"
+    },
+
+    "studio": {
+      "title": "Studio de contenido",
+      "prompt": "¿Qué quieres crear?",
+      "promptPlaceholder": "Escribe tu idea o tema...",
+      "generate": "Generar con IA",
+      "generating": "Generando...",
+      "regenerate": "Regenerar",
+      "save": "Guardar contenido",
+      "saved": "¡Guardado!",
+      "copy": "Copiar",
+      "copied": "¡Copiado!",
+      "platform": "Plataforma",
+      "contentType": "Tipo de contenido",
+      "types": {
+        "post": "Post",
+        "story": "Story",
+        "reel": "Reel",
+        "carousel": "Carrusel",
+        "thread": "Hilo",
+        "article": "Artículo"
+      },
+      "recentGenerations": "Generaciones recientes",
+      "noGenerations": "Aún no has generado contenido",
+      "charCount": "{count} caracteres",
+      "charLimit": "Límite: {limit} caracteres"
+    },
+
+    "ai": {
+      "configured": "IA configurada",
+      "notConfigured": "IA no configurada",
+      "notConfiguredDesc": "Configura tus claves API para generar contenido con IA",
+      "usingProvider": "Usando {provider}",
+      "error": "Error de generación",
+      "retrying": "Reintentando con {provider}..."
+    },
+
+    "kanban": {
+      "title": "Pipeline de contenido",
+      "empty": "Sin contenido todavía",
+      "addContent": "Agregar",
+      "statuses": {
+        "idea": "Idea",
+        "draft": "Borrador",
+        "review": "Revisión",
+        "approved": "Aprobado",
+        "scheduled": "Programado",
+        "published": "Publicado"
+      },
+      "dragHint": "Arrastra para cambiar estado",
+      "count": "{count} items"
+    },
+
+    "calendar": {
+      "title": "Calendario de contenido",
+      "today": "Hoy",
+      "noContent": "Sin contenido programado",
+      "scheduleContent": "Programar contenido",
+      "month": {
+        "previous": "Mes anterior",
+        "next": "Mes siguiente"
+      }
+    },
+
+    "content": {
+      "edit": "Editar contenido",
+      "delete": "Eliminar",
+      "deleteConfirm": "¿Eliminar este contenido?",
+      "schedule": "Programar",
+      "publish": "Marcar como publicado",
+      "hashtags": "Hashtags",
+      "addHashtag": "Agregar hashtag",
+      "scheduledFor": "Programado para {date}",
+      "createdAt": "Creado {date}",
+      "improve": "Mejorar con IA",
+      "moveTo": "Mover a",
+      "title": "Título",
+      "titlePlaceholder": "Título interno (opcional)",
+      "body": "Contenido",
+      "bodyPlaceholder": "Escribe tu contenido aquí...",
+      "scheduleDate": "Fecha de publicación",
+      "saveChanges": "Guardar cambios",
+      "cancel": "Cancelar",
+      "platform": "Plataforma",
+      "type": "Tipo"
+    },
+
+    "usage": {
+      "title": "Uso del mes",
+      "used": "{used} de {limit} contenidos",
+      "unlimited": "Contenidos ilimitados",
+      "upgrade": "Mejorar plan",
+      "limitReached": "Límite alcanzado",
+      "generations": "{count} generaciones IA"
+    },
+
+    "platforms": {
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "twitter": "Twitter/X",
+      "linkedin": "LinkedIn",
+      "tiktok": "TikTok",
+      "multi": "Multi-plataforma"
+    },
+
+    "chat": {
+      "title": "Chat con Ramona",
+      "placeholder": "Escribe tu mensaje...",
+      "send": "Enviar",
+      "thinking": "Ramona está pensando...",
+      "newChat": "Nueva conversación",
+      "conversations": "Conversaciones",
+      "noConversations": "Sin conversaciones aún",
+      "saveToKanban": "Guardar al Pipeline",
+      "savedToKanban": "¡Guardado al Pipeline!",
+      "selectPlatform": "Plataforma",
+      "selectType": "Tipo",
+      "welcome": "¡Hola! Soy Ramona 🌵, tu asistente de marketing. ¿En qué puedo ayudarte hoy?",
+      "notConfigured": "La IA no está configurada. Pide al administrador que configure las claves API.",
+      "contextInfo": "Contexto actual"
+    },
+
+    "batch": {
+      "title": "Generación Masiva",
+      "subtitle": "Genera contenido para todo el mes",
+      "howMany": "¿Cuántos contenidos quieres generar?",
+      "platforms": "¿Para qué plataformas?",
+      "contentTypes": "¿Qué tipos de contenido?",
+      "themes": "Temas específicos",
+      "themesPlaceholder": "marketing, ventas, tips (separados por coma)",
+      "optional": "opcional",
+      "startGeneration": "Generar {count} contenidos",
+      "generating": "Generando contenido...",
+      "generatingDesc": "Ramona está creando {count} piezas de contenido. Esto puede tomar unos minutos.",
+      "complete": "¡Generación completada!",
+      "completeDesc": "Se crearon {count} contenidos nuevos",
+      "viewContent": "Ver contenido",
+      "cancel": "Cancelar",
+      "hint": "Los contenidos aparecerán en tu Pipeline como \"Ideas\""
+    },
+
+    "swipe": {
+      "title": "Revisar contenido",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "edit": "Editar",
+      "progress": "{current} de {total} revisados",
+      "remaining": "{count} pendientes",
+      "noContent": "Sin contenido para revisar",
+      "noContentDesc": "Genera contenido primero usando el botón de generación masiva",
+      "allDone": "¡Revisión completada!",
+      "allDoneDesc": "Revisaste {count} contenidos"
+    },
+
+    "autoSchedule": {
+      "title": "Auto-Programar",
+      "availableContent": "{count} contenidos listos",
+      "availableDesc": "Contenido aprobado sin programar",
+      "dateRange": "¿Cuánto tiempo quieres llenar?",
+      "preferredTimes": "Horarios preferidos",
+      "frequency": "Publicaciones por semana",
+      "excludeWeekends": "Excluir fines de semana",
+      "scheduling": "Programando...",
+      "scheduleButton": "Programar contenido",
+      "success": "¡Calendario listo!",
+      "successDesc": "Se programaron {count} contenidos",
+      "preview": "Próximas publicaciones:",
+      "viewCalendar": "Ver calendario"
+    },
+
+    "videoStudio": {
+      "title": "Video Studio",
+      "back": "Atrás",
+      "next": "Siguiente",
+      "generate": "Generar video",
+
+      "typeStep": {
+        "title": "¿Qué tipo de video quieres crear?",
+        "subtitle": "Elige el formato que mejor se adapte a tu contenido"
+      },
+
+      "templateGallery": {
+        "title": "Elige una plantilla",
+        "subtitle": "Selecciona un estilo predefinido o empieza desde cero",
+        "noTemplate": "Sin plantilla",
+        "noTemplateDesc": "Empezar con un lienzo en blanco",
+        "loading": "Cargando plantillas..."
+      },
+
+      "scriptEditor": {
+        "title": "Escribe tu guión",
+        "subtitle": "El texto que aparecerá o se narrará en tu video",
+        "aiGenerate": {
+          "title": "Generar con IA",
+          "placeholder": "Describe el tema de tu video...",
+          "button": "Generar"
+        },
+        "scriptLabel": "Guión",
+        "placeholder": "Escribe o pega tu guión aquí...",
+        "characters": "caracteres",
+        "words": "palabras",
+        "tooShort": "El guión es muy corto",
+        "tooLong": "El guión excede el límite",
+        "templates": "Plantillas de guión"
+      },
+
+      "stylePicker": {
+        "title": "Personaliza el estilo",
+        "subtitle": "Ajusta colores, fuentes y transiciones",
+        "aspectRatio": "Formato de video",
+        "colors": "Paleta de colores",
+        "brandColors": "Colores de tu marca",
+        "primaryColor": "Primario",
+        "secondaryColor": "Secundario",
+        "font": "Tipografía",
+        "transitions": "Transiciones",
+        "preview": "Vista previa",
+        "previewText": "Tu contenido aquí"
+      },
+
+      "preview": {
+        "noVideo": "Sin video"
+      },
+
+      "generating": {
+        "processing": "Procesando guión...",
+        "rendering": "Renderizando video...",
+        "finishing": "Finalizando...",
+        "description": "Esto puede tomar unos minutos",
+        "cancel": "Cancelar"
+      },
+
+      "complete": {
+        "title": "¡Video listo!",
+        "description": "Tu video ha sido generado exitosamente",
+        "download": "Descargar",
+        "createAnother": "Crear otro"
+      },
+
+      "error": {
+        "title": "Error al generar",
+        "tryAgain": "Intentar de nuevo"
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "platform": {
+    "sidebar": {
+      "dashboard": "Panel principal",
+      "marketplace": "Marketplace",
+      "settings": "Configuración",
+      "billing": "Facturación",
+      "myApps": "Mis apps",
+      "explore": "Explorar",
+      "admin": "Admin"
+    },
+    "dashboard": {
+      "title": "Panel principal",
+      "welcome": "Hola, {name}",
+      "welcomeDefault": "Bienvenido a Cactus",
+      "subtitle": "Tu plataforma de herramientas inteligentes",
+      "activeApps": "Apps activas",
+      "noApps": "Aún no tienes apps activas",
+      "noAppsDescription": "Explora nuestro marketplace para encontrar herramientas que potencien tu negocio.",
+      "exploreMarketplace": "Explorar Marketplace",
+      "quickActions": "Acciones rápidas",
+      "recentActivity": "Actividad reciente",
+      "moodTrend": "Estado de ánimo",
+      "contentGenerated": "Contenido creado",
+      "aiGenerations": "Generaciones AI",
+      "tasksCompleted": "Tareas completadas",
+      "tasksPending": "Tareas pendientes",
+      "thisMonth": "este mes",
+      "noActivity": "Sin actividad reciente",
+      "activity": {
+        "generation": "Generación AI",
+        "content": "Contenido creado",
+        "task": "Tarea completada"
+      }
+    },
+    "settings": {
+      "title": "Configuración",
+      "profile": "Perfil",
+      "billing": "Facturación",
+      "preferences": "Preferencias",
+      "notifications": "Notificaciones",
+      "fullName": "Nombre completo",
+      "email": "Correo electrónico",
+      "language": "Idioma preferido",
+      "theme": "Tema",
+      "saveChanges": "Guardar cambios",
+      "manageBilling": "Gestionar facturación",
+      "manageSubscription": "Gestionar suscripción",
+      "currentPlan": "Plan actual",
+      "noPlan": "Sin plan activo",
+      "whatsapp": "WhatsApp"
+    },
+    "appSwitcher": {
+      "title": "Cambiar app",
+      "noApps": "Sin apps activas"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "home": {
+    "tagline": "Inteligencia que Echa Raíces",
+    "title": "Cactus",
+    "titleHighlight": "Comunidad Creativa",
+    "subtitle": "Tu plataforma de herramientas inteligentes. Cada app resuelve un problema. Elige las que necesitas.",
+    "cta": {
+      "getStarted": "Comenzar gratis",
+      "viewApps": "Ver apps"
+    },
+    "appsSection": {
+      "title": "Apps para cada necesidad"
+    },
+    "apps": {
+      "saguaro": {
+        "name": "SAGUARO",
+        "description": "Estructura de tareas y flujo de trabajo. Claridad mental para equipos que necesitan orden.",
+        "price": "$9/mes"
+      },
+      "ramona": {
+        "name": "RAMONA",
+        "description": "Tu departamento de marketing completo con IA. Genera, publica, convierte.",
+        "price": "$59/mes"
+      },
+      "tuna": {
+        "name": "TUNA",
+        "description": "Cierre de campaña agrícola. Consolida Producción, Costos, Ventas y Presupuesto en un solo lugar.",
+        "price": "Próximamente"
+      },
+      "agave": {
+        "name": "AGAVE",
+        "description": "Decisión de precios asistida por IA. Precio óptimo basado en costos, históricos y márgenes objetivo.",
+        "price": "Próximamente"
+      }
+    },
+    "footer": {
+      "brand": "Cactus Comunidad Creativa"
+    }
+  }
+}

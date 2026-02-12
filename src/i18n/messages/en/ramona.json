@@ -1,0 +1,449 @@
+{
+  "ramona": {
+    "title": "Ramona Social",
+    "subtitle": "Your AI-powered marketing department",
+    "noAccess": "Subscription required",
+    "noAccessDescription": "Subscribe to Ramona Social in the marketplace to access this app.",
+    "goToMarketplace": "Go to Marketplace",
+
+    "tabs": {
+      "studio": "Studio",
+      "kanban": "Pipeline",
+      "calendar": "Calendar"
+    },
+
+    "onboarding": {
+      "title": "Set up your brand",
+      "subtitle": "Let's create your brand voice profile so AI can generate authentic content",
+      "step": "Step {current} of {total}",
+      "next": "Next",
+      "previous": "Previous",
+      "finish": "Create brand",
+      "creating": "Creating...",
+      "skipForNow": "Skip for now",
+
+      "sourceSelection": {
+        "subtitle": "Choose how you want to start building your brand profile",
+        "existing": {
+          "title": "I already have a brand",
+          "description": "I'll analyze your website and social media to automatically extract your brand identity",
+          "feature1": "Analyzes website, Instagram, Facebook, LinkedIn, TikTok",
+          "feature2": "Extracts colors, tone, value proposition",
+          "feature3": "Auto-fills all fields automatically"
+        },
+        "referents": {
+          "title": "I want to get inspired by references",
+          "description": "I'll analyze brands you admire and help you create your own identity combining the best of each",
+          "feature1": "Analyzes up to 5 reference brands",
+          "feature2": "Identifies what works from each one",
+          "feature3": "Suggests how to differentiate yourself"
+        },
+        "scratch": {
+          "title": "Create brand from scratch",
+          "description": "I'll guide you step by step to define your brand with simple questions and smart suggestions",
+          "feature1": "Guided step-by-step questionnaire",
+          "feature2": "Suggestions based on your industry",
+          "feature3": "AI-powered value proposition generation"
+        }
+      },
+
+      "urlImport": {
+        "subtitle": "Add the URLs of your website and social media profiles",
+        "addedUrls": "{count} source(s) added",
+        "analyzing": "Analyzing your sources...",
+        "analyzeButton": "Analyze my brand",
+        "analysisComplete": "Analysis complete!",
+        "reviewBelow": "Review the extracted data and adjust if needed",
+        "emptyState": "Add at least one URL to get started"
+      },
+
+      "referents": {
+        "subtitle": "Add URLs of brands you admire or that are your competition",
+        "inputLabel": "Referent URL",
+        "placeholder": "https://brandyouadmire.com",
+        "maxHint": "{current} of {max} referents added",
+        "analyzing": "Analyzing referents...",
+        "analyzeButton": "Analyze referents",
+        "strengths": "Strengths",
+        "takeaways": "For your brand",
+        "error": "Analysis error",
+        "recommendationsTitle": "Recommendations for your brand",
+        "combinedStrengths": "Best practices identified",
+        "suggestedApproach": "Suggested approach",
+        "differentiation": "Differentiation opportunities",
+        "emptyState": "Add URLs of brands you admire",
+        "emptyHint": "Can be competitors or brands from any industry",
+        "suggestions": "Ideas for what to add:",
+        "suggestion1": "Direct competitors in your industry",
+        "suggestion2": "Brands with the tone you'd like to have",
+        "suggestion3": "Social media accounts you admire"
+      },
+
+      "audienceUrls": {
+        "title": "Define your ideal audience",
+        "subtitle": "Share social media profiles of people who represent your ideal customer",
+        "hint": "Ramona will analyze these profiles to better understand who you want to reach",
+        "inputLabel": "Profile URL",
+        "placeholder": "instagram.com/user or @user",
+        "examples": "E.g.: instagram.com/idealcustomer, twitter.com/user",
+        "addedProfiles": "{count} profile(s) added",
+        "analyzing": "Analyzing audience profiles...",
+        "analyzeButton": "Analyze audience",
+        "analysisTitle": "Your ideal audience profile",
+        "confidence": {
+          "high": "High confidence",
+          "medium": "Medium confidence",
+          "low": "Low confidence"
+        },
+        "ageRange": "Age range",
+        "gender": "Gender",
+        "interests": "Interests",
+        "painPoints": "Pain points",
+        "preferredTone": "Preferred tone",
+        "emptyState": "Optional: add profiles of your ideal customer",
+        "emptyHint": "If you don't have profiles, you can describe your audience manually",
+        "skipNote": "This step is optional. You can define your audience manually in the next step."
+      },
+
+      "basics": {
+        "title": "Basic info",
+        "name": "Brand name",
+        "namePlaceholder": "My Brand",
+        "industry": "Industry",
+        "industryPlaceholder": "Select an industry",
+        "industries": {
+          "technology": "Technology",
+          "ecommerce": "E-commerce",
+          "food": "Food & Beverage",
+          "health": "Health",
+          "fitness": "Fitness",
+          "education": "Education",
+          "fashion": "Fashion",
+          "beauty": "Beauty",
+          "travel": "Travel",
+          "finance": "Finance",
+          "real_estate": "Real Estate",
+          "entertainment": "Entertainment",
+          "sports": "Sports",
+          "automotive": "Automotive",
+          "nonprofit": "Nonprofit",
+          "consulting": "Consulting",
+          "agency": "Agency",
+          "saas": "SaaS",
+          "retail": "Retail",
+          "other": "Other"
+        }
+      },
+      "voice": {
+        "title": "Voice & tone",
+        "toneLabel": "How does your brand speak?",
+        "toneHint": "Select one or more tones",
+        "tones": {
+          "professional": "Professional",
+          "friendly": "Friendly",
+          "funny": "Funny",
+          "inspiring": "Inspiring",
+          "formal": "Formal",
+          "casual": "Casual",
+          "educational": "Educational",
+          "provocative": "Provocative"
+        },
+        "keywords": "Keywords",
+        "keywordsPlaceholder": "Words your brand uses frequently (comma separated)",
+        "forbidden": "Forbidden words",
+        "forbiddenPlaceholder": "Words your brand never uses (comma separated)"
+      },
+      "audience": {
+        "title": "Audience & value",
+        "ageRange": "Age range",
+        "ageRangePlaceholder": "E.g. 25-45",
+        "gender": "Primary gender",
+        "genderOptions": {
+          "all": "All",
+          "female": "Female",
+          "male": "Male",
+          "nonbinary": "Non-binary"
+        },
+        "interests": "Interests",
+        "interestsPlaceholder": "What does your audience care about?",
+        "painPoints": "Pain points",
+        "painPointsPlaceholder": "What problems does your audience have?",
+        "valueProp": "Value proposition",
+        "valuePropPlaceholder": "What makes you unique?"
+      },
+      "platforms": {
+        "title": "Platforms & competition",
+        "select": "Where do you publish content?",
+        "competitors": "Competitors",
+        "competitorsPlaceholder": "Competitor names or URLs (one per line)",
+        "exampleContent": "Example content",
+        "exampleContentPlaceholder": "URLs or text of content you like (one per line)"
+      },
+      "review": {
+        "title": "Review your profile",
+        "edit": "Edit",
+        "looksGood": "All set!",
+        "section": {
+          "basics": "Basic info",
+          "voice": "Voice & tone",
+          "audience": "Audience",
+          "platforms": "Platforms"
+        }
+      }
+    },
+
+    "brand": {
+      "select": "Select brand",
+      "addNew": "Add brand",
+      "settings": "Brand settings",
+      "limitReached": "Brand limit reached for your plan",
+      "edit": "Edit brand",
+      "delete": "Delete brand",
+      "deleteConfirm": "Delete this brand and all its content?"
+    },
+
+    "studio": {
+      "title": "Content Studio",
+      "prompt": "What do you want to create?",
+      "promptPlaceholder": "Write your idea or topic...",
+      "generate": "Generate with AI",
+      "generating": "Generating...",
+      "regenerate": "Regenerate",
+      "save": "Save content",
+      "saved": "Saved!",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "platform": "Platform",
+      "contentType": "Content type",
+      "types": {
+        "post": "Post",
+        "story": "Story",
+        "reel": "Reel",
+        "carousel": "Carousel",
+        "thread": "Thread",
+        "article": "Article"
+      },
+      "recentGenerations": "Recent generations",
+      "noGenerations": "You haven't generated content yet",
+      "charCount": "{count} characters",
+      "charLimit": "Limit: {limit} characters"
+    },
+
+    "ai": {
+      "configured": "AI configured",
+      "notConfigured": "AI not configured",
+      "notConfiguredDesc": "Set up your API keys to generate content with AI",
+      "usingProvider": "Using {provider}",
+      "error": "Generation error",
+      "retrying": "Retrying with {provider}..."
+    },
+
+    "kanban": {
+      "title": "Content Pipeline",
+      "empty": "No content yet",
+      "addContent": "Add",
+      "statuses": {
+        "idea": "Idea",
+        "draft": "Draft",
+        "review": "Review",
+        "approved": "Approved",
+        "scheduled": "Scheduled",
+        "published": "Published"
+      },
+      "dragHint": "Drag to change status",
+      "count": "{count} items"
+    },
+
+    "calendar": {
+      "title": "Content Calendar",
+      "today": "Today",
+      "noContent": "No scheduled content",
+      "scheduleContent": "Schedule content",
+      "month": {
+        "previous": "Previous month",
+        "next": "Next month"
+      }
+    },
+
+    "content": {
+      "edit": "Edit content",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this content?",
+      "schedule": "Schedule",
+      "publish": "Mark as published",
+      "hashtags": "Hashtags",
+      "addHashtag": "Add hashtag",
+      "scheduledFor": "Scheduled for {date}",
+      "createdAt": "Created {date}",
+      "improve": "Improve with AI",
+      "moveTo": "Move to",
+      "title": "Title",
+      "titlePlaceholder": "Internal title (optional)",
+      "body": "Content",
+      "bodyPlaceholder": "Write your content here...",
+      "scheduleDate": "Publish date",
+      "saveChanges": "Save changes",
+      "cancel": "Cancel",
+      "platform": "Platform",
+      "type": "Type"
+    },
+
+    "usage": {
+      "title": "Monthly usage",
+      "used": "{used} of {limit} contents",
+      "unlimited": "Unlimited content",
+      "upgrade": "Upgrade plan",
+      "limitReached": "Limit reached",
+      "generations": "{count} AI generations"
+    },
+
+    "platforms": {
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "twitter": "Twitter/X",
+      "linkedin": "LinkedIn",
+      "tiktok": "TikTok",
+      "multi": "Multi-platform"
+    },
+
+    "chat": {
+      "title": "Chat with Ramona",
+      "placeholder": "Type your message...",
+      "send": "Send",
+      "thinking": "Ramona is thinking...",
+      "newChat": "New conversation",
+      "conversations": "Conversations",
+      "noConversations": "No conversations yet",
+      "saveToKanban": "Save to Pipeline",
+      "savedToKanban": "Saved to Pipeline!",
+      "selectPlatform": "Platform",
+      "selectType": "Type",
+      "welcome": "Hi! I'm Ramona 🌵, your marketing assistant. How can I help you today?",
+      "notConfigured": "AI is not configured. Ask your administrator to set up API keys.",
+      "contextInfo": "Current context"
+    },
+
+    "batch": {
+      "title": "Batch Generation",
+      "subtitle": "Generate content for the whole month",
+      "howMany": "How many content pieces do you want to generate?",
+      "platforms": "For which platforms?",
+      "contentTypes": "What types of content?",
+      "themes": "Specific themes",
+      "themesPlaceholder": "marketing, sales, tips (comma separated)",
+      "optional": "optional",
+      "startGeneration": "Generate {count} content pieces",
+      "generating": "Generating content...",
+      "generatingDesc": "Ramona is creating {count} content pieces. This may take a few minutes.",
+      "complete": "Generation complete!",
+      "completeDesc": "{count} new content pieces created",
+      "viewContent": "View content",
+      "cancel": "Cancel",
+      "hint": "Content will appear in your Pipeline as \"Ideas\""
+    },
+
+    "swipe": {
+      "title": "Review content",
+      "approve": "Approve",
+      "reject": "Reject",
+      "edit": "Edit",
+      "progress": "{current} of {total} reviewed",
+      "remaining": "{count} remaining",
+      "noContent": "No content to review",
+      "noContentDesc": "Generate content first using the batch generation button",
+      "allDone": "Review complete!",
+      "allDoneDesc": "You reviewed {count} content pieces"
+    },
+
+    "autoSchedule": {
+      "title": "Auto-Schedule",
+      "availableContent": "{count} contents ready",
+      "availableDesc": "Approved content without schedule",
+      "dateRange": "How far ahead do you want to fill?",
+      "preferredTimes": "Preferred times",
+      "frequency": "Posts per week",
+      "excludeWeekends": "Exclude weekends",
+      "scheduling": "Scheduling...",
+      "scheduleButton": "Schedule content",
+      "success": "Calendar ready!",
+      "successDesc": "{count} contents scheduled",
+      "preview": "Upcoming posts:",
+      "viewCalendar": "View calendar"
+    },
+
+    "videoStudio": {
+      "title": "Video Studio",
+      "back": "Back",
+      "next": "Next",
+      "generate": "Generate video",
+
+      "typeStep": {
+        "title": "What type of video do you want to create?",
+        "subtitle": "Choose the format that best fits your content"
+      },
+
+      "templateGallery": {
+        "title": "Choose a template",
+        "subtitle": "Select a predefined style or start from scratch",
+        "noTemplate": "No template",
+        "noTemplateDesc": "Start with a blank canvas",
+        "loading": "Loading templates..."
+      },
+
+      "scriptEditor": {
+        "title": "Write your script",
+        "subtitle": "The text that will appear or be narrated in your video",
+        "aiGenerate": {
+          "title": "Generate with AI",
+          "placeholder": "Describe the topic of your video...",
+          "button": "Generate"
+        },
+        "scriptLabel": "Script",
+        "placeholder": "Write or paste your script here...",
+        "characters": "characters",
+        "words": "words",
+        "tooShort": "Script is too short",
+        "tooLong": "Script exceeds limit",
+        "templates": "Script templates"
+      },
+
+      "stylePicker": {
+        "title": "Customize the style",
+        "subtitle": "Adjust colors, fonts and transitions",
+        "aspectRatio": "Video format",
+        "colors": "Color palette",
+        "brandColors": "Your brand colors",
+        "primaryColor": "Primary",
+        "secondaryColor": "Secondary",
+        "font": "Typography",
+        "transitions": "Transitions",
+        "preview": "Preview",
+        "previewText": "Your content here"
+      },
+
+      "preview": {
+        "noVideo": "No video"
+      },
+
+      "generating": {
+        "processing": "Processing script...",
+        "rendering": "Rendering video...",
+        "finishing": "Finishing up...",
+        "description": "This may take a few minutes",
+        "cancel": "Cancel"
+      },
+
+      "complete": {
+        "title": "Video ready!",
+        "description": "Your video has been generated successfully",
+        "download": "Download",
+        "createAnother": "Create another"
+      },
+
+      "error": {
+        "title": "Generation failed",
+        "tryAgain": "Try again"
+      }
+    }
+  }
+}

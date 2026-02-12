@@ -1,0 +1,83 @@
+{
+  "admin": {
+    "title": "Admin Panel",
+    "tabs": {
+      "config": "Configuration",
+      "users": "Users",
+      "analytics": "Analytics",
+      "audit": "Audit Log"
+    },
+    "config": {
+      "title": "Platform Configuration",
+      "apiKeys": "API Keys",
+      "aiSettings": "AI Settings",
+      "anthropicKey": "Anthropic API Key (Claude)",
+      "openaiKey": "OpenAI API Key",
+      "defaultProvider": "Default Provider",
+      "fallbackEnabled": "Fallback Enabled",
+      "globalTokenLimit": "Global monthly token limit",
+      "globalGenLimit": "Global monthly generation limit",
+      "unlimited": "Unlimited",
+      "save": "Save",
+      "saved": "Saved!",
+      "testConnection": "Test Connection",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "showKey": "Show",
+      "hideKey": "Hide",
+      "placeholder": "Enter API key...",
+      "keyConfigured": "Key configured (enter a new one to replace)",
+      "description": "Keys are stored encrypted in the database",
+      "whatsappConfig": "WhatsApp / Twilio",
+      "whatsappDescription": "Credentials for WhatsApp Business integration",
+      "twilioSid": "Twilio Account SID",
+      "twilioToken": "Twilio Auth Token",
+      "twilioPhone": "Twilio Phone Number",
+      "waVerifyToken": "WhatsApp Verify Token"
+    },
+    "users": {
+      "title": "User Management",
+      "search": "Search user...",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "tokensUsed": "Tokens used",
+      "generationsUsed": "Generations",
+      "tokenLimit": "Token limit",
+      "genLimit": "Generation limit",
+      "editBudget": "Edit limits",
+      "saveBudget": "Save limits",
+      "cancel": "Cancel",
+      "noUsers": "No registered users",
+      "unlimited": "Unlimited",
+      "perMonth": "/month",
+      "budgetUpdated": "Limits updated"
+    },
+    "analytics": {
+      "title": "Usage Analytics",
+      "thisMonth": "This month",
+      "totalGenerations": "Total generations",
+      "totalTokens": "Total tokens",
+      "totalUsers": "Active users",
+      "byApp": "By application",
+      "topUsers": "Top users",
+      "noData": "No data this month",
+      "generations": "generations",
+      "tokens": "tokens"
+    },
+    "audit": {
+      "title": "Audit Log",
+      "action": "Action",
+      "admin": "Administrator",
+      "target": "Target",
+      "details": "Details",
+      "date": "Date",
+      "noEntries": "No audit entries",
+      "actions": {
+        "config_updated": "Configuration updated",
+        "budget_updated": "Budget updated",
+        "user_role_changed": "Role changed"
+      }
+    }
+  }
+}

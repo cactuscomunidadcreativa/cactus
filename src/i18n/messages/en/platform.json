@@ -1,0 +1,58 @@
+{
+  "platform": {
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "marketplace": "Marketplace",
+      "settings": "Settings",
+      "billing": "Billing",
+      "myApps": "My apps",
+      "explore": "Explore",
+      "admin": "Admin"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Hi, {name}",
+      "welcomeDefault": "Welcome to Cactus",
+      "subtitle": "Your intelligent tools platform",
+      "activeApps": "Active apps",
+      "noApps": "You don't have any active apps yet",
+      "noAppsDescription": "Explore our marketplace to find tools that power your business.",
+      "exploreMarketplace": "Explore Marketplace",
+      "quickActions": "Quick actions",
+      "recentActivity": "Recent activity",
+      "moodTrend": "Mood trend",
+      "contentGenerated": "Content created",
+      "aiGenerations": "AI generations",
+      "tasksCompleted": "Tasks completed",
+      "tasksPending": "Tasks pending",
+      "thisMonth": "this month",
+      "noActivity": "No recent activity",
+      "activity": {
+        "generation": "AI generation",
+        "content": "Content created",
+        "task": "Task completed"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "profile": "Profile",
+      "billing": "Billing",
+      "preferences": "Preferences",
+      "notifications": "Notifications",
+      "fullName": "Full name",
+      "email": "Email",
+      "language": "Preferred language",
+      "theme": "Theme",
+      "saveChanges": "Save changes",
+      "manageBilling": "Manage billing",
+      "manageSubscription": "Manage subscription",
+      "currentPlan": "Current plan",
+      "noPlan": "No active plan",
+      "whatsapp": "WhatsApp"
+    },
+    "appSwitcher": {
+      "title": "Switch app",
+      "noApps": "No active apps"
+    }
+  }
+}

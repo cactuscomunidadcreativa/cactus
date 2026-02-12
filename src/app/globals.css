@@ -1,0 +1,1484 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode - Cactus brand */
+    --background: 0 0% 100%;
+    --foreground: 144 35% 15%;
+    --card: 0 0% 98%;
+    --card-foreground: 144 35% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 144 35% 15%;
+    --primary: 121 38% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 25% 72%;
+    --secondary-foreground: 144 35% 15%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 30 95% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 121 38% 40%;
+    --radius: 0.5rem;
+
+    /* Sidebar */
+    --sidebar: 0 0% 98%;
+    --sidebar-foreground: 144 35% 15%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-accent: 121 38% 95%;
+    --sidebar-accent-foreground: 121 38% 30%;
+  }
+
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 121 38% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 300 32% 46%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 30 95% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 121 38% 40%;
+
+    /* Sidebar dark */
+    --sidebar: 0 0% 9%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-accent: 0 0% 13%;
+    --sidebar-accent-foreground: 0 0% 95%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Font imports */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
+
+/* ============================================
+   RAMONA BRAND COLORS
+   ============================================ */
+@layer base {
+  :root {
+    /* Ramona Primary - Purple */
+    --ramona-purple: 300 32% 46%;
+    --ramona-purple-light: 300 32% 57%;
+    --ramona-purple-lighter: 320 60% 95%;
+
+    /* Ramona Secondary - Orange (flores) */
+    --ramona-orange: 38 91% 55%;
+    --ramona-orange-light: 38 100% 80%;
+  }
+}
+
+/* ============================================
+   RAMONA ANIMATIONS - More Dynamic & Fun!
+   ============================================ */
+
+/* Floating animation with personality - idle state */
+@keyframes ramona-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  15% {
+    transform: translateY(-8px) rotate(2deg) scale(1.02);
+  }
+  30% {
+    transform: translateY(-12px) rotate(-1deg) scale(1.01);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg) scale(1.03);
+  }
+  70% {
+    transform: translateY(-6px) rotate(-2deg) scale(1.01);
+  }
+  85% {
+    transform: translateY(-3px) rotate(1deg) scale(1);
+  }
+}
+
+/* Excited bouncy thinking - like she's got an idea! */
+@keyframes ramona-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  15% {
+    transform: translateY(-15px) scale(1.08) rotate(-3deg);
+  }
+  30% {
+    transform: translateY(-5px) scale(0.95) rotate(2deg);
+  }
+  45% {
+    transform: translateY(-12px) scale(1.05) rotate(-2deg);
+  }
+  60% {
+    transform: translateY(-3px) scale(0.97) rotate(1deg);
+  }
+  75% {
+    transform: translateY(-8px) scale(1.03) rotate(-1deg);
+  }
+  90% {
+    transform: translateY(-2px) scale(0.99) rotate(0deg);
+  }
+}
+
+/* Talking animation - more expressive like she's chatting */
+@keyframes ramona-talk {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  8% {
+    transform: scale(1.08) rotate(2deg);
+  }
+  16% {
+    transform: scale(0.95) rotate(-1deg);
+  }
+  24% {
+    transform: scale(1.06) rotate(1deg);
+  }
+  32% {
+    transform: scale(0.97) rotate(-2deg);
+  }
+  40% {
+    transform: scale(1.04) rotate(1deg);
+  }
+  48% {
+    transform: scale(0.98) rotate(0deg);
+  }
+  56% {
+    transform: scale(1.05) rotate(-1deg);
+  }
+  64% {
+    transform: scale(0.96) rotate(2deg);
+  }
+  72% {
+    transform: scale(1.03) rotate(-1deg);
+  }
+  80% {
+    transform: scale(0.99) rotate(1deg);
+  }
+  90% {
+    transform: scale(1.01) rotate(0deg);
+  }
+}
+
+/* Celebration - super happy dance wiggle! */
+@keyframes ramona-celebrate {
+  0% {
+    transform: rotate(0deg) scale(1) translateY(0);
+  }
+  10% {
+    transform: rotate(-15deg) scale(1.15) translateY(-10px);
+  }
+  20% {
+    transform: rotate(15deg) scale(1.2) translateY(-15px);
+  }
+  30% {
+    transform: rotate(-12deg) scale(1.15) translateY(-10px);
+  }
+  40% {
+    transform: rotate(12deg) scale(1.18) translateY(-12px);
+  }
+  50% {
+    transform: rotate(-10deg) scale(1.12) translateY(-8px);
+  }
+  60% {
+    transform: rotate(10deg) scale(1.15) translateY(-10px);
+  }
+  70% {
+    transform: rotate(-6deg) scale(1.08) translateY(-5px);
+  }
+  80% {
+    transform: rotate(6deg) scale(1.1) translateY(-6px);
+  }
+  90% {
+    transform: rotate(-3deg) scale(1.03) translateY(-2px);
+  }
+  100% {
+    transform: rotate(0deg) scale(1) translateY(0);
+  }
+}
+
+/* Sleep animation - cute snoozy breathing with tilt */
+@keyframes ramona-sleep {
+  0%, 100% {
+    transform: scale(1) rotate(-5deg) translateY(0);
+    opacity: 0.7;
+    filter: brightness(0.9);
+  }
+  50% {
+    transform: scale(1.05) rotate(-3deg) translateY(-3px);
+    opacity: 0.9;
+    filter: brightness(1);
+  }
+}
+
+/* Sparkle animation - more magical */
+@keyframes ramona-sparkle {
+  0% {
+    transform: scale(0) rotate(0deg) translateY(0);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1.2) rotate(72deg) translateY(-5px);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(0.8) rotate(144deg) translateY(-10px);
+    opacity: 0.9;
+  }
+  60% {
+    transform: scale(1.3) rotate(216deg) translateY(-8px);
+    opacity: 0.7;
+  }
+  80% {
+    transform: scale(0.6) rotate(288deg) translateY(-12px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0) rotate(360deg) translateY(-15px);
+    opacity: 0;
+  }
+}
+
+/* NEW: Wiggle animation for hover states */
+@keyframes ramona-wiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-8deg);
+  }
+  40% {
+    transform: rotate(8deg);
+  }
+  60% {
+    transform: rotate(-5deg);
+  }
+  80% {
+    transform: rotate(5deg);
+  }
+}
+
+/* NEW: Wave hello animation */
+@keyframes ramona-wave {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  10% {
+    transform: rotate(14deg) scale(1.05);
+  }
+  20% {
+    transform: rotate(-8deg) scale(1.02);
+  }
+  30% {
+    transform: rotate(14deg) scale(1.05);
+  }
+  40% {
+    transform: rotate(-4deg) scale(1.02);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.03);
+  }
+  60% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+/* NEW: Excited jump */
+@keyframes ramona-jump {
+  0%, 100% {
+    transform: translateY(0) scaleY(1) scaleX(1);
+  }
+  10% {
+    transform: translateY(0) scaleY(0.9) scaleX(1.1);
+  }
+  30% {
+    transform: translateY(-25px) scaleY(1.1) scaleX(0.95);
+  }
+  50% {
+    transform: translateY(-30px) scaleY(1.05) scaleX(1);
+  }
+  70% {
+    transform: translateY(-15px) scaleY(1.08) scaleX(0.97);
+  }
+  85% {
+    transform: translateY(0) scaleY(0.92) scaleX(1.08);
+  }
+}
+
+/* NEW: Heartbeat/Love animation */
+@keyframes ramona-love {
+  0%, 100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.15);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.1);
+  }
+  60% {
+    transform: scale(1);
+  }
+}
+
+/* Fade in animation */
+@keyframes ramona-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse glow effect */
+@keyframes ramona-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(154, 78, 154, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(154, 78, 154, 0);
+  }
+}
+
+/* Swipe animations for content review */
+@keyframes swipe-right {
+  to {
+    transform: translateX(150%) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes swipe-left {
+  to {
+    transform: translateX(-150%) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes swipe-up {
+  to {
+    transform: translateY(-150%);
+    opacity: 0;
+  }
+}
+
+/* Confetti piece animation */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
+/* Progress bar shimmer */
+@keyframes ramona-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Typing indicator dots */
+@keyframes ramona-typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   RAMONA ANIMATION UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+  .animate-ramona-float {
+    animation: ramona-float 3s ease-in-out infinite;
+  }
+
+  .animate-ramona-bounce {
+    animation: ramona-bounce 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+  }
+
+  .animate-ramona-talk {
+    animation: ramona-talk 0.6s ease-in-out infinite;
+  }
+
+  .animate-ramona-celebrate {
+    animation: ramona-celebrate 1.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+  }
+
+  .animate-ramona-wiggle {
+    animation: ramona-wiggle 0.5s ease-in-out;
+  }
+
+  .animate-ramona-wave {
+    animation: ramona-wave 1s ease-in-out;
+  }
+
+  .animate-ramona-jump {
+    animation: ramona-jump 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+
+  .animate-ramona-love {
+    animation: ramona-love 1s ease-in-out infinite;
+  }
+
+  /* Hover animation for interactive elements */
+  .hover-ramona-wiggle:hover {
+    animation: ramona-wiggle 0.4s ease-in-out;
+  }
+
+  .hover-ramona-jump:hover {
+    animation: ramona-jump 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+
+  .animate-ramona-sleep {
+    animation: ramona-sleep 3s ease-in-out infinite;
+  }
+
+  .animate-ramona-sparkle {
+    animation: ramona-sparkle 1.5s ease-in-out infinite;
+  }
+
+  .animate-ramona-fade-in {
+    animation: ramona-fade-in 0.3s ease-out forwards;
+  }
+
+  .animate-ramona-pulse {
+    animation: ramona-pulse 2s ease-in-out infinite;
+  }
+
+  .animate-swipe-right {
+    animation: swipe-right 0.3s ease-out forwards;
+  }
+
+  .animate-swipe-left {
+    animation: swipe-left 0.3s ease-out forwards;
+  }
+
+  .animate-swipe-up {
+    animation: swipe-up 0.3s ease-out forwards;
+  }
+
+  .animate-confetti {
+    animation: confetti-fall 3s linear forwards, confetti-shake 0.5s ease-in-out infinite;
+  }
+
+  .animate-ramona-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--ramona-purple)) 0%,
+      hsl(var(--ramona-purple-light)) 50%,
+      hsl(var(--ramona-purple)) 100%
+    );
+    background-size: 200% 100%;
+    animation: ramona-shimmer 2s linear infinite;
+  }
+
+  .animate-ramona-typing {
+    animation: ramona-typing 1.4s ease-in-out infinite;
+  }
+}
+
+/* ============================================
+   RAMONA BRAND UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+  .bg-ramona-purple {
+    background-color: hsl(var(--ramona-purple));
+  }
+
+  .bg-ramona-purple-light {
+    background-color: hsl(var(--ramona-purple-light));
+  }
+
+  .bg-ramona-purple-lighter {
+    background-color: hsl(var(--ramona-purple-lighter));
+  }
+
+  .bg-ramona-orange {
+    background-color: hsl(var(--ramona-orange));
+  }
+
+  .bg-ramona-orange-light {
+    background-color: hsl(var(--ramona-orange-light));
+  }
+
+  .text-ramona-purple {
+    color: hsl(var(--ramona-purple));
+  }
+
+  .text-ramona-purple-light {
+    color: hsl(var(--ramona-purple-light));
+  }
+
+  .text-ramona-orange {
+    color: hsl(var(--ramona-orange));
+  }
+
+  .border-ramona-purple {
+    border-color: hsl(var(--ramona-purple));
+  }
+
+  .border-ramona-orange {
+    border-color: hsl(var(--ramona-orange));
+  }
+
+  .ring-ramona-purple {
+    --tw-ring-color: hsl(var(--ramona-purple));
+  }
+
+  .bg-ramona-gradient {
+    background: linear-gradient(135deg, hsl(300 32% 57%) 0%, hsl(300 32% 46%) 50%, hsl(300 32% 38%) 100%);
+  }
+
+  .bg-ramona-gradient-soft {
+    background: linear-gradient(135deg, hsl(320 60% 95%) 0%, hsl(300 32% 90%) 100%);
+  }
+}
+
+/* ============================================
+   TUNA BRAND COLORS - Premium Data Magenta
+   "El Cierre de Campaña. Consolidado."
+   ============================================ */
+@layer base {
+  :root {
+    /* TUNA Primary - Magenta Vibrante */
+    --tuna-magenta: 340 82% 43%;
+    --tuna-magenta-light: 340 82% 55%;
+    --tuna-magenta-lighter: 340 80% 92%;
+
+    /* TUNA Secondary - Púrpura Profundo (Premium Data) */
+    --tuna-purple: 282 68% 26%;
+    --tuna-purple-light: 282 68% 38%;
+
+    /* TUNA Accent - Verde Brote (Herencia Cactus) */
+    --tuna-green: 88 50% 53%;
+    --tuna-green-light: 88 50% 70%;
+
+    /* TUNA Status Colors */
+    --tuna-success: 142 76% 36%;
+    --tuna-warning: 38 92% 50%;
+    --tuna-error: 0 84% 60%;
+  }
+}
+
+/* ============================================
+   TUNA ANIMATIONS - Premium & Conclusive
+   ============================================ */
+
+/* Data nodes pulsing animation - like data flowing through circuits */
+@keyframes tuna-data-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Consolidation animation - data coming together */
+@keyframes tuna-consolidate {
+  0% {
+    transform: scale(0.8) rotate(-5deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotate(3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Premium float - more subtle and professional */
+@keyframes tuna-float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+/* Processing animation - data being crunched */
+@keyframes tuna-process {
+  0% {
+    transform: rotate(0deg);
+    filter: hue-rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+    filter: hue-rotate(10deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+    filter: hue-rotate(-10deg);
+  }
+  75% {
+    transform: rotate(3deg);
+    filter: hue-rotate(5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+    filter: hue-rotate(0deg);
+  }
+}
+
+/* Success seal stamp - "TUNA approved" */
+@keyframes tuna-seal {
+  0% {
+    transform: scale(2) rotate(-20deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.9) rotate(5deg);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(1.05) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Counting numbers animation */
+@keyframes tuna-count-up {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Data orbit - icons orbiting around the tuna */
+@keyframes tuna-orbit {
+  0% {
+    transform: rotate(0deg) translateX(40px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(40px) rotate(-360deg);
+  }
+}
+
+/* Checkmark draw animation */
+@keyframes tuna-check-draw {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Progress bar fill */
+@keyframes tuna-progress-fill {
+  0% {
+    width: 0%;
+    background-position: 0% 50%;
+  }
+  100% {
+    width: var(--progress, 100%);
+    background-position: 100% 50%;
+  }
+}
+
+/* Shimmer effect for loading states */
+@keyframes tuna-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Glow pulse for important elements */
+@keyframes tuna-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsl(340 82% 43% / 0.3),
+                0 0 10px hsl(340 82% 43% / 0.2),
+                0 0 15px hsl(340 82% 43% / 0.1);
+  }
+  50% {
+    box-shadow: 0 0 10px hsl(340 82% 43% / 0.5),
+                0 0 20px hsl(340 82% 43% / 0.3),
+                0 0 30px hsl(340 82% 43% / 0.2);
+  }
+}
+
+/* Upload drop zone pulse */
+@keyframes tuna-dropzone {
+  0%, 100% {
+    border-color: hsl(340 82% 43% / 0.3);
+    background-color: hsl(340 82% 43% / 0.02);
+  }
+  50% {
+    border-color: hsl(340 82% 43% / 0.6);
+    background-color: hsl(340 82% 43% / 0.05);
+  }
+}
+
+/* Chart bar grow animation */
+@keyframes tuna-bar-grow {
+  0% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  60% {
+    transform: scaleY(1.05);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+/* Celebration sparkle for campaign close */
+@keyframes tuna-sparkle {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.5) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   TUNA ANIMATION UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+  .animate-tuna-float {
+    animation: tuna-float 4s ease-in-out infinite;
+  }
+
+  .animate-tuna-process {
+    animation: tuna-process 2s ease-in-out infinite;
+  }
+
+  .animate-tuna-consolidate {
+    animation: tuna-consolidate 0.6s ease-out forwards;
+  }
+
+  .animate-tuna-seal {
+    animation: tuna-seal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  .animate-tuna-data-pulse {
+    animation: tuna-data-pulse 2s ease-in-out infinite;
+  }
+
+  .animate-tuna-orbit {
+    animation: tuna-orbit 8s linear infinite;
+  }
+
+  .animate-tuna-glow {
+    animation: tuna-glow 2s ease-in-out infinite;
+  }
+
+  .animate-tuna-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--tuna-magenta)) 0%,
+      hsl(var(--tuna-magenta-light)) 50%,
+      hsl(var(--tuna-magenta)) 100%
+    );
+    background-size: 200% 100%;
+    animation: tuna-shimmer 2s linear infinite;
+  }
+
+  .animate-tuna-dropzone {
+    animation: tuna-dropzone 2s ease-in-out infinite;
+  }
+
+  .animate-tuna-bar-grow {
+    animation: tuna-bar-grow 0.8s ease-out forwards;
+  }
+
+  .animate-tuna-sparkle {
+    animation: tuna-sparkle 1s ease-in-out infinite;
+  }
+
+  .animate-tuna-count-up {
+    animation: tuna-count-up 0.5s ease-out forwards;
+  }
+}
+
+/* ============================================
+   TUNA BRAND UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+  /* Background colors */
+  .bg-tuna-magenta {
+    background-color: hsl(var(--tuna-magenta));
+  }
+
+  .bg-tuna-magenta-light {
+    background-color: hsl(var(--tuna-magenta-light));
+  }
+
+  .bg-tuna-magenta-lighter {
+    background-color: hsl(var(--tuna-magenta-lighter));
+  }
+
+  .bg-tuna-purple {
+    background-color: hsl(var(--tuna-purple));
+  }
+
+  .bg-tuna-purple-light {
+    background-color: hsl(var(--tuna-purple-light));
+  }
+
+  .bg-tuna-green {
+    background-color: hsl(var(--tuna-green));
+  }
+
+  /* Text colors */
+  .text-tuna-magenta {
+    color: hsl(var(--tuna-magenta));
+  }
+
+  .text-tuna-magenta-light {
+    color: hsl(var(--tuna-magenta-light));
+  }
+
+  .text-tuna-purple {
+    color: hsl(var(--tuna-purple));
+  }
+
+  .text-tuna-green {
+    color: hsl(var(--tuna-green));
+  }
+
+  /* Border colors */
+  .border-tuna-magenta {
+    border-color: hsl(var(--tuna-magenta));
+  }
+
+  .border-tuna-purple {
+    border-color: hsl(var(--tuna-purple));
+  }
+
+  .border-tuna-green {
+    border-color: hsl(var(--tuna-green));
+  }
+
+  /* Ring colors */
+  .ring-tuna-magenta {
+    --tw-ring-color: hsl(var(--tuna-magenta));
+  }
+
+  /* Gradients - Premium Dark Mode feel */
+  .bg-tuna-gradient {
+    background: linear-gradient(135deg, hsl(340 82% 55%) 0%, hsl(340 82% 43%) 50%, hsl(282 68% 26%) 100%);
+  }
+
+  .bg-tuna-gradient-dark {
+    background: linear-gradient(135deg, hsl(282 68% 20%) 0%, hsl(282 68% 12%) 50%, hsl(0 0% 7%) 100%);
+  }
+
+  .bg-tuna-gradient-soft {
+    background: linear-gradient(135deg, hsl(340 80% 95%) 0%, hsl(340 80% 92%) 50%, hsl(282 68% 95%) 100%);
+  }
+
+  /* Special data node effect */
+  .tuna-data-node {
+    background: radial-gradient(circle, hsl(var(--tuna-magenta-light)) 0%, hsl(var(--tuna-magenta)) 70%, transparent 100%);
+    border-radius: 50%;
+  }
+}
+
+/* ============================================
+   SAGUARO BRAND COLORS - Electric Blue Focus
+   "Workflow. In Flow."
+   ============================================ */
+@layer base {
+  :root {
+    /* SAGUARO Primary - Azul Eléctrico */
+    --saguaro-blue: 197 100% 50%;
+    --saguaro-blue-light: 197 100% 60%;
+    --saguaro-blue-lighter: 197 100% 92%;
+
+    /* SAGUARO Secondary - Azul Cobalto */
+    --saguaro-cobalt: 211 100% 19%;
+    --saguaro-cobalt-light: 211 100% 30%;
+
+    /* SAGUARO Accent - Cian Neón */
+    --saguaro-cyan: 180 100% 48%;
+    --saguaro-cyan-light: 180 100% 65%;
+  }
+}
+
+/* ============================================
+   SAGUARO ANIMATIONS - Flow & Focus
+   ============================================ */
+
+/* Flow animation - smooth transition between states */
+@keyframes saguaro-flow {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-5px) scale(1.02);
+    opacity: 0.9;
+  }
+}
+
+/* Focus pulse - indicating active state */
+@keyframes saguaro-focus {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsla(197, 100%, 50%, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px hsla(197, 100%, 50%, 0);
+  }
+}
+
+/* Task complete animation */
+@keyframes saguaro-complete {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Wave animation for progress */
+@keyframes saguaro-wave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-saguaro-flow {
+  animation: saguaro-flow 3s ease-in-out infinite;
+}
+
+.animate-saguaro-focus {
+  animation: saguaro-focus 2s ease-in-out infinite;
+}
+
+.animate-saguaro-complete {
+  animation: saguaro-complete 0.5s ease-out;
+}
+
+/* SAGUARO Utility Classes */
+@layer utilities {
+  .bg-saguaro-blue {
+    background-color: hsl(var(--saguaro-blue));
+  }
+  .bg-saguaro-blue-light {
+    background-color: hsl(var(--saguaro-blue-light));
+  }
+  .bg-saguaro-blue-lighter {
+    background-color: hsl(var(--saguaro-blue-lighter));
+  }
+  .bg-saguaro-cobalt {
+    background-color: hsl(var(--saguaro-cobalt));
+  }
+  .bg-saguaro-cobalt-light {
+    background-color: hsl(var(--saguaro-cobalt-light));
+  }
+  .bg-saguaro-cyan {
+    background-color: hsl(var(--saguaro-cyan));
+  }
+  .bg-saguaro-cyan-light {
+    background-color: hsl(var(--saguaro-cyan-light));
+  }
+
+  .text-saguaro-blue {
+    color: hsl(var(--saguaro-blue));
+  }
+  .text-saguaro-cobalt {
+    color: hsl(var(--saguaro-cobalt));
+  }
+  .text-saguaro-cyan {
+    color: hsl(var(--saguaro-cyan));
+  }
+
+  .border-saguaro-blue {
+    border-color: hsl(var(--saguaro-blue));
+  }
+  .border-saguaro-cyan {
+    border-color: hsl(var(--saguaro-cyan));
+  }
+
+  .ring-saguaro-blue {
+    --tw-ring-color: hsl(var(--saguaro-blue));
+  }
+
+  /* SAGUARO Gradients */
+  .bg-saguaro-gradient {
+    background: linear-gradient(135deg, hsl(var(--saguaro-blue)) 0%, hsl(var(--saguaro-cyan)) 100%);
+  }
+
+  .bg-saguaro-gradient-dark {
+    background: linear-gradient(135deg, hsl(211 100% 15%) 0%, hsl(211 100% 10%) 50%, hsl(0 0% 7%) 100%);
+  }
+
+  .bg-saguaro-gradient-soft {
+    background: linear-gradient(135deg, hsl(197 100% 95%) 0%, hsl(180 100% 95%) 100%);
+  }
+}
+
+/* ============================================
+   AGAVE BRAND COLORS - Golden Precision
+   "The Right Price. Always."
+   ============================================ */
+@layer base {
+  :root {
+    /* AGAVE Primary - Oro Dorado */
+    --agave-gold: 43 73% 52%;
+    --agave-gold-light: 43 80% 65%;
+    --agave-gold-lighter: 43 80% 92%;
+
+    /* AGAVE Secondary - Azul Petróleo */
+    --agave-petrol: 209 75% 16%;
+    --agave-petrol-light: 209 60% 28%;
+
+    /* AGAVE Accent - Cian Eléctrico */
+    --agave-cyan: 174 100% 47%;
+    --agave-cyan-light: 174 100% 60%;
+  }
+}
+
+/* ============================================
+   AGAVE ANIMATIONS - Precision & Confidence
+   ============================================ */
+
+/* Price calculation animation */
+@keyframes agave-calculate {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+
+/* Gold shimmer effect */
+@keyframes agave-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Confidence meter fill */
+@keyframes agave-fill {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: var(--fill-width, 100%);
+  }
+}
+
+/* Premium float */
+@keyframes agave-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-3px) rotate(1deg);
+  }
+  75% {
+    transform: translateY(-6px) rotate(-1deg);
+  }
+}
+
+.animate-agave-calculate {
+  animation: agave-calculate 2s ease-in-out infinite;
+}
+
+.animate-agave-shimmer {
+  background: linear-gradient(90deg, transparent, hsla(43, 80%, 70%, 0.4), transparent);
+  background-size: 200% 100%;
+  animation: agave-shimmer 3s ease-in-out infinite;
+}
+
+.animate-agave-float {
+  animation: agave-float 4s ease-in-out infinite;
+}
+
+/* AGAVE Utility Classes */
+@layer utilities {
+  .bg-agave-gold {
+    background-color: hsl(var(--agave-gold));
+  }
+  .bg-agave-gold-light {
+    background-color: hsl(var(--agave-gold-light));
+  }
+  .bg-agave-gold-lighter {
+    background-color: hsl(var(--agave-gold-lighter));
+  }
+  .bg-agave-petrol {
+    background-color: hsl(var(--agave-petrol));
+  }
+  .bg-agave-petrol-light {
+    background-color: hsl(var(--agave-petrol-light));
+  }
+  .bg-agave-cyan {
+    background-color: hsl(var(--agave-cyan));
+  }
+  .bg-agave-cyan-light {
+    background-color: hsl(var(--agave-cyan-light));
+  }
+
+  .text-agave-gold {
+    color: hsl(var(--agave-gold));
+  }
+  .text-agave-petrol {
+    color: hsl(var(--agave-petrol));
+  }
+  .text-agave-cyan {
+    color: hsl(var(--agave-cyan));
+  }
+
+  .border-agave-gold {
+    border-color: hsl(var(--agave-gold));
+  }
+  .border-agave-petrol {
+    border-color: hsl(var(--agave-petrol));
+  }
+
+  .ring-agave-gold {
+    --tw-ring-color: hsl(var(--agave-gold));
+  }
+
+  /* AGAVE Gradients */
+  .bg-agave-gradient {
+    background: linear-gradient(135deg, hsl(var(--agave-gold)) 0%, hsl(var(--agave-gold-light)) 50%, hsl(var(--agave-cyan)) 100%);
+  }
+
+  .bg-agave-gradient-dark {
+    background: linear-gradient(135deg, hsl(209 75% 12%) 0%, hsl(209 75% 8%) 50%, hsl(0 0% 5%) 100%);
+  }
+
+  .bg-agave-gradient-soft {
+    background: linear-gradient(135deg, hsl(43 80% 95%) 0%, hsl(43 80% 92%) 50%, hsl(174 100% 95%) 100%);
+  }
+
+  /* Gold shimmer on hover */
+  .agave-gold-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .agave-gold-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, hsla(43, 80%, 70%, 0.3), transparent);
+    background-size: 200% 100%;
+    animation: agave-shimmer 3s ease-in-out infinite;
+  }
+}
+
+/* ============================================
+   PITA BRAND COLORS - Editorial & Modern
+   "Tu contenido en vitrina. Tu feedback bajo control."
+   ============================================ */
+@layer base {
+  :root {
+    /* PITA Primary - Azul Profundo */
+    --pita-deep: 213 52% 11%;
+    --pita-deep-light: 213 52% 18%;
+
+    /* PITA Secondary - Verde Sofisticado */
+    --pita-green: 160 45% 50%;
+    --pita-green-light: 160 45% 65%;
+    --pita-green-lighter: 160 45% 92%;
+
+    /* PITA Accent - Dorado Moderno */
+    --pita-gold: 42 47% 54%;
+    --pita-gold-light: 42 60% 70%;
+
+    /* PITA Blue Accent */
+    --pita-blue: 219 72% 53%;
+    --pita-blue-light: 219 72% 65%;
+
+    /* PITA Forest */
+    --pita-forest: 160 33% 18%;
+  }
+}
+
+/* ============================================
+   PITA ANIMATIONS - Elegant & Expansive
+   ============================================ */
+
+/* Impact pulse - expanding rings from center */
+@keyframes pita-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+/* Expand ring animation */
+@keyframes pita-ring-expand {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+    border-width: 2px;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+    border-width: 0px;
+  }
+}
+
+/* Slide up reveal */
+@keyframes pita-slide-up {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Fade in */
+@keyframes pita-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Float subtle */
+@keyframes pita-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Glow for active sections */
+@keyframes pita-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px hsla(160, 45%, 50%, 0.2),
+                0 0 20px hsla(160, 45%, 50%, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 15px hsla(160, 45%, 50%, 0.4),
+                0 0 30px hsla(160, 45%, 50%, 0.2);
+  }
+}
+
+/* Progress bar shimmer */
+@keyframes pita-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ============================================
+   PITA ANIMATION UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+  .animate-pita-pulse {
+    animation: pita-pulse 3s ease-in-out infinite;
+  }
+
+  .animate-pita-ring {
+    animation: pita-ring-expand 2s ease-out infinite;
+  }
+
+  .animate-pita-slide-up {
+    animation: pita-slide-up 0.6s ease-out forwards;
+  }
+
+  .animate-pita-fade-in {
+    animation: pita-fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-pita-float {
+    animation: pita-float 4s ease-in-out infinite;
+  }
+
+  .animate-pita-glow {
+    animation: pita-glow 2s ease-in-out infinite;
+  }
+
+  .animate-pita-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--pita-green)) 0%,
+      hsl(var(--pita-green-light)) 50%,
+      hsl(var(--pita-green)) 100%
+    );
+    background-size: 200% 100%;
+    animation: pita-shimmer 2s linear infinite;
+  }
+}
+
+/* ============================================
+   PITA BRAND UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+  .bg-pita-deep {
+    background-color: hsl(var(--pita-deep));
+  }
+  .bg-pita-deep-light {
+    background-color: hsl(var(--pita-deep-light));
+  }
+  .bg-pita-green {
+    background-color: hsl(var(--pita-green));
+  }
+  .bg-pita-green-light {
+    background-color: hsl(var(--pita-green-light));
+  }
+  .bg-pita-green-lighter {
+    background-color: hsl(var(--pita-green-lighter));
+  }
+  .bg-pita-gold {
+    background-color: hsl(var(--pita-gold));
+  }
+  .bg-pita-gold-light {
+    background-color: hsl(var(--pita-gold-light));
+  }
+  .bg-pita-blue {
+    background-color: hsl(var(--pita-blue));
+  }
+  .bg-pita-forest {
+    background-color: hsl(var(--pita-forest));
+  }
+
+  .text-pita-deep {
+    color: hsl(var(--pita-deep));
+  }
+  .text-pita-green {
+    color: hsl(var(--pita-green));
+  }
+  .text-pita-green-light {
+    color: hsl(var(--pita-green-light));
+  }
+  .text-pita-gold {
+    color: hsl(var(--pita-gold));
+  }
+  .text-pita-blue {
+    color: hsl(var(--pita-blue));
+  }
+
+  .border-pita-green {
+    border-color: hsl(var(--pita-green));
+  }
+  .border-pita-gold {
+    border-color: hsl(var(--pita-gold));
+  }
+  .border-pita-deep {
+    border-color: hsl(var(--pita-deep));
+  }
+
+  .ring-pita-green {
+    --tw-ring-color: hsl(var(--pita-green));
+  }
+
+  /* PITA Gradients */
+  .bg-pita-gradient {
+    background: linear-gradient(135deg, #0E1B2C 0%, #1F3D36 50%, #0E1B2C 100%);
+  }
+
+  .bg-pita-gradient-radial {
+    background: radial-gradient(ellipse at center, #1F3D36 0%, #0E1B2C 70%);
+  }
+
+  .bg-pita-gradient-soft {
+    background: linear-gradient(135deg, hsl(160 45% 95%) 0%, hsl(160 45% 92%) 50%, hsl(213 52% 95%) 100%);
+  }
+}

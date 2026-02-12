@@ -1,0 +1,266 @@
+{
+  "landing": {
+    "shared": {
+      "learnMore": "Saber más",
+      "tryDemo": "Probar demo",
+      "getStarted": "Comenzar",
+      "viewPricing": "Ver precios",
+      "backToHome": "Volver al inicio",
+      "features": "Características",
+      "howItWorks": "Cómo funciona",
+      "pricing": "Precios"
+    },
+    "hero": {
+      "badge": "Nuevo",
+      "cta": {
+        "primary": "Iniciar prueba gratis",
+        "secondary": "Ver demo"
+      }
+    },
+    "howItWorks": {
+      "title": "Cómo funciona",
+      "subtitle": "Empieza en minutos"
+    },
+    "cta": {
+      "title": "¿Listo para empezar?",
+      "subtitle": "Únete a miles de usuarios que ya usan nuestras herramientas.",
+      "button": "Inicia tu prueba gratis"
+    },
+    "demo": {
+      "title": "Velo en acción",
+      "subtitle": "Prueba el demo interactivo"
+    },
+    "tuna": {
+      "hero": {
+        "badge": "Inteligencia Agrícola",
+        "title": "El Cierre de Campaña.",
+        "titleHighlight": "Consolidado.",
+        "subtitle": "TUNA es el punto único donde Producción, Costos, Ventas y Presupuesto se encuentran, validan y explican automáticamente."
+      },
+      "tagline": "Si no está en TUNA, no existe.",
+      "features": {
+        "title": "Todo en un solo lugar",
+        "consolidation": {
+          "title": "Consolidación Automática",
+          "description": "Importa datos de múltiples fuentes y consolida automáticamente"
+        },
+        "validation": {
+          "title": "Validación Inteligente",
+          "description": "Validación cruzada automática entre Producción, Costos y Ventas"
+        },
+        "reports": {
+          "title": "Reportes Ejecutivos",
+          "description": "Genera reportes listos para presentación en un click"
+        },
+        "ratios": {
+          "title": "Ratios Financieros",
+          "description": "Costo por hectárea, por caja, análisis de rendimiento"
+        },
+        "comparison": {
+          "title": "Comparación de Temporadas",
+          "description": "Compara la campaña actual con años anteriores"
+        },
+        "alerts": {
+          "title": "Alertas de Desviación",
+          "description": "Notificaciones automáticas cuando los datos no coinciden"
+        }
+      },
+      "howItWorks": {
+        "upload": {
+          "title": "Sube tus datos",
+          "description": "Importa archivos Excel de Producción, Costos, Ventas y Presupuesto"
+        },
+        "map": {
+          "title": "Mapea categorías",
+          "description": "TUNA aprende a interpretar tu formato de datos con IA"
+        },
+        "validate": {
+          "title": "Valida y consolida",
+          "description": "Validación cruzada automática identifica discrepancias"
+        },
+        "report": {
+          "title": "Genera reportes",
+          "description": "Descarga reportes consolidados listos para presentación"
+        }
+      },
+      "cta": {
+        "title": "Cierra tu campaña de la manera correcta",
+        "subtitle": "Únete a empresas agrícolas que ya usan TUNA"
+      }
+    },
+    "ramona": {
+      "hero": {
+        "badge": "Marketing con IA",
+        "title": "Tu Departamento de Marketing.",
+        "titleHighlight": "Completo.",
+        "subtitle": "Ramona genera contenido, programa publicaciones y convierte seguidores en clientes. Todo automático."
+      },
+      "tagline": "Marketing que trabaja mientras duermes.",
+      "features": {
+        "title": "Todo lo que necesitas para crecer",
+        "content": {
+          "title": "Generación de Contenido",
+          "description": "Crea posts, stories y videos con IA que conoce tu marca"
+        },
+        "schedule": {
+          "title": "Programación Inteligente",
+          "description": "Publica en el momento perfecto para máximo engagement"
+        },
+        "analytics": {
+          "title": "Analytics Profundo",
+          "description": "Entiende qué funciona y optimiza tu estrategia"
+        },
+        "brand": {
+          "title": "Voz de Marca",
+          "description": "Mantén consistencia en todo tu contenido"
+        },
+        "video": {
+          "title": "Video Studio",
+          "description": "Crea videos cortos listos para TikTok e Instagram"
+        },
+        "calendar": {
+          "title": "Calendario Editorial",
+          "description": "Visualiza y planifica tu contenido del mes"
+        }
+      },
+      "howItWorks": {
+        "connect": {
+          "title": "Conecta tu marca",
+          "description": "Cuéntale a Ramona sobre tu negocio y tu audiencia"
+        },
+        "generate": {
+          "title": "Genera contenido",
+          "description": "Ramona crea posts personalizados para tu marca"
+        },
+        "review": {
+          "title": "Revisa y aprueba",
+          "description": "Edita o aprueba el contenido generado"
+        },
+        "publish": {
+          "title": "Publica automático",
+          "description": "Ramona publica en el mejor momento"
+        }
+      },
+      "cta": {
+        "title": "Deja que Ramona maneje tu marketing",
+        "subtitle": "Únete a marcas que ya crecen con IA"
+      }
+    },
+    "saguaro": {
+      "hero": {
+        "badge": "Estructura de Tareas",
+        "title": "Flujo de Trabajo.",
+        "titleHighlight": "En Flow.",
+        "subtitle": "SAGUARO te da claridad mental para gestionar tareas y mantener a tu equipo enfocado en lo que importa."
+      },
+      "tagline": "Claridad mental, resultados visibles.",
+      "features": {
+        "title": "Para equipos que fluyen",
+        "tasks": {
+          "title": "Gestión de Tareas",
+          "description": "Organiza, prioriza y completa tareas con claridad"
+        },
+        "flow": {
+          "title": "Estado de Flow",
+          "description": "Visualiza el progreso y mantén el momentum"
+        },
+        "priorities": {
+          "title": "Prioridades Claras",
+          "description": "Sabe siempre qué hacer primero"
+        },
+        "team": {
+          "title": "Colaboración",
+          "description": "Asigna y coordina tareas con tu equipo"
+        },
+        "tracking": {
+          "title": "Seguimiento",
+          "description": "Monitorea el avance de proyectos en tiempo real"
+        },
+        "insights": {
+          "title": "Insights de Productividad",
+          "description": "Entiende cómo trabaja tu equipo"
+        }
+      },
+      "howItWorks": {
+        "create": {
+          "title": "Crea tu espacio",
+          "description": "Configura tu workspace y equipo"
+        },
+        "organize": {
+          "title": "Organiza tareas",
+          "description": "Crea y prioriza lo que necesitas hacer"
+        },
+        "execute": {
+          "title": "Ejecuta en flow",
+          "description": "Trabaja enfocado con claridad"
+        },
+        "review": {
+          "title": "Revisa resultados",
+          "description": "Analiza tu productividad y mejora"
+        }
+      },
+      "cta": {
+        "title": "Encuentra tu flow de trabajo",
+        "subtitle": "Comienza gratis con tu equipo"
+      }
+    },
+    "agave": {
+      "hero": {
+        "badge": "Decisión de Precios",
+        "title": "El Precio Correcto.",
+        "titleHighlight": "Siempre.",
+        "subtitle": "AGAVE es tu asistente de pricing. Analiza costos, históricos y márgenes para darte el precio óptimo en segundos."
+      },
+      "tagline": "No es Excel. No es BI. Es decisión asistida.",
+      "features": {
+        "title": "Pricing inteligente para gerentes",
+        "quickMode": {
+          "title": "Modo Rápido",
+          "description": "3 datos, 1 recomendación de precio instantánea"
+        },
+        "simulation": {
+          "title": "Simulación",
+          "description": "Compara escenarios y ve el impacto en margen y volumen"
+        },
+        "margins": {
+          "title": "Control de Márgenes",
+          "description": "Precio mínimo, recomendado y de riesgo en tiempo real"
+        },
+        "history": {
+          "title": "Aprendizaje Histórico",
+          "description": "Aprende de ventas pasadas, presupuestos y tendencias"
+        },
+        "policy": {
+          "title": "Política Comercial",
+          "description": "Define rangos y descuentos máximos para tu equipo"
+        },
+        "impact": {
+          "title": "Impacto Anual",
+          "description": "Ve cómo cada precio afecta tu resultado del año"
+        }
+      },
+      "howItWorks": {
+        "input": {
+          "title": "Ingresa datos clave",
+          "description": "Producto, costo unitario y objetivo de margen"
+        },
+        "analyze": {
+          "title": "AGAVE calcula",
+          "description": "IA procesa históricos, costos y presupuestos"
+        },
+        "recommend": {
+          "title": "Recibe recomendación",
+          "description": "Precio mínimo, recomendado y zona de riesgo"
+        },
+        "decide": {
+          "title": "Decide con confianza",
+          "description": "Ve el impacto antes de cerrar el precio"
+        }
+      },
+      "cta": {
+        "title": "Deja de adivinar el precio",
+        "subtitle": "Únete a gerentes que ya deciden con AGAVE"
+      }
+    }
+  }
+}

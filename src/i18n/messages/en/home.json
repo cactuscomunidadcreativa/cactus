@@ -1,0 +1,40 @@
+{
+  "home": {
+    "tagline": "Intelligence that Takes Root",
+    "title": "Cactus",
+    "titleHighlight": "Creative Community",
+    "subtitle": "Your platform for intelligent tools. Each app solves a problem. Choose the ones you need.",
+    "cta": {
+      "getStarted": "Get started free",
+      "viewApps": "View apps"
+    },
+    "appsSection": {
+      "title": "Apps for every need"
+    },
+    "apps": {
+      "saguaro": {
+        "name": "SAGUARO",
+        "description": "Task structure and workflow. Mental clarity for teams that need order.",
+        "price": "$9/mo"
+      },
+      "ramona": {
+        "name": "RAMONA",
+        "description": "Your complete AI-powered marketing department. Generate, publish, convert.",
+        "price": "$59/mo"
+      },
+      "tuna": {
+        "name": "TUNA",
+        "description": "Agricultural campaign closing. Consolidate Production, Costs, Sales and Budget in one place.",
+        "price": "Coming soon"
+      },
+      "agave": {
+        "name": "AGAVE",
+        "description": "AI-assisted pricing decisions. Optimal price based on costs, history and target margins.",
+        "price": "Coming soon"
+      }
+    },
+    "footer": {
+      "brand": "Cactus Creative Community"
+    }
+  }
+}

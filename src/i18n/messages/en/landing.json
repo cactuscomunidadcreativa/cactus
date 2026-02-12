@@ -1,0 +1,266 @@
+{
+  "landing": {
+    "shared": {
+      "learnMore": "Learn more",
+      "tryDemo": "Try demo",
+      "getStarted": "Get started",
+      "viewPricing": "View pricing",
+      "backToHome": "Back to home",
+      "features": "Features",
+      "howItWorks": "How it works",
+      "pricing": "Pricing"
+    },
+    "hero": {
+      "badge": "New",
+      "cta": {
+        "primary": "Start free trial",
+        "secondary": "See demo"
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "Get started in minutes"
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Join thousands of users already using our tools.",
+      "button": "Start your free trial"
+    },
+    "demo": {
+      "title": "See it in action",
+      "subtitle": "Try the interactive demo"
+    },
+    "tuna": {
+      "hero": {
+        "badge": "Agricultural Intelligence",
+        "title": "The Campaign Closing.",
+        "titleHighlight": "Consolidated.",
+        "subtitle": "TUNA is the single point where Production, Costs, Sales and Budget meet, validate, and explain themselves automatically."
+      },
+      "tagline": "If it's not in TUNA, it doesn't exist.",
+      "features": {
+        "title": "Everything in one place",
+        "consolidation": {
+          "title": "Automatic Consolidation",
+          "description": "Import data from multiple sources and consolidate automatically"
+        },
+        "validation": {
+          "title": "Smart Validation",
+          "description": "Automatic cross-validation between Production, Costs and Sales"
+        },
+        "reports": {
+          "title": "Executive Reports",
+          "description": "Generate presentation-ready reports in one click"
+        },
+        "ratios": {
+          "title": "Financial Ratios",
+          "description": "Cost per hectare, per box, yield analysis and more"
+        },
+        "comparison": {
+          "title": "Season Comparison",
+          "description": "Compare current campaign with previous years"
+        },
+        "alerts": {
+          "title": "Deviation Alerts",
+          "description": "Automatic notifications when data doesn't match"
+        }
+      },
+      "howItWorks": {
+        "upload": {
+          "title": "Upload your data",
+          "description": "Import Excel files from Production, Costs, Sales and Budget"
+        },
+        "map": {
+          "title": "Map categories",
+          "description": "TUNA learns to interpret your data format with AI"
+        },
+        "validate": {
+          "title": "Validate and consolidate",
+          "description": "Automatic cross-validation identifies discrepancies"
+        },
+        "report": {
+          "title": "Generate reports",
+          "description": "Download consolidated reports ready for presentation"
+        }
+      },
+      "cta": {
+        "title": "Close your campaign the right way",
+        "subtitle": "Join agricultural companies already using TUNA"
+      }
+    },
+    "ramona": {
+      "hero": {
+        "badge": "AI Marketing",
+        "title": "Your Marketing Department.",
+        "titleHighlight": "Complete.",
+        "subtitle": "Ramona generates content, schedules posts and converts followers into customers. All automatic."
+      },
+      "tagline": "Marketing that works while you sleep.",
+      "features": {
+        "title": "Everything you need to grow",
+        "content": {
+          "title": "Content Generation",
+          "description": "Create posts, stories and videos with AI that knows your brand"
+        },
+        "schedule": {
+          "title": "Smart Scheduling",
+          "description": "Publish at the perfect time for maximum engagement"
+        },
+        "analytics": {
+          "title": "Deep Analytics",
+          "description": "Understand what works and optimize your strategy"
+        },
+        "brand": {
+          "title": "Brand Voice",
+          "description": "Maintain consistency across all your content"
+        },
+        "video": {
+          "title": "Video Studio",
+          "description": "Create short videos ready for TikTok and Instagram"
+        },
+        "calendar": {
+          "title": "Editorial Calendar",
+          "description": "Visualize and plan your month's content"
+        }
+      },
+      "howItWorks": {
+        "connect": {
+          "title": "Connect your brand",
+          "description": "Tell Ramona about your business and audience"
+        },
+        "generate": {
+          "title": "Generate content",
+          "description": "Ramona creates personalized posts for your brand"
+        },
+        "review": {
+          "title": "Review and approve",
+          "description": "Edit or approve generated content"
+        },
+        "publish": {
+          "title": "Auto publish",
+          "description": "Ramona publishes at the best time"
+        }
+      },
+      "cta": {
+        "title": "Let Ramona handle your marketing",
+        "subtitle": "Join brands already growing with AI"
+      }
+    },
+    "saguaro": {
+      "hero": {
+        "badge": "Task Structure",
+        "title": "Workflow.",
+        "titleHighlight": "In Flow.",
+        "subtitle": "SAGUARO gives you mental clarity to manage tasks and keep your team focused on what matters."
+      },
+      "tagline": "Mental clarity, visible results.",
+      "features": {
+        "title": "For teams that flow",
+        "tasks": {
+          "title": "Task Management",
+          "description": "Organize, prioritize and complete tasks with clarity"
+        },
+        "flow": {
+          "title": "Flow State",
+          "description": "Visualize progress and maintain momentum"
+        },
+        "priorities": {
+          "title": "Clear Priorities",
+          "description": "Always know what to do first"
+        },
+        "team": {
+          "title": "Collaboration",
+          "description": "Assign and coordinate tasks with your team"
+        },
+        "tracking": {
+          "title": "Tracking",
+          "description": "Monitor project progress in real time"
+        },
+        "insights": {
+          "title": "Productivity Insights",
+          "description": "Understand how your team works"
+        }
+      },
+      "howItWorks": {
+        "create": {
+          "title": "Create your space",
+          "description": "Set up your workspace and team"
+        },
+        "organize": {
+          "title": "Organize tasks",
+          "description": "Create and prioritize what you need to do"
+        },
+        "execute": {
+          "title": "Execute in flow",
+          "description": "Work focused with clarity"
+        },
+        "review": {
+          "title": "Review results",
+          "description": "Analyze your productivity and improve"
+        }
+      },
+      "cta": {
+        "title": "Find your workflow",
+        "subtitle": "Start free with your team"
+      }
+    },
+    "agave": {
+      "hero": {
+        "badge": "Pricing Decisions",
+        "title": "The Right Price.",
+        "titleHighlight": "Always.",
+        "subtitle": "AGAVE is your pricing assistant. Analyzes costs, history and margins to give you the optimal price in seconds."
+      },
+      "tagline": "Not Excel. Not BI. It's assisted decision-making.",
+      "features": {
+        "title": "Smart pricing for managers",
+        "quickMode": {
+          "title": "Quick Mode",
+          "description": "3 inputs, 1 instant price recommendation"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "description": "Compare scenarios and see impact on margin and volume"
+        },
+        "margins": {
+          "title": "Margin Control",
+          "description": "Minimum, recommended and risk price in real time"
+        },
+        "history": {
+          "title": "Historical Learning",
+          "description": "Learns from past sales, budgets and trends"
+        },
+        "policy": {
+          "title": "Commercial Policy",
+          "description": "Define price ranges and max discounts for your team"
+        },
+        "impact": {
+          "title": "Annual Impact",
+          "description": "See how each price affects your yearly result"
+        }
+      },
+      "howItWorks": {
+        "input": {
+          "title": "Enter key data",
+          "description": "Product, unit cost and margin target"
+        },
+        "analyze": {
+          "title": "AGAVE calculates",
+          "description": "AI processes history, costs and budgets"
+        },
+        "recommend": {
+          "title": "Get recommendation",
+          "description": "Minimum, recommended and risk zone prices"
+        },
+        "decide": {
+          "title": "Decide with confidence",
+          "description": "See the impact before closing the price"
+        }
+      },
+      "cta": {
+        "title": "Stop guessing the price",
+        "subtitle": "Join managers already deciding with AGAVE"
+      }
+    }
+  }
+}
