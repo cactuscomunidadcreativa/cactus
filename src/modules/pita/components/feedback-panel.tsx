@@ -12,6 +12,7 @@ interface FeedbackPanelProps {
   existingReaction?: 'like' | 'dislike' | 'love' | null;
   existingComment?: string;
   onSubmitFeedback: (sectionId: string, reaction: string | null, comment: string) => void;
+  isWhiteBg?: boolean;
 }
 
 export function FeedbackPanel({
@@ -22,6 +23,7 @@ export function FeedbackPanel({
   existingReaction,
   existingComment,
   onSubmitFeedback,
+  isWhiteBg = false,
 }: FeedbackPanelProps) {
   const [reaction, setReaction] = useState<string | null>(existingReaction || null);
   const [comment, setComment] = useState(existingComment || '');
@@ -45,7 +47,12 @@ export function FeedbackPanel({
   const initial = reviewerName.charAt(0).toUpperCase();
 
   return (
-    <div className="border-t border-white/10 bg-white/[0.02] backdrop-blur-sm">
+    <div className={cn(
+      'border-t backdrop-blur-sm',
+      isWhiteBg
+        ? 'border-[#E9EEF2] bg-white/80'
+        : 'border-white/10 bg-white/[0.02]'
+    )}>
       <div className="max-w-4xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Reviewer Badge */}
@@ -54,7 +61,7 @@ export function FeedbackPanel({
               {initial}
             </div>
             <div className="hidden sm:block">
-              <p className="text-xs text-[#F5F7F9]/40">
+              <p className={cn('text-xs', isWhiteBg ? 'text-[#0E1B2C]/35' : 'text-[#F5F7F9]/40')}>
                 Section {sectionIndex + 1} of {totalSections}
               </p>
             </div>
@@ -68,6 +75,8 @@ export function FeedbackPanel({
                 'p-2 rounded-lg transition-all',
                 reaction === 'like'
                   ? 'bg-[#4FAF8F]/20 text-[#4FAF8F]'
+                  : isWhiteBg
+                  ? 'text-[#0E1B2C]/25 hover:text-[#0E1B2C]/50 hover:bg-[#0E1B2C]/[0.04]'
                   : 'text-[#F5F7F9]/30 hover:text-[#F5F7F9]/60 hover:bg-white/5'
               )}
               title="Like"
@@ -80,6 +89,8 @@ export function FeedbackPanel({
                 'p-2 rounded-lg transition-all',
                 reaction === 'dislike'
                   ? 'bg-red-500/20 text-red-400'
+                  : isWhiteBg
+                  ? 'text-[#0E1B2C]/25 hover:text-[#0E1B2C]/50 hover:bg-[#0E1B2C]/[0.04]'
                   : 'text-[#F5F7F9]/30 hover:text-[#F5F7F9]/60 hover:bg-white/5'
               )}
               title="Needs changes"
@@ -92,6 +103,8 @@ export function FeedbackPanel({
                 'p-2 rounded-lg transition-all',
                 reaction === 'love'
                   ? 'bg-[#C7A54A]/20 text-[#C7A54A]'
+                  : isWhiteBg
+                  ? 'text-[#0E1B2C]/25 hover:text-[#0E1B2C]/50 hover:bg-[#0E1B2C]/[0.04]'
                   : 'text-[#F5F7F9]/30 hover:text-[#F5F7F9]/60 hover:bg-white/5'
               )}
               title="Love it"
@@ -99,7 +112,7 @@ export function FeedbackPanel({
               <Heart className={cn('w-5 h-5', reaction === 'love' && 'fill-current')} />
             </button>
 
-            <div className="w-[1px] h-6 bg-white/10 mx-1" />
+            <div className={cn('w-[1px] h-6 mx-1', isWhiteBg ? 'bg-[#E9EEF2]' : 'bg-white/10')} />
 
             <button
               onClick={() => setShowComment(!showComment)}
@@ -107,6 +120,8 @@ export function FeedbackPanel({
                 'p-2 rounded-lg transition-all',
                 showComment
                   ? 'bg-[#2D6CDF]/20 text-[#2D6CDF]'
+                  : isWhiteBg
+                  ? 'text-[#0E1B2C]/25 hover:text-[#0E1B2C]/50 hover:bg-[#0E1B2C]/[0.04]'
                   : 'text-[#F5F7F9]/30 hover:text-[#F5F7F9]/60 hover:bg-white/5'
               )}
               title="Add comment"
@@ -125,13 +140,18 @@ export function FeedbackPanel({
               onChange={(e) => setComment(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCommentSubmit()}
               placeholder="Any thoughts on this section?"
-              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-[#F5F7F9] text-sm placeholder-[#F5F7F9]/20 focus:outline-none focus:border-[#4FAF8F]/30 transition-all"
+              className={cn(
+                'flex-1 px-4 py-3 rounded-lg text-sm focus:outline-none transition-all',
+                isWhiteBg
+                  ? 'bg-[#0E1B2C]/[0.03] border border-[#E9EEF2] text-[#0E1B2C] placeholder-[#0E1B2C]/20 focus:border-[#4FAF8F]/30'
+                  : 'bg-white/5 border border-white/10 text-[#F5F7F9] placeholder-[#F5F7F9]/20 focus:border-[#4FAF8F]/30'
+              )}
               autoFocus
             />
             <button
               onClick={handleCommentSubmit}
               disabled={!comment.trim()}
-              className="px-4 py-3 bg-[#4FAF8F] text-[#0E1B2C] rounded-lg font-medium text-sm hover:bg-[#4FAF8F]/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="px-4 py-3 bg-[#4FAF8F] text-white rounded-lg font-medium text-sm hover:bg-[#4FAF8F]/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               <Send className="w-4 h-4" />
             </button>

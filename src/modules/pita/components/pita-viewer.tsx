@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Globe } from 'lucide-react';
 import Image from 'next/image';
 import { WelcomeGate } from './welcome-gate';
 import { SectionRenderer } from './section-renderer';
@@ -36,6 +36,7 @@ export function PitaViewer({
   const [currentSection, setCurrentSection] = useState(0);
   const [feedback, setFeedback] = useState<FeedbackData>({});
   const [reviewerId, setReviewerId] = useState<string | null>(null);
+  const [lang, setLang] = useState<'es' | 'en'>('es');
 
   // Check for existing session
   useEffect(() => {
@@ -50,6 +51,17 @@ export function PitaViewer({
       }
     }
   }, [slug]);
+
+  // Language toggle effect — show/hide bilingual spans
+  useEffect(() => {
+    const root = document.documentElement;
+    if (lang === 'en') {
+      root.classList.add('pita-lang-en');
+    } else {
+      root.classList.remove('pita-lang-en');
+    }
+    return () => root.classList.remove('pita-lang-en');
+  }, [lang]);
 
   // Register reviewer
   const handleEnter = useCallback(async (name: string) => {
@@ -135,17 +147,27 @@ export function PitaViewer({
   const section = sortedSections[currentSection];
   const progress = ((currentSection + 1) / sections.length) * 100;
 
+  const isWhiteBg = brandConfig.backgroundColor === '#FFFFFF' || brandConfig.backgroundColor === '#fff';
+
   return (
     <div
       className="min-h-screen flex flex-col"
       style={{ backgroundColor: brandConfig.backgroundColor, color: brandConfig.textColor }}
     >
       {/* Top Bar */}
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0E1B2C]/90 backdrop-blur-xl">
+      <header className={cn(
+        'sticky top-0 z-50 border-b backdrop-blur-xl',
+        isWhiteBg
+          ? 'border-[#E9EEF2] bg-white/90'
+          : 'border-white/5 bg-[#0E1B2C]/90'
+      )}>
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Image src="/pita.png" alt="PITA" width={28} height={28} className="opacity-70" />
-            <span className="text-sm text-[#F5F7F9]/40 hidden sm:block font-editorial">{title}</span>
+            <Image src="/pita.png" alt="PITA" width={28} height={28} className={isWhiteBg ? 'opacity-80' : 'opacity-70'} />
+            <span className={cn(
+              'text-sm hidden sm:block font-editorial',
+              isWhiteBg ? 'text-[#0E1B2C]/40' : 'text-[#F5F7F9]/40'
+            )}>{title}</span>
           </div>
 
           {/* Section Navigation Dots */}
@@ -160,22 +182,43 @@ export function PitaViewer({
                     ? 'bg-[#4FAF8F] w-6'
                     : i < currentSection
                     ? 'bg-[#4FAF8F]/40'
-                    : 'bg-white/10'
+                    : isWhiteBg ? 'bg-[#0E1B2C]/10' : 'bg-white/10'
                 )}
               />
             ))}
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-[#F5F7F9]/30">
-            <div className="w-6 h-6 rounded bg-[#4FAF8F]/20 flex items-center justify-center text-[#4FAF8F] text-xs font-bold">
-              {reviewerName.charAt(0).toUpperCase()}
+          <div className="flex items-center gap-3">
+            {/* Language Toggle */}
+            <button
+              onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                isWhiteBg
+                  ? 'bg-[#0E1B2C]/[0.04] hover:bg-[#0E1B2C]/[0.08] text-[#0E1B2C]/50'
+                  : 'bg-white/5 hover:bg-white/10 text-[#F5F7F9]/50'
+              )}
+              title={lang === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span className="uppercase">{lang}</span>
+            </button>
+
+            {/* Reviewer Badge */}
+            <div className={cn(
+              'flex items-center gap-2 text-sm',
+              isWhiteBg ? 'text-[#0E1B2C]/30' : 'text-[#F5F7F9]/30'
+            )}>
+              <div className="w-6 h-6 rounded bg-[#4FAF8F]/20 flex items-center justify-center text-[#4FAF8F] text-xs font-bold">
+                {reviewerName.charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden sm:block">{reviewerName}</span>
             </div>
-            <span className="hidden sm:block">{reviewerName}</span>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="h-[2px] bg-white/5">
+        <div className={cn('h-[2px]', isWhiteBg ? 'bg-[#E9EEF2]' : 'bg-white/5')}>
           <div
             className="h-full bg-[#4FAF8F] transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
@@ -199,25 +242,31 @@ export function PitaViewer({
             onClick={goPrev}
             disabled={currentSection === 0}
             className={cn(
-              'pointer-events-auto p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm transition-all',
+              'pointer-events-auto p-3 rounded-full backdrop-blur-sm transition-all',
+              isWhiteBg
+                ? 'bg-[#0E1B2C]/[0.04] border border-[#E9EEF2] hover:bg-[#0E1B2C]/[0.08]'
+                : 'bg-white/5 border border-white/10 hover:bg-white/10',
               currentSection === 0
                 ? 'opacity-0 cursor-default'
-                : 'opacity-100 hover:bg-white/10'
+                : 'opacity-100'
             )}
           >
-            <ChevronLeft className="w-5 h-5 text-[#F5F7F9]/60" />
+            <ChevronLeft className={cn('w-5 h-5', isWhiteBg ? 'text-[#0E1B2C]/40' : 'text-[#F5F7F9]/60')} />
           </button>
           <button
             onClick={goNext}
             disabled={currentSection === sections.length - 1}
             className={cn(
-              'pointer-events-auto p-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm transition-all',
+              'pointer-events-auto p-3 rounded-full backdrop-blur-sm transition-all',
+              isWhiteBg
+                ? 'bg-[#0E1B2C]/[0.04] border border-[#E9EEF2] hover:bg-[#0E1B2C]/[0.08]'
+                : 'bg-white/5 border border-white/10 hover:bg-white/10',
               currentSection === sections.length - 1
                 ? 'opacity-0 cursor-default'
-                : 'opacity-100 hover:bg-white/10'
+                : 'opacity-100'
             )}
           >
-            <ChevronRight className="w-5 h-5 text-[#F5F7F9]/60" />
+            <ChevronRight className={cn('w-5 h-5', isWhiteBg ? 'text-[#0E1B2C]/40' : 'text-[#F5F7F9]/60')} />
           </button>
         </div>
       </main>
@@ -233,12 +282,18 @@ export function PitaViewer({
           existingReaction={feedback[section?.id]?.reaction as any}
           existingComment={feedback[section?.id]?.comment}
           onSubmitFeedback={handleFeedback}
+          isWhiteBg={isWhiteBg}
         />
       </div>
 
       {/* Completion Message */}
       {currentSection === sections.length - 1 && (
-        <div className="text-center py-4 bg-[#4FAF8F]/5 border-t border-[#4FAF8F]/10">
+        <div className={cn(
+          'text-center py-4 border-t',
+          isWhiteBg
+            ? 'bg-[#4FAF8F]/[0.03] border-[#4FAF8F]/10'
+            : 'bg-[#4FAF8F]/5 border-[#4FAF8F]/10'
+        )}>
           <p className="text-sm text-[#4FAF8F]/60">
             {reviewerName}, your feedback helps this idea take root. Thank you!
           </p>
