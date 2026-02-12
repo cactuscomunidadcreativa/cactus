@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { PitaViewerClient } from './client';
-import { OWN_YOUR_IMPACT_SECTIONS, OWN_YOUR_IMPACT_BRAND } from '@/modules/pita/lib/presentations';
+import { OWN_YOUR_IMPACT_SECTIONS, OWN_YOUR_IMPACT_BRAND, INCLUSION_BY_DESIGN_SECTIONS, INCLUSION_BY_DESIGN_BRAND } from '@/modules/pita/lib/presentations';
 import { createClient } from '@/lib/supabase/server';
 
 // Static presentations map (fallback when not in DB)
@@ -17,6 +17,13 @@ const PRESENTATIONS: Record<string, {
     subtitle: 'Be. Grow. Lead. — Elevate Your EQ. Transform Your Leadership.',
     brandConfig: OWN_YOUR_IMPACT_BRAND,
     sections: OWN_YOUR_IMPACT_SECTIONS,
+  },
+  'inclusion-by-design': {
+    id: 'inclusion-by-design-001',
+    title: 'INCLUSION BY DESIGN',
+    subtitle: 'Know. Choose. Give. — Diversa Peru × Six Seconds Official Certification Pathway.',
+    brandConfig: INCLUSION_BY_DESIGN_BRAND,
+    sections: INCLUSION_BY_DESIGN_SECTIONS,
   },
 };
 

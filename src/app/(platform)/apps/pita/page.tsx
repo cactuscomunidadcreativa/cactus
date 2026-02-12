@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { PitaDashboard } from '@/modules/pita/components/pita-dashboard';
-import { OWN_YOUR_IMPACT_SECTIONS } from '@/modules/pita/lib/presentations';
+import { OWN_YOUR_IMPACT_SECTIONS, INCLUSION_BY_DESIGN_SECTIONS } from '@/modules/pita/lib/presentations';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ExternalLink, Pencil } from 'lucide-react';
@@ -25,14 +25,20 @@ export default async function PitaPage() {
     }
   }
 
-  // Fall back to static presentation if no DB presentations
+  // Static presentations
+  const staticPresentations = [
+    { id: 'own-your-impact-001', slug: 'own-your-impact', title: 'OWN YOUR IMPACT', subtitle: 'Be. Grow. Lead.', sections: OWN_YOUR_IMPACT_SECTIONS },
+    { id: 'inclusion-by-design-001', slug: 'inclusion-by-design', title: 'INCLUSION BY DESIGN', subtitle: 'Know. Choose. Give.', sections: INCLUSION_BY_DESIGN_SECTIONS },
+  ];
+
+  // Fall back to static presentations if no DB presentations
   const useStatic = dbPresentations.length === 0;
-  const presentationId = useStatic ? 'own-your-impact-001' : dbPresentations[0].id;
-  const slug = useStatic ? 'own-your-impact' : dbPresentations[0].slug;
-  const title = useStatic ? 'OWN YOUR IMPACT' : dbPresentations[0].title;
+  const presentationId = useStatic ? staticPresentations[0].id : dbPresentations[0].id;
+  const slug = useStatic ? staticPresentations[0].slug : dbPresentations[0].slug;
+  const title = useStatic ? staticPresentations[0].title : dbPresentations[0].title;
 
   const sectionsWithIds = useStatic
-    ? OWN_YOUR_IMPACT_SECTIONS.map((section, i) => ({
+    ? staticPresentations[0].sections.map((section, i) => ({
         ...section,
         id: `${slug}-section-${i}`,
         presentation_id: presentationId,
@@ -93,7 +99,34 @@ export default async function PitaPage() {
         </div>
       </div>
 
-      {/* Presentations list (if multiple in DB) */}
+      {/* Static Presentations */}
+      {useStatic && (
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {staticPresentations.map((pres) => (
+            <div
+              key={pres.id}
+              className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:border-pita-green/30 transition-all"
+            >
+              <div>
+                <p className="text-sm font-semibold">{pres.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  /{pres.slug} · {pres.sections.length} slides
+                  <span className="ml-1 text-pita-green">· Live</span>
+                </p>
+              </div>
+              <Link
+                href={`/pita/${pres.slug}`}
+                target="_blank"
+                className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* DB Presentations list (if multiple) */}
       {dbPresentations.length > 1 && (
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {dbPresentations.map((pres: any) => (
