@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { WelcomeGate } from './welcome-gate';
 import { SectionRenderer } from './section-renderer';
 import { FeedbackPanel } from './feedback-panel';
-import { PresentationSection, BrandConfig } from '../types';
+import { PresentationSection, BrandConfig, PitaThread, PitaAttachment, CoCreationData } from '../types';
 import { cn } from '@/lib/utils';
 
 interface PitaViewerProps {
@@ -37,6 +37,9 @@ export function PitaViewer({
   const [feedback, setFeedback] = useState<FeedbackData>({});
   const [reviewerId, setReviewerId] = useState<string | null>(null);
   const [lang, setLang] = useState<'es' | 'en'>('es');
+
+  // Co-creation state: threads and attachments per section
+  const [coCreationData, setCoCreationData] = useState<Record<string, CoCreationData>>({});
 
   // Check for existing session
   useEffect(() => {
@@ -110,6 +113,96 @@ export function PitaViewer({
     }
   }, [reviewerId, reviewerName]);
 
+  // ─── Co-Creation: Load threads + attachments for current section ───
+  const loadCoCreationData = useCallback(async (sectionId: string) => {
+    // Skip if already loaded
+    if (coCreationData[sectionId]) return;
+
+    try {
+      const [threadsRes, attachmentsRes] = await Promise.all([
+        fetch(`/api/pita/threads?presentationId=${presentationId}&sectionId=${sectionId}`),
+        fetch(`/api/pita/attachments?presentationId=${presentationId}&sectionId=${sectionId}`),
+      ]);
+
+      const threadsData = await threadsRes.json();
+      const attachmentsData = await attachmentsRes.json();
+
+      setCoCreationData(prev => ({
+        ...prev,
+        [sectionId]: {
+          threads: threadsData.threads || [],
+          attachments: attachmentsData.attachments || [],
+        },
+      }));
+    } catch {
+      // If API fails, set empty data
+      setCoCreationData(prev => ({
+        ...prev,
+        [sectionId]: { threads: [], attachments: [] },
+      }));
+    }
+  }, [presentationId, coCreationData]);
+
+  // Load co-creation data when section changes
+  const sortedSections = [...sections].sort((a, b) => a.order_index - b.order_index);
+  const section = sortedSections[currentSection];
+
+  useEffect(() => {
+    if (section?.id && reviewerName) {
+      loadCoCreationData(section.id);
+    }
+  }, [section?.id, reviewerName, loadCoCreationData]);
+
+  // Handle new comment
+  const handleNewComment = useCallback(async (content: string, parentId?: string) => {
+    if (!section?.id) return;
+
+    try {
+      const res = await fetch('/api/pita/threads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          presentationId,
+          sectionId: section.id,
+          reviewerId: reviewerId || `anon_${Date.now()}`,
+          reviewerName,
+          content,
+          parentId,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.ok && data.thread) {
+        // Re-fetch threads to get updated list with proper nesting
+        const threadsRes = await fetch(`/api/pita/threads?presentationId=${presentationId}&sectionId=${section.id}`);
+        const threadsData = await threadsRes.json();
+
+        setCoCreationData(prev => ({
+          ...prev,
+          [section.id]: {
+            ...prev[section.id],
+            threads: threadsData.threads || [],
+          },
+        }));
+      }
+    } catch {
+      // Silently fail
+    }
+  }, [presentationId, section?.id, reviewerId, reviewerName]);
+
+  // Handle upload complete
+  const handleUploadComplete = useCallback((attachment: PitaAttachment) => {
+    if (!section?.id) return;
+
+    setCoCreationData(prev => ({
+      ...prev,
+      [section.id]: {
+        ...prev[section.id],
+        attachments: [...(prev[section.id]?.attachments || []), attachment],
+      },
+    }));
+  }, [section?.id]);
+
   // Navigate sections
   const goNext = () => {
     if (currentSection < sections.length - 1) {
@@ -143,11 +236,11 @@ export function PitaViewer({
     return <WelcomeGate presentationTitle={title} onEnter={handleEnter} />;
   }
 
-  const sortedSections = [...sections].sort((a, b) => a.order_index - b.order_index);
-  const section = sortedSections[currentSection];
   const progress = ((currentSection + 1) / sections.length) * 100;
 
   const isWhiteBg = brandConfig.backgroundColor === '#FFFFFF' || brandConfig.backgroundColor === '#fff';
+
+  const currentCoCreation = section?.id ? coCreationData[section.id] : undefined;
 
   return (
     <div
@@ -271,18 +364,24 @@ export function PitaViewer({
         </div>
       </main>
 
-      {/* Feedback Panel */}
+      {/* Feedback Panel with Co-Creation */}
       <div className="sticky bottom-0 z-40">
         <FeedbackPanel
           key={section?.id || currentSection}
           sectionId={section?.id || String(currentSection)}
           sectionIndex={currentSection}
           totalSections={sections.length}
+          presentationId={presentationId}
+          reviewerId={reviewerId || `anon_${Date.now()}`}
           reviewerName={reviewerName}
           existingReaction={feedback[section?.id]?.reaction as any}
           existingComment={feedback[section?.id]?.comment}
           onSubmitFeedback={handleFeedback}
           isWhiteBg={isWhiteBg}
+          threads={currentCoCreation?.threads}
+          attachments={currentCoCreation?.attachments}
+          onNewComment={handleNewComment}
+          onUploadComplete={handleUploadComplete}
         />
       </div>
 

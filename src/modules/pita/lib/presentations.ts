@@ -533,10 +533,226 @@ export const OWN_YOUR_IMPACT_SECTIONS: Omit<PresentationSection, 'id' | 'present
   },
 
   // ═══════════════════════════════════════
-  // SLIDE 19 — EVENT VISUAL / SOCIAL POSTS
+  // SLIDE 19 — LÍNEA GRÁFICA: PALETA & TIPOGRAFÍA
   // ═══════════════════════════════════════
   {
     order_index: 18,
+    title: bi('Línea Gráfica — Paleta & Tipografía', 'Brand Identity — Palette & Typography'),
+    subtitle: '',
+    content: `<div class="max-w-4xl mx-auto py-16 relative">
+      ${WAVE_RINGS}
+      <div class="relative z-10">
+        <p class="text-xs font-medium tracking-[0.3em] uppercase text-[#C7A54A] mb-6">${bi('Identidad Visual', 'Visual Identity')}</p>
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-[#0E1B2C] mb-16">${bi('Línea <span class="text-[#4FAF8F]">Gráfica</span>', 'Brand <span class="text-[#4FAF8F]">Identity</span>')}</h2>
+
+        <!-- Color Palette -->
+        <div class="mb-12">
+          <p class="text-xs tracking-[0.2em] uppercase text-[#0E1B2C]/30 mb-4">${bi('Paleta de Color', 'Color Palette')}</p>
+          <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+            <div class="text-center">
+              <div class="aspect-square rounded-xl bg-white border-2 border-[#E9EEF2] mb-2"></div>
+              <p class="text-[10px] font-mono text-[#0E1B2C]/40">#FFFFFF</p>
+              <p class="text-[10px] text-[#0E1B2C]/25">${bi('Base', 'Base')}</p>
+            </div>
+            <div class="text-center">
+              <div class="aspect-square rounded-xl bg-[#0E1B2C] mb-2"></div>
+              <p class="text-[10px] font-mono text-[#0E1B2C]/40">#0E1B2C</p>
+              <p class="text-[10px] text-[#0E1B2C]/25">${bi('Texto', 'Text')}</p>
+            </div>
+            <div class="text-center">
+              <div class="aspect-square rounded-xl bg-[#4FAF8F] mb-2"></div>
+              <p class="text-[10px] font-mono text-[#0E1B2C]/40">#4FAF8F</p>
+              <p class="text-[10px] text-[#0E1B2C]/25">${bi('Crecimiento', 'Growth')}</p>
+            </div>
+            <div class="text-center">
+              <div class="aspect-square rounded-xl bg-[#2D6CDF] mb-2"></div>
+              <p class="text-[10px] font-mono text-[#0E1B2C]/40">#2D6CDF</p>
+              <p class="text-[10px] text-[#0E1B2C]/25">${bi('Confianza', 'Trust')}</p>
+            </div>
+            <div class="text-center">
+              <div class="aspect-square rounded-xl bg-[#C7A54A] mb-2"></div>
+              <p class="text-[10px] font-mono text-[#0E1B2C]/40">#C7A54A</p>
+              <p class="text-[10px] text-[#0E1B2C]/25">${bi('Excelencia', 'Excellence')}</p>
+            </div>
+            <div class="text-center">
+              <div class="aspect-square rounded-xl bg-[#E9EEF2] mb-2"></div>
+              <p class="text-[10px] font-mono text-[#0E1B2C]/40">#E9EEF2</p>
+              <p class="text-[10px] text-[#0E1B2C]/25">${bi('Neutro', 'Neutral')}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typography -->
+        <div class="mb-12">
+          <p class="text-xs tracking-[0.2em] uppercase text-[#0E1B2C]/30 mb-4">${bi('Tipografía', 'Typography')}</p>
+          <div class="space-y-4">
+            <div class="p-5 rounded-xl border border-[#E9EEF2]">
+              <p class="text-2xl font-bold text-[#0E1B2C] mb-1" style="font-family: Inter, sans-serif">Inter</p>
+              <p class="text-sm text-[#0E1B2C]/40">Body · UI · ${bi('Comunicación', 'Communication')}</p>
+              <p class="text-xs text-[#0E1B2C]/20 mt-2" style="font-family: Inter, sans-serif">Aa Bb Cc Dd Ee Ff Gg — 0123456789</p>
+            </div>
+            <div class="p-5 rounded-xl border border-[#E9EEF2]">
+              <p class="text-2xl font-bold text-[#0E1B2C] mb-1" style="font-family: 'Space Grotesk', sans-serif">Space Grotesk</p>
+              <p class="text-sm text-[#0E1B2C]/40">Display · Headlines · ${bi('Títulos', 'Titles')}</p>
+              <p class="text-xs text-[#0E1B2C]/20 mt-2" style="font-family: 'Space Grotesk', sans-serif">Aa Bb Cc Dd Ee Ff Gg — 0123456789</p>
+            </div>
+            <div class="p-5 rounded-xl border border-[#E9EEF2]">
+              <p class="text-2xl font-bold text-[#0E1B2C] mb-1 font-editorial">Playfair Display</p>
+              <p class="text-sm text-[#0E1B2C]/40">Editorial · ${bi('Momentos especiales', 'Special moments')}</p>
+              <p class="text-xs text-[#0E1B2C]/20 mt-2 font-editorial">Aa Bb Cc Dd Ee Ff Gg — 0123456789</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wave Rings Motif -->
+        <div class="text-center p-8 rounded-xl border border-[#E9EEF2] bg-[#0E1B2C]/[0.01]">
+          <svg class="w-24 h-24 mx-auto mb-4 opacity-30" viewBox="0 0 200 200" fill="none">
+            <circle cx="100" cy="100" r="30" stroke="#4FAF8F" stroke-width="1"/>
+            <circle cx="100" cy="100" r="50" stroke="#4FAF8F" stroke-width="0.7"/>
+            <circle cx="100" cy="100" r="70" stroke="#2D6CDF" stroke-width="0.5"/>
+            <circle cx="100" cy="100" r="90" stroke="#E9EEF2" stroke-width="0.5"/>
+          </svg>
+          <p class="text-sm font-semibold text-[#0E1B2C]/60">${bi('Ondas de Impacto', 'Impact Waves')}</p>
+          <p class="text-xs text-[#0E1B2C]/30 mt-1">${bi('Motivo visual central — expansión desde el centro', 'Core visual motif — expansion from the center')}</p>
+        </div>
+
+        <p class="text-center text-sm italic text-[#0E1B2C]/30 mt-8">${bi('"Fondo blanco. Líneas limpias. Impacto silencioso."', '"White background. Clean lines. Silent impact."')}</p>
+      </div>
+    </div>`,
+    section_type: 'brand',
+    metadata: {},
+  },
+
+  // ═══════════════════════════════════════
+  // SLIDE 20 — LÍNEA GRÁFICA: APLICACIONES
+  // ═══════════════════════════════════════
+  {
+    order_index: 19,
+    title: bi('Línea Gráfica — Aplicaciones', 'Brand Identity — Applications'),
+    subtitle: '',
+    content: `<div class="max-w-4xl mx-auto py-16">
+      <p class="text-xs font-medium tracking-[0.3em] uppercase text-[#C7A54A] mb-6">${bi('Aplicaciones', 'Applications')}</p>
+      <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-[#0E1B2C] mb-16">${bi('Línea Gráfica en <span class="text-[#4FAF8F]">Acción</span>', 'Brand Identity in <span class="text-[#4FAF8F]">Action</span>')}</h2>
+
+      <!-- Logo Lockup -->
+      <div class="mb-10 p-8 rounded-2xl border border-[#E9EEF2] text-center bg-[#0E1B2C]/[0.01]">
+        <div class="flex items-center justify-center gap-3 mb-4 text-lg text-[#0E1B2C]/30 tracking-widest uppercase">
+          <span class="font-semibold text-[#2D6CDF]">Six Seconds</span>
+          <span class="text-[#C7A54A] text-xl font-bold">×</span>
+          <span class="font-semibold text-[#4FAF8F]">B2Grow</span>
+        </div>
+        <p class="text-3xl md:text-4xl font-black tracking-tight text-[#0E1B2C]">OWN YOUR <span class="text-[#4FAF8F]">IMPACT</span></p>
+        <p class="text-xs text-[#0E1B2C]/25 tracking-widest uppercase mt-3">Be. Grow. Lead.</p>
+      </div>
+
+      <!-- Application Mockups -->
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <!-- Business Card -->
+        <div class="p-5 rounded-xl border border-[#E9EEF2] hover:border-[#4FAF8F]/30 transition-all">
+          <div class="aspect-[1.6/1] rounded-lg bg-white border border-[#E9EEF2] p-4 flex flex-col justify-between mb-3">
+            <div>
+              <p class="text-[8px] font-black text-[#0E1B2C]">OWN YOUR <span class="text-[#4FAF8F]">IMPACT</span></p>
+            </div>
+            <div>
+              <p class="text-[7px] font-semibold text-[#0E1B2C]">Nombre Apellido</p>
+              <p class="text-[6px] text-[#0E1B2C]/40">Director · B2Grow</p>
+              <div class="w-4 h-[0.5px] bg-[#C7A54A] mt-1"></div>
+            </div>
+          </div>
+          <p class="text-xs font-medium text-[#0E1B2C]">${bi('Tarjeta de Presentación', 'Business Card')}</p>
+          <p class="text-[10px] text-[#0E1B2C]/30">${bi('Minimalista · Fondo blanco', 'Minimalist · White background')}</p>
+        </div>
+
+        <!-- Email Signature -->
+        <div class="p-5 rounded-xl border border-[#E9EEF2] hover:border-[#2D6CDF]/30 transition-all">
+          <div class="aspect-[1.6/1] rounded-lg bg-white border border-[#E9EEF2] p-3 flex flex-col justify-center mb-3">
+            <div class="border-t border-[#E9EEF2] pt-2">
+              <p class="text-[7px] font-bold text-[#0E1B2C]">Nombre Apellido</p>
+              <p class="text-[6px] text-[#0E1B2C]/40">EQ Practitioner · B2Grow</p>
+              <div class="flex items-center gap-1 mt-1">
+                <div class="w-1.5 h-1.5 rounded-full bg-[#4FAF8F]"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-[#2D6CDF]"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-[#C7A54A]"></div>
+              </div>
+              <p class="text-[5px] text-[#0E1B2C]/25 mt-1">ownyourimpact.com</p>
+            </div>
+          </div>
+          <p class="text-xs font-medium text-[#0E1B2C]">${bi('Firma de Email', 'Email Signature')}</p>
+          <p class="text-[10px] text-[#0E1B2C]/30">${bi('Colores de marca · Ondas', 'Brand colors · Waves')}</p>
+        </div>
+
+        <!-- Corporate Folder -->
+        <div class="p-5 rounded-xl border border-[#E9EEF2] hover:border-[#C7A54A]/30 transition-all">
+          <div class="aspect-[1.6/1] rounded-lg bg-[#0E1B2C] p-4 flex flex-col justify-between mb-3 relative overflow-hidden">
+            <svg class="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 200 120" fill="none"><circle cx="160" cy="90" r="30" stroke="#4FAF8F" stroke-width="0.5"/><circle cx="160" cy="90" r="50" stroke="#4FAF8F" stroke-width="0.3"/><circle cx="160" cy="90" r="70" stroke="#2D6CDF" stroke-width="0.3"/></svg>
+            <div class="relative z-10">
+              <p class="text-[8px] font-black text-white">OWN YOUR <span class="text-[#4FAF8F]">IMPACT</span></p>
+            </div>
+            <div class="relative z-10">
+              <div class="w-4 h-[0.5px] bg-[#C7A54A]"></div>
+              <p class="text-[6px] text-white/40 mt-1">Be. Grow. Lead.</p>
+            </div>
+          </div>
+          <p class="text-xs font-medium text-[#0E1B2C]">${bi('Carpeta Corporativa', 'Corporate Folder')}</p>
+          <p class="text-[10px] text-[#0E1B2C]/30">${bi('Versión oscura · Ondas', 'Dark version · Waves')}</p>
+        </div>
+
+        <!-- Tote Bag -->
+        <div class="p-5 rounded-xl border border-[#E9EEF2] hover:border-[#4FAF8F]/30 transition-all">
+          <div class="aspect-[1/1.2] rounded-lg bg-[#F5F7F9] flex items-center justify-center mb-3">
+            <div class="text-center">
+              <p class="text-sm font-black text-[#0E1B2C]">OWN YOUR</p>
+              <p class="text-sm font-black text-[#4FAF8F]">IMPACT</p>
+              <svg class="w-8 h-8 mx-auto mt-2 opacity-20" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="15" stroke="#4FAF8F" stroke-width="0.5"/><circle cx="50" cy="50" r="25" stroke="#4FAF8F" stroke-width="0.3"/><circle cx="50" cy="50" r="35" stroke="#2D6CDF" stroke-width="0.3"/></svg>
+            </div>
+          </div>
+          <p class="text-xs font-medium text-[#0E1B2C]">Tote Bag</p>
+          <p class="text-[10px] text-[#0E1B2C]/30">${bi('Merchandising', 'Merchandise')}</p>
+        </div>
+
+        <!-- Notebook -->
+        <div class="p-5 rounded-xl border border-[#E9EEF2] hover:border-[#2D6CDF]/30 transition-all">
+          <div class="aspect-[1/1.4] rounded-lg bg-[#0E1B2C] flex items-center justify-center mb-3 relative overflow-hidden">
+            <svg class="absolute inset-0 w-full h-full opacity-[0.06]" viewBox="0 0 200 280" fill="none"><circle cx="100" cy="200" r="40" stroke="#4FAF8F" stroke-width="0.5"/><circle cx="100" cy="200" r="70" stroke="#4FAF8F" stroke-width="0.3"/><circle cx="100" cy="200" r="100" stroke="#2D6CDF" stroke-width="0.3"/></svg>
+            <div class="relative z-10 text-center">
+              <p class="text-xs font-black text-white tracking-tight">OWN YOUR</p>
+              <p class="text-xs font-black text-[#4FAF8F] tracking-tight">IMPACT</p>
+              <div class="w-6 h-[0.5px] bg-[#C7A54A] mx-auto mt-2"></div>
+            </div>
+          </div>
+          <p class="text-xs font-medium text-[#0E1B2C]">Notebook</p>
+          <p class="text-[10px] text-[#0E1B2C]/30">${bi('Merchandising', 'Merchandise')}</p>
+        </div>
+
+        <!-- Social Media Template -->
+        <div class="p-5 rounded-xl border border-[#E9EEF2] hover:border-[#C7A54A]/30 transition-all">
+          <div class="aspect-square rounded-lg bg-white border border-[#E9EEF2] p-4 flex flex-col items-center justify-center text-center mb-3 relative overflow-hidden">
+            <svg class="absolute inset-0 w-full h-full opacity-[0.04]" viewBox="0 0 200 200" fill="none"><circle cx="100" cy="100" r="40" stroke="#4FAF8F" stroke-width="0.5"/><circle cx="100" cy="100" r="60" stroke="#4FAF8F" stroke-width="0.3"/></svg>
+            <div class="relative z-10">
+              <p class="text-[7px] tracking-[0.2em] uppercase text-[#0E1B2C]/25">Six Seconds × B2Grow</p>
+              <p class="text-sm font-black text-[#0E1B2C] mt-1">OWN YOUR</p>
+              <p class="text-sm font-black text-[#4FAF8F]">IMPACT</p>
+            </div>
+          </div>
+          <p class="text-xs font-medium text-[#0E1B2C]">${bi('Redes Sociales', 'Social Media')}</p>
+          <p class="text-[10px] text-[#0E1B2C]/30">${bi('Plantilla base', 'Base template')}</p>
+        </div>
+      </div>
+
+      <div class="mt-10 pt-8 border-t border-[#E9EEF2] text-center">
+        <p class="text-lg font-semibold text-[#0E1B2C]">${bi('Coherencia visual = <span class="text-[#4FAF8F]">Credibilidad profesional</span>', 'Visual coherence = <span class="text-[#4FAF8F]">Professional credibility</span>')}</p>
+        <p class="text-xs text-[#0E1B2C]/30 mt-2">${bi('Cada punto de contacto refuerza el mismo mensaje.', 'Every touchpoint reinforces the same message.')}</p>
+      </div>
+    </div>`,
+    section_type: 'brand',
+    metadata: {},
+  },
+
+  // ═══════════════════════════════════════
+  // SLIDE 21 — EVENT VISUAL / SOCIAL POSTS
+  // ═══════════════════════════════════════
+  {
+    order_index: 20,
     title: bi('Visual del Evento', 'Event Visual'),
     subtitle: '',
     content: `<div class="max-w-5xl mx-auto py-16">
@@ -596,10 +812,10 @@ export const OWN_YOUR_IMPACT_SECTIONS: Omit<PresentationSection, 'id' | 'present
   },
 
   // ═══════════════════════════════════════
-  // SLIDE 20 — NEXT STEPS
+  // SLIDE 22 — NEXT STEPS
   // ═══════════════════════════════════════
   {
-    order_index: 19,
+    order_index: 21,
     title: bi('Próximos Pasos', 'Next Steps'),
     subtitle: '',
     content: `<div class="max-w-3xl mx-auto py-20 text-center">
@@ -634,10 +850,10 @@ export const OWN_YOUR_IMPACT_SECTIONS: Omit<PresentationSection, 'id' | 'present
   },
 
   // ═══════════════════════════════════════
-  // SLIDE 21 — CLOSING
+  // SLIDE 23 — CLOSING
   // ═══════════════════════════════════════
   {
-    order_index: 20,
+    order_index: 22,
     title: 'OWN YOUR IMPACT',
     subtitle: 'Closing',
     content: `<div class="flex flex-col items-center justify-center min-h-[75vh] text-center relative">

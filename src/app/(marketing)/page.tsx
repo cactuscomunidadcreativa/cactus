@@ -286,7 +286,7 @@ export default async function HomePage() {
                 className="group bg-card border border-border rounded-2xl p-5 hover:shadow-xl transition-all hover:-translate-y-2 text-center"
                 style={{ borderColor: `${app.color}30` }}
               >
-                <div className="text-4xl mb-3">{app.emoji}</div>
+                <Image src={`/${app.id}.png`} alt={app.name} width={56} height={56} className="mx-auto mb-3" />
                 <p className="font-bold text-sm" style={{ color: app.color }}>{app.name}</p>
                 <p className="text-xs text-muted-foreground mt-1">{app.attribute}</p>
               </Link>
@@ -412,7 +412,7 @@ export default async function HomePage() {
                     className="relative w-48 h-48 mx-auto rounded-3xl flex items-center justify-center"
                     style={{ backgroundColor: `${app.color}12` }}
                   >
-                    <span className="text-8xl">{app.emoji}</span>
+                    <Image src={`/${app.id}.png`} alt={app.name} width={96} height={96} />
                     <div
                       className="absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-white text-xs font-medium"
                       style={{ backgroundColor: app.color }}
@@ -554,7 +554,7 @@ export default async function HomePage() {
               <p className="text-lg font-light text-white/40 mb-2">Be. Grow. Lead.</p>
               <div className="w-12 h-[1px] bg-[#C7A54A] mx-auto mb-6"></div>
               <p className="text-sm text-white/30 mb-8 max-w-md mx-auto">
-                21 slides · Bilingual ES/EN · EQ Week April 2026
+                23 slides · Bilingual ES/EN · EQ Week April 2026
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

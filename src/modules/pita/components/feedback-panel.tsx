@@ -1,34 +1,52 @@
 'use client';
 
 import { useState } from 'react';
-import { ThumbsUp, ThumbsDown, Heart, Send, MessageSquare } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Heart, Send, MessageSquare, Paperclip, ChevronUp, ChevronDown, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PitaThread, PitaAttachment } from '../types';
+import { CommentThread } from './comment-thread';
+import { AttachmentUploader } from './attachment-uploader';
+import { AttachmentGallery } from './attachment-gallery';
 
 interface FeedbackPanelProps {
   sectionId: string;
   sectionIndex: number;
   totalSections: number;
+  presentationId: string;
+  reviewerId: string;
   reviewerName: string;
   existingReaction?: 'like' | 'dislike' | 'love' | null;
   existingComment?: string;
   onSubmitFeedback: (sectionId: string, reaction: string | null, comment: string) => void;
   isWhiteBg?: boolean;
+  // Co-creation props
+  threads?: PitaThread[];
+  attachments?: PitaAttachment[];
+  onNewComment?: (content: string, parentId?: string) => Promise<void>;
+  onUploadComplete?: (attachment: PitaAttachment) => void;
 }
 
 export function FeedbackPanel({
   sectionId,
   sectionIndex,
   totalSections,
+  presentationId,
+  reviewerId,
   reviewerName,
   existingReaction,
   existingComment,
   onSubmitFeedback,
   isWhiteBg = false,
+  threads = [],
+  attachments = [],
+  onNewComment,
+  onUploadComplete,
 }: FeedbackPanelProps) {
   const [reaction, setReaction] = useState<string | null>(existingReaction || null);
   const [comment, setComment] = useState(existingComment || '');
   const [showComment, setShowComment] = useState(!!existingComment);
   const [submitted, setSubmitted] = useState(false);
+  const [showCoCreation, setShowCoCreation] = useState(false);
 
   const handleReaction = (type: string) => {
     const newReaction = reaction === type ? null : type;
@@ -45,6 +63,10 @@ export function FeedbackPanel({
   };
 
   const initial = reviewerName.charAt(0).toUpperCase();
+
+  const threadCount = threads.length;
+  const attachmentCount = attachments.length;
+  const hasCoCreationContent = threadCount > 0 || attachmentCount > 0;
 
   return (
     <div className={cn(
@@ -124,14 +146,39 @@ export function FeedbackPanel({
                   ? 'text-[#0E1B2C]/25 hover:text-[#0E1B2C]/50 hover:bg-[#0E1B2C]/[0.04]'
                   : 'text-[#F5F7F9]/30 hover:text-[#F5F7F9]/60 hover:bg-white/5'
               )}
-              title="Add comment"
+              title="Quick note"
             >
               <MessageSquare className="w-5 h-5" />
+            </button>
+
+            {/* Co-Creation Toggle */}
+            <button
+              onClick={() => setShowCoCreation(!showCoCreation)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all text-xs font-medium',
+                showCoCreation
+                  ? 'bg-[#4FAF8F]/15 text-[#4FAF8F]'
+                  : isWhiteBg
+                  ? 'text-[#0E1B2C]/30 hover:text-[#0E1B2C]/50 hover:bg-[#0E1B2C]/[0.04]'
+                  : 'text-[#F5F7F9]/30 hover:text-[#F5F7F9]/50 hover:bg-white/5'
+              )}
+              title="Comments & Files"
+            >
+              {showCoCreation ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+              Co-Create
+              {hasCoCreationContent && !showCoCreation && (
+                <span className={cn(
+                  'px-1.5 py-0.5 rounded-full text-[10px] font-bold',
+                  isWhiteBg ? 'bg-[#4FAF8F]/10 text-[#4FAF8F]' : 'bg-[#4FAF8F]/20 text-[#4FAF8F]'
+                )}>
+                  {threadCount + attachmentCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Comment Box */}
+        {/* Quick Comment Box */}
         {showComment && (
           <div className="mt-4 flex gap-2 animate-pita-slide-up">
             <input
@@ -158,10 +205,71 @@ export function FeedbackPanel({
           </div>
         )}
 
-        {submitted && !showComment && (
+        {submitted && !showComment && !showCoCreation && (
           <p className="mt-2 text-xs text-[#4FAF8F]/60 text-center">
             Feedback saved
           </p>
+        )}
+
+        {/* Co-Creation Panel */}
+        {showCoCreation && (
+          <div className={cn(
+            'mt-4 p-4 rounded-xl space-y-4 animate-pita-slide-up',
+            isWhiteBg
+              ? 'bg-[#0E1B2C]/[0.02] border border-[#E9EEF2]'
+              : 'bg-white/[0.03] border border-white/10'
+          )}>
+            {/* Attachments Gallery */}
+            {attachments.length > 0 && (
+              <AttachmentGallery attachments={attachments} isWhiteBg={isWhiteBg} />
+            )}
+
+            {/* Comment Threads */}
+            {threads.length > 0 && onNewComment && (
+              <CommentThread
+                threads={threads}
+                presentationId={presentationId}
+                sectionId={sectionId}
+                reviewerId={reviewerId}
+                reviewerName={reviewerName}
+                isWhiteBg={isWhiteBg}
+                onNewComment={onNewComment}
+              />
+            )}
+
+            {/* If no threads yet, show standalone comment input */}
+            {threads.length === 0 && onNewComment && (
+              <div className="space-y-3">
+                <p className={cn(
+                  'text-xs',
+                  isWhiteBg ? 'text-[#0E1B2C]/30' : 'text-[#F5F7F9]/30'
+                )}>
+                  No comments yet — be the first to share your thoughts
+                </p>
+                <CommentThread
+                  threads={[]}
+                  presentationId={presentationId}
+                  sectionId={sectionId}
+                  reviewerId={reviewerId}
+                  reviewerName={reviewerName}
+                  isWhiteBg={isWhiteBg}
+                  onNewComment={onNewComment}
+                />
+              </div>
+            )}
+
+            {/* Attachment Uploader */}
+            {onUploadComplete && (
+              <AttachmentUploader
+                presentationId={presentationId}
+                sectionId={sectionId}
+                reviewerId={reviewerId}
+                reviewerName={reviewerName}
+                isWhiteBg={isWhiteBg}
+                onUploadComplete={onUploadComplete}
+              />
+            )}
+          </div>
         )}
       </div>
     </div>

@@ -27,7 +27,7 @@ export interface PresentationSection {
   title: string;
   subtitle?: string;
   content: string;
-  section_type: 'cover' | 'content' | 'quote' | 'architecture' | 'visual' | 'manifesto' | 'closing';
+  section_type: 'cover' | 'content' | 'quote' | 'architecture' | 'visual' | 'manifesto' | 'closing' | 'brand';
   metadata?: Record<string, any>;
 }
 
@@ -63,4 +63,41 @@ export interface FeedbackSummary {
     comment: string;
     created_at: string;
   }[];
+}
+
+// ═══════════════════════════════════════
+// CO-CREATION TYPES
+// ═══════════════════════════════════════
+
+export interface PitaThread {
+  id: string;
+  section_id: string;
+  presentation_id: string;
+  reviewer_id: string;
+  reviewer_name: string;
+  parent_id?: string | null;
+  content: string;
+  created_at: string;
+  attachments?: PitaAttachment[];
+  replies?: PitaThread[];
+}
+
+export interface PitaAttachment {
+  id: string;
+  thread_id?: string | null;
+  section_id: string;
+  presentation_id: string;
+  reviewer_id: string;
+  reviewer_name: string;
+  file_name: string;
+  file_url: string;
+  file_type: string;
+  file_size: number;
+  description?: string;
+  created_at: string;
+}
+
+export interface CoCreationData {
+  threads: PitaThread[];
+  attachments: PitaAttachment[];
 }
