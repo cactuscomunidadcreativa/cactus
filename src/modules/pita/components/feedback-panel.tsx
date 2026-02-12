@@ -214,7 +214,7 @@ export function FeedbackPanel({
         {/* Co-Creation Panel */}
         {showCoCreation && (
           <div className={cn(
-            'mt-4 p-4 rounded-xl space-y-4 animate-pita-slide-up',
+            'mt-4 p-4 rounded-xl space-y-4 animate-pita-slide-up max-h-[50vh] overflow-y-auto',
             isWhiteBg
               ? 'bg-[#0E1B2C]/[0.02] border border-[#E9EEF2]'
               : 'bg-white/[0.03] border border-white/10'

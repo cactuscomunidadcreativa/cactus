@@ -101,3 +101,29 @@ export interface CoCreationData {
   threads: PitaThread[];
   attachments: PitaAttachment[];
 }
+
+// ═══════════════════════════════════════
+// EDITOR TYPES
+// ═══════════════════════════════════════
+
+export interface PresentationWithSections extends Presentation {
+  sections: PresentationSection[];
+}
+
+export interface SectionDraft {
+  id?: string;
+  title: string;
+  subtitle?: string;
+  content: string;
+  section_type: PresentationSection['section_type'];
+  order_index: number;
+  metadata?: Record<string, any>;
+}
+
+export interface AIMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+export type EditorTab = 'edit' | 'preview';

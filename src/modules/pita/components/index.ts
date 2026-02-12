@@ -6,3 +6,8 @@ export { SectionRenderer } from './section-renderer';
 export { CommentThread } from './comment-thread';
 export { AttachmentUploader } from './attachment-uploader';
 export { AttachmentGallery } from './attachment-gallery';
+export { PresentationEditor } from './presentation-editor';
+export { SlideList } from './slide-list';
+export { SectionEditor } from './section-editor';
+export { AIAssistant } from './ai-assistant';
+export { PresentationSettings } from './presentation-settings';

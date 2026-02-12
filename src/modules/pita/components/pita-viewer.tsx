@@ -219,6 +219,11 @@ export function PitaViewer({
   // Keyboard navigation
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
+      // Don't hijack navigation when user is typing in form elements
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement as HTMLElement)?.isContentEditable) {
+        return;
+      }
       if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault();
         goNext();
@@ -229,7 +234,8 @@ export function PitaViewer({
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSection, sections.length]);
 
   // Welcome Gate
   if (!reviewerName) {
@@ -330,7 +336,7 @@ export function PitaViewer({
         </div>
 
         {/* Navigation Arrows */}
-        <div className="fixed bottom-24 left-4 right-4 flex justify-between pointer-events-none">
+        <div className="fixed bottom-24 left-4 right-4 z-50 flex justify-between pointer-events-none">
           <button
             onClick={goPrev}
             disabled={currentSection === 0}
