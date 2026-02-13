@@ -10,7 +10,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   // Check if super_admin
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
@@ -20,15 +20,20 @@ export async function GET() {
 
   if (isSuperAdmin) {
     // Admin: return first cereus maison (or all)
-    const { data: maisons } = await supabase
+    const { data: maisons, error: maisonError } = await supabase
       .from('app_clients')
       .select('*')
       .eq('app_id', 'cereus')
       .eq('activo', true)
       .order('created_at');
 
+    if (maisonError) {
+      console.error('[cereus/maison] Error fetching maisons:', maisonError);
+      return NextResponse.json({ hasAccess: false, maison: null, debug: { error: maisonError.message, code: maisonError.code } });
+    }
+
     if (!maisons || maisons.length === 0) {
-      return NextResponse.json({ hasAccess: false, maison: null });
+      return NextResponse.json({ hasAccess: false, maison: null, debug: { reason: 'no_maisons_found', isSuperAdmin: true } });
     }
 
     return NextResponse.json({
@@ -39,21 +44,40 @@ export async function GET() {
     });
   }
 
-  // Regular user: find their maison
-  const { data: userClient } = await supabase
+  // Regular user: find their maison via app_client_users
+  const { data: assignments, error: assignError } = await supabase
     .from('app_client_users')
     .select('*, client:app_clients(*)')
     .eq('user_id', user.id)
-    .eq('activo', true)
-    .single();
+    .eq('activo', true);
 
-  if (!userClient || !userClient.client || userClient.client.app_id !== 'cereus') {
-    return NextResponse.json({ hasAccess: false, maison: null });
+  if (assignError) {
+    console.error('[cereus/maison] Error fetching assignments:', assignError);
+    return NextResponse.json({ hasAccess: false, maison: null, debug: { error: assignError.message } });
+  }
+
+  // Find the cereus assignment
+  const cereusAssignment = assignments?.find(
+    (a: any) => a.client?.app_id === 'cereus'
+  );
+
+  if (!cereusAssignment || !cereusAssignment.client) {
+    return NextResponse.json({
+      hasAccess: false,
+      maison: null,
+      debug: {
+        reason: 'no_cereus_assignment',
+        isSuperAdmin: false,
+        profileRole: profile?.role,
+        profileError: profileError?.message,
+        totalAssignments: assignments?.length || 0,
+      },
+    });
   }
 
   return NextResponse.json({
     hasAccess: true,
-    maison: userClient.client,
-    role: userClient.rol,
+    maison: cereusAssignment.client,
+    role: cereusAssignment.rol,
   });
 }
