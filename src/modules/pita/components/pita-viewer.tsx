@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Globe } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Globe, FileDown, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { WelcomeGate } from './welcome-gate';
 import { SectionRenderer } from './section-renderer';
@@ -203,6 +203,47 @@ export function PitaViewer({
     }));
   }, [section?.id]);
 
+  // PDF Export
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportPdf = useCallback(async () => {
+    if (exporting) return;
+    setExporting(true);
+
+    try {
+      // Load all feedback data for the presentation
+      const [fbRes, threadsRes, attachmentsRes, reviewersRes] = await Promise.all([
+        fetch(`/api/pita/feedback?presentationId=${presentationId}`),
+        fetch(`/api/pita/threads?presentationId=${presentationId}`),
+        fetch(`/api/pita/attachments?presentationId=${presentationId}`),
+        fetch(`/api/pita/reviewers?presentationId=${presentationId}`),
+      ]);
+
+      const fbData = await fbRes.json();
+      const threadsData = await threadsRes.json();
+      const attachmentsData = await attachmentsRes.json();
+      const reviewersData = await reviewersRes.json();
+
+      // Dynamic import to keep bundle small
+      const { exportPresentationPDF } = await import('../lib/pdf-export');
+
+      await exportPresentationPDF({
+        title,
+        slug,
+        sections: sortedSections,
+        feedbackData: fbData.feedback || [],
+        reviewers: reviewersData.reviewers || [],
+        threads: threadsData.threads || [],
+        attachments: attachmentsData.attachments || [],
+        lang,
+      });
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setExporting(false);
+    }
+  }, [exporting, presentationId, title, slug, sortedSections, lang]);
+
   // Navigate sections
   const goNext = () => {
     if (currentSection < sections.length - 1) {
@@ -288,6 +329,23 @@ export function PitaViewer({
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Export PDF */}
+            <button
+              onClick={handleExportPdf}
+              disabled={exporting}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                isWhiteBg
+                  ? 'bg-[#0E1B2C]/[0.04] hover:bg-[#0E1B2C]/[0.08] text-[#0E1B2C]/50'
+                  : 'bg-white/5 hover:bg-white/10 text-[#F5F7F9]/50',
+                exporting && 'opacity-60'
+              )}
+              title="Export PDF"
+            >
+              {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">{exporting ? 'PDF...' : 'PDF'}</span>
+            </button>
+
             {/* Language Toggle */}
             <button
               onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
