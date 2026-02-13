@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { Lock } from 'lucide-react';
 import { redirect } from 'next/navigation';
-import { CereusClientsPage } from '@/modules/cereus/components/clients-page';
+import { Suspense } from 'react';
+import { CereusClientsRouter } from '@/modules/cereus/components/clients-router';
 
 export default async function CereusClientsRoute() {
   const supabase = await createClient();
@@ -43,7 +44,9 @@ export default async function CereusClientsRoute() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <CereusClientsPage />
+      <Suspense>
+        <CereusClientsRouter />
+      </Suspense>
     </div>
   );
 }
