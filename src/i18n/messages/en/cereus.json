@@ -1,0 +1,164 @@
+{
+  "app": {
+    "name": "CEREUS",
+    "tagline": "Emotional Algorithmic Atelier",
+    "description": "Haute couture operating system — from inspiration to digital closet"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "clients": "Clients",
+    "designer": "Designer",
+    "costing": "Costing",
+    "production": "Production",
+    "closet": "Closet",
+    "advisor": "AI Advisor",
+    "catalog": "Catalog",
+    "measurements": "Measurements"
+  },
+  "designer": {
+    "title": "Designer Studio",
+    "tabs": {
+      "collections": "Collections",
+      "garments": "Garments",
+      "variants": "Variants"
+    },
+    "collections": {
+      "new": "New Collection",
+      "edit": "Edit Collection",
+      "name": "Name",
+      "code": "Code",
+      "season": "Season",
+      "year": "Year",
+      "targetPieces": "Target Pieces",
+      "description": "Description",
+      "coverImage": "Cover Image",
+      "moodBoard": "Mood Board",
+      "inspirationNotes": "Inspiration Notes",
+      "aiBrief": "AI Brief",
+      "publish": "Publish Lookbook",
+      "statuses": {
+        "concept": "Concept",
+        "design": "Design",
+        "production": "Production",
+        "launched": "Launched",
+        "archived": "Archived"
+      }
+    },
+    "garments": {
+      "new": "New Garment",
+      "name": "Name",
+      "code": "Code",
+      "category": "Category",
+      "bodyZone": "Body Zone",
+      "complexity": "Complexity",
+      "laborHours": "Labor Hours",
+      "laborCost": "Labor Cost",
+      "basePrice": "Base Price",
+      "marginTarget": "Margin Target",
+      "gallery": "Gallery",
+      "techSheet": "Tech Sheet",
+      "addImage": "Add Image"
+    },
+    "variants": {
+      "new": "New Variant",
+      "name": "Variant Name",
+      "color": "Color",
+      "material": "Material",
+      "extras": "Extras",
+      "previewImage": "Preview Image",
+      "estimatedPrice": "Estimated Price",
+      "statuses": {
+        "draft": "Draft",
+        "proposed": "Proposed",
+        "approved": "Approved",
+        "ordered": "Ordered",
+        "archived": "Archived"
+      }
+    }
+  },
+  "catalog": {
+    "title": "Catalog",
+    "personalizedFor": "Personalized for you",
+    "browseCollections": "Browse our collections",
+    "recommended": "Recommended for you",
+    "customize": "Customize",
+    "allCollections": "All",
+    "noItems": "No items available",
+    "priceOnRequest": "Price on request",
+    "from": "From"
+  },
+  "configurator": {
+    "title": "Customize",
+    "steps": {
+      "color": "Color",
+      "material": "Fabric",
+      "extras": "Extras",
+      "review": "Review"
+    },
+    "selectColor": "Select Color",
+    "selectFabric": "Select Fabric",
+    "customizations": "Customizations",
+    "reviewOrder": "Review Order",
+    "estimatedPrice": "Estimated Price",
+    "requestQuote": "Request Quote",
+    "materialCost": "Material Cost",
+    "laborCost": "Labor Cost",
+    "overhead": "Overhead",
+    "totalPrice": "Total Price"
+  },
+  "lookbook": {
+    "theCollection": "The Collection",
+    "variantsAvailable": "variants available",
+    "hideVariants": "Hide variants",
+    "customize": "Customize",
+    "poweredBy": "Powered by CEREUS x PRIVAT"
+  },
+  "extras": {
+    "embroidery": "Custom Embroidery",
+    "customLining": "Custom Lining",
+    "specialButtons": "Special Buttons",
+    "lengthAdjustment": "Length Adjustment",
+    "handFinishing": "Hand Finishing",
+    "beading": "Beading",
+    "monogram": "Monogram"
+  },
+  "seasons": {
+    "spring_summer": "Spring/Summer",
+    "fall_winter": "Fall/Winter",
+    "resort": "Resort",
+    "cruise": "Cruise",
+    "capsule": "Capsule",
+    "bridal": "Bridal",
+    "custom": "Custom"
+  },
+  "categories": {
+    "dress": "Dress",
+    "gown": "Gown",
+    "suit": "Suit",
+    "blazer": "Blazer",
+    "coat": "Coat",
+    "skirt": "Skirt",
+    "pants": "Pants",
+    "blouse": "Blouse",
+    "shirt": "Shirt",
+    "jumpsuit": "Jumpsuit",
+    "cape": "Cape",
+    "corset": "Corset",
+    "accessory": "Accessory",
+    "other": "Other"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "delete": "Delete",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "loading": "Loading",
+    "noResults": "No results",
+    "viewAll": "View all"
+  }
+}

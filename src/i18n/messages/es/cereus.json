@@ -1,0 +1,164 @@
+{
+  "app": {
+    "name": "CEREUS",
+    "tagline": "Atelier Algorítmico Emocional",
+    "description": "Sistema operativo de alta costura — de la inspiración al closet digital"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "clients": "Clientes",
+    "designer": "Diseñador",
+    "costing": "Costeo",
+    "production": "Producción",
+    "closet": "Closet",
+    "advisor": "Asesor IA",
+    "catalog": "Catálogo",
+    "measurements": "Medidas"
+  },
+  "designer": {
+    "title": "Estudio del Diseñador",
+    "tabs": {
+      "collections": "Colecciones",
+      "garments": "Prendas",
+      "variants": "Variantes"
+    },
+    "collections": {
+      "new": "Nueva Colección",
+      "edit": "Editar Colección",
+      "name": "Nombre",
+      "code": "Código",
+      "season": "Temporada",
+      "year": "Año",
+      "targetPieces": "Piezas Objetivo",
+      "description": "Descripción",
+      "coverImage": "Imagen de Portada",
+      "moodBoard": "Mood Board",
+      "inspirationNotes": "Notas de Inspiración",
+      "aiBrief": "Brief IA",
+      "publish": "Publicar Lookbook",
+      "statuses": {
+        "concept": "Concepto",
+        "design": "Diseño",
+        "production": "Producción",
+        "launched": "Publicada",
+        "archived": "Archivada"
+      }
+    },
+    "garments": {
+      "new": "Nueva Prenda",
+      "name": "Nombre",
+      "code": "Código",
+      "category": "Categoría",
+      "bodyZone": "Zona Corporal",
+      "complexity": "Complejidad",
+      "laborHours": "Horas de Mano de Obra",
+      "laborCost": "Costo de Mano de Obra",
+      "basePrice": "Precio Base",
+      "marginTarget": "Margen Objetivo",
+      "gallery": "Galería",
+      "techSheet": "Ficha Técnica",
+      "addImage": "Agregar Imagen"
+    },
+    "variants": {
+      "new": "Nueva Variante",
+      "name": "Nombre de Variante",
+      "color": "Color",
+      "material": "Material",
+      "extras": "Extras",
+      "previewImage": "Imagen de Vista Previa",
+      "estimatedPrice": "Precio Estimado",
+      "statuses": {
+        "draft": "Borrador",
+        "proposed": "Propuesta",
+        "approved": "Aprobada",
+        "ordered": "Ordenada",
+        "archived": "Archivada"
+      }
+    }
+  },
+  "catalog": {
+    "title": "Catálogo",
+    "personalizedFor": "Personalizado para ti",
+    "browseCollections": "Explora nuestras colecciones",
+    "recommended": "Recomendado para ti",
+    "customize": "Personalizar",
+    "allCollections": "Todas",
+    "noItems": "Sin piezas disponibles",
+    "priceOnRequest": "Precio a consultar",
+    "from": "Desde"
+  },
+  "configurator": {
+    "title": "Personalizar",
+    "steps": {
+      "color": "Color",
+      "material": "Tela",
+      "extras": "Extras",
+      "review": "Resumen"
+    },
+    "selectColor": "Seleccionar Color",
+    "selectFabric": "Seleccionar Tela",
+    "customizations": "Personalizaciones",
+    "reviewOrder": "Revisar Pedido",
+    "estimatedPrice": "Precio Estimado",
+    "requestQuote": "Solicitar Cotización",
+    "materialCost": "Costo de Materiales",
+    "laborCost": "Mano de Obra",
+    "overhead": "Gastos Generales",
+    "totalPrice": "Precio Final"
+  },
+  "lookbook": {
+    "theCollection": "La Colección",
+    "variantsAvailable": "variantes disponibles",
+    "hideVariants": "Ocultar variantes",
+    "customize": "Personalizar",
+    "poweredBy": "Potenciado por CEREUS x PRIVAT"
+  },
+  "extras": {
+    "embroidery": "Bordado Personalizado",
+    "customLining": "Forro Especial",
+    "specialButtons": "Botones Especiales",
+    "lengthAdjustment": "Ajuste de Largo",
+    "handFinishing": "Acabado a Mano",
+    "beading": "Pedrería",
+    "monogram": "Monograma"
+  },
+  "seasons": {
+    "spring_summer": "Primavera/Verano",
+    "fall_winter": "Otoño/Invierno",
+    "resort": "Resort",
+    "cruise": "Crucero",
+    "capsule": "Cápsula",
+    "bridal": "Nupcial",
+    "custom": "Especial"
+  },
+  "categories": {
+    "dress": "Vestido",
+    "gown": "Vestido de Gala",
+    "suit": "Traje",
+    "blazer": "Blazer",
+    "coat": "Abrigo",
+    "skirt": "Falda",
+    "pants": "Pantalón",
+    "blouse": "Blusa",
+    "shirt": "Camisa",
+    "jumpsuit": "Jumpsuit",
+    "cape": "Capa",
+    "corset": "Corsé",
+    "accessory": "Accesorio",
+    "other": "Otro"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "delete": "Eliminar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "search": "Buscar",
+    "loading": "Cargando",
+    "noResults": "Sin resultados",
+    "viewAll": "Ver todos"
+  }
+}
