@@ -63,17 +63,6 @@ export const APP_INFO = {
     demo: '/pita/own-your-impact',
     app: '/apps/pita',
   },
-  weekflow: {
-    id: 'weekflow',
-    name: 'WEEKFLOW',
-    emoji: '📅',
-    logo: null as string | null,
-    tagline: 'Planificación Semanal de Equipos',
-    color: '#6366F1',
-    landing: '/landing/saguaro',
-    demo: '/apps/saguaro/demo',
-    app: '/apps/weekflow',
-  },
 } as const;
 
 export const FOOTER_LINKS = {

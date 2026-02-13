@@ -4,7 +4,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { APP_INFO } from '@/components/marketing';
 import { getTranslations } from 'next-intl/server';
 
-const APP_ORDER = ['ramona', 'tuna', 'agave', 'saguaro', 'pita', 'weekflow'] as const;
+const APP_ORDER = ['ramona', 'tuna', 'agave', 'saguaro', 'pita'] as const;
 
 const GRADIENTS: Record<string, string> = {
   ramona: 'from-purple-500/20 to-pink-500/20',
@@ -12,7 +12,6 @@ const GRADIENTS: Record<string, string> = {
   agave: 'from-green-500/20 to-emerald-500/20',
   saguaro: 'from-teal-500/20 to-green-500/20',
   pita: 'from-lime-500/20 to-yellow-500/20',
-  weekflow: 'from-indigo-500/20 to-violet-500/20',
 };
 
 export default async function AppsMarketplacePage() {
@@ -53,17 +52,13 @@ export default async function AppsMarketplacePage() {
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        {app.logo ? (
-                          <Image
-                            src={app.logo}
-                            alt={app.name}
-                            width={48}
-                            height={48}
-                            className="rounded-lg"
-                          />
-                        ) : (
-                          <span className="text-4xl">{app.emoji}</span>
-                        )}
+                        <Image
+                          src={app.logo}
+                          alt={app.name}
+                          width={48}
+                          height={48}
+                          className="rounded-lg"
+                        />
                         <div>
                           <h2 className="text-2xl font-display font-bold">{app.name}</h2>
                           <p className="text-sm text-muted-foreground">

@@ -68,11 +68,6 @@
           "tagline": "Presentation & Co-Creation Vault",
           "description": "Create presentations with AI, get live feedback and co-create with your audience.",
           "features": ["AI creation", "Live feedback", "Co-creation", "Bilingual ES/EN"]
-        },
-        "weekflow": {
-          "tagline": "Weekly Team Planning",
-          "description": "Plan your team's week with clarity. Check-ins, assignments and tracking.",
-          "features": ["Weekly planning", "Check-ins", "Assignments", "Tracking"]
         }
       }
     },
