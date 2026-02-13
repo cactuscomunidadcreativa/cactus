@@ -5,6 +5,7 @@ import {
   Layers, Shirt, Palette, Plus, ChevronRight, ChevronLeft, Loader2,
   Search, Sparkles, Edit3, Trash2, ExternalLink, Eye, Check, X,
   Upload, Image as ImageIcon, DollarSign, ArrowRight, Package,
+  Target, Link2, Lock, Rocket, Share2, Copy, CheckCircle2,
 } from 'lucide-react';
 import { ImageUploader } from './image-uploader';
 
@@ -180,6 +181,10 @@ export function DesignerPage() {
   // Search
   const [search, setSearch] = useState('');
 
+  // Cross-tab navigation
+  const [activeCollectionFilter, setActiveCollectionFilter] = useState<string | null>(null);
+  const [openGarmentFormForCollection, setOpenGarmentFormForCollection] = useState<string | null>(null);
+
   useEffect(() => {
     fetchMaison();
   }, []);
@@ -305,11 +310,17 @@ export function DesignerPage() {
             setSelectedCollection(c);
             setEditingCollection(c);
           }}
+          onUpdateSelectedCollection={setSelectedCollection}
           showForm={showCollectionForm}
           onShowForm={setShowCollectionForm}
           editingCollection={editingCollection}
           onEditCollection={setEditingCollection}
           garments={garments}
+          onNavigateToGarments={(collectionId, openForm) => {
+            setActiveCollectionFilter(collectionId);
+            if (openForm) setOpenGarmentFormForCollection(collectionId);
+            setTab('garments');
+          }}
         />
       )}
 
@@ -328,6 +339,10 @@ export function DesignerPage() {
           }}
           showForm={showGarmentForm}
           onShowForm={setShowGarmentForm}
+          collectionFilter={activeCollectionFilter}
+          onClearCollectionFilter={() => setActiveCollectionFilter(null)}
+          openFormForCollection={openGarmentFormForCollection}
+          onClearOpenFormForCollection={() => setOpenGarmentFormForCollection(null)}
         />
       )}
 
@@ -357,8 +372,10 @@ export function DesignerPage() {
 
 function CollectionsTab({
   maisonId, collections, search, onSearch, onRefresh,
-  selectedCollection, onSelectCollection, showForm, onShowForm,
+  selectedCollection, onSelectCollection, onUpdateSelectedCollection,
+  showForm, onShowForm,
   editingCollection, onEditCollection, garments,
+  onNavigateToGarments,
 }: {
   maisonId: string;
   collections: Collection[];
@@ -367,14 +384,18 @@ function CollectionsTab({
   onRefresh: () => void;
   selectedCollection: Collection | null;
   onSelectCollection: (c: Collection | null) => void;
+  onUpdateSelectedCollection: (c: Collection | null) => void;
   showForm: boolean;
   onShowForm: (b: boolean) => void;
   editingCollection: Collection | null;
   onEditCollection: (c: Collection | null) => void;
   garments: Garment[];
+  onNavigateToGarments: (collectionId: string, openForm?: boolean) => void;
 }) {
   const [saving, setSaving] = useState(false);
   const [generatingBrief, setGeneratingBrief] = useState(false);
+  const [changingStatus, setChangingStatus] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -460,12 +481,23 @@ function CollectionsTab({
   }
 
   async function handleStatusChange(collection: Collection, newStatus: string) {
-    await fetch('/api/cereus/collections', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: collection.id, status: newStatus }),
-    });
-    onRefresh();
+    setChangingStatus(true);
+    try {
+      const res = await fetch('/api/cereus/collections', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: collection.id, status: newStatus }),
+      });
+      const data = await res.json();
+      // Update local selectedCollection with new status (and lookbook_code if launched)
+      const updated = { ...collection, status: newStatus, ...(data.collection || {}) };
+      onUpdateSelectedCollection(updated);
+      onRefresh();
+    } catch {
+      // Silent
+    } finally {
+      setChangingStatus(false);
+    }
   }
 
   async function handleGenerateBrief(collection: Collection) {
@@ -511,6 +543,15 @@ function CollectionsTab({
   // Detail view
   if (selectedCollection) {
     const collectionGarments = garments.filter(g => g.collection_id === selectedCollection.id);
+    const targetPieces = selectedCollection.target_pieces || 0;
+    const progressPct = targetPieces > 0 ? Math.min((collectionGarments.length / targetPieces) * 100, 100) : 0;
+    const isDesign = selectedCollection.status === 'design';
+    const isProduction = selectedCollection.status === 'production';
+    const isLaunched = selectedCollection.status === 'launched';
+    const isConcept = selectedCollection.status === 'concept';
+    const lookbookUrl = selectedCollection.lookbook_code
+      ? `${typeof window !== 'undefined' ? window.location.origin : ''}/lookbook/${selectedCollection.lookbook_code}`
+      : null;
 
     return (
       <div className="space-y-6">
@@ -524,15 +565,58 @@ function CollectionsTab({
 
         {/* Collection Header */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          {selectedCollection.cover_image_url && (
-            <div className="h-48 bg-muted">
+          {/* Cover Image — always show section in design mode */}
+          {selectedCollection.cover_image_url ? (
+            <div className="h-48 bg-muted relative">
               <img
                 src={selectedCollection.cover_image_url}
                 alt={selectedCollection.name}
                 className="w-full h-full object-cover"
               />
+              {isDesign && (
+                <div className="absolute bottom-2 right-2">
+                  <ImageUploader
+                    bucket="cereus-garment-images"
+                    folder="collections/covers"
+                    onUpload={async (url) => {
+                      await fetch('/api/cereus/collections', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: selectedCollection.id, cover_image_url: url }),
+                      });
+                      onUpdateSelectedCollection({ ...selectedCollection, cover_image_url: url });
+                      onRefresh();
+                    }}
+                    compact
+                    label="Change"
+                    labelEs="Cambiar"
+                  />
+                </div>
+              )}
             </div>
-          )}
+          ) : isDesign ? (
+            <div className="h-48 bg-muted/50 border-b border-dashed border-border flex flex-col items-center justify-center gap-3">
+              <ImageIcon className="w-10 h-10 text-muted-foreground/50" />
+              <p className="text-xs text-muted-foreground">Upload Cover Image / Subir Portada</p>
+              <ImageUploader
+                bucket="cereus-garment-images"
+                folder="collections/covers"
+                onUpload={async (url) => {
+                  await fetch('/api/cereus/collections', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: selectedCollection.id, cover_image_url: url }),
+                  });
+                  onUpdateSelectedCollection({ ...selectedCollection, cover_image_url: url });
+                  onRefresh();
+                }}
+                compact
+                label="Upload Cover"
+                labelEs="Subir Portada"
+              />
+            </div>
+          ) : null}
+
           <div className="p-6">
             <div className="flex items-start justify-between">
               <div>
@@ -548,21 +632,28 @@ function CollectionsTab({
                 )}
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    populateForm(selectedCollection);
-                    onEditCollection(selectedCollection);
-                    onShowForm(true);
-                    onSelectCollection(null);
-                  }}
-                  className="p-2 hover:bg-muted rounded-lg transition-colors"
-                >
-                  <Edit3 className="w-4 h-4" />
-                </button>
+                {!isLaunched && (
+                  <button
+                    onClick={() => {
+                      populateForm(selectedCollection);
+                      onEditCollection(selectedCollection);
+                      onShowForm(true);
+                      onSelectCollection(null);
+                    }}
+                    className="p-2 hover:bg-muted rounded-lg transition-colors"
+                    title="Edit Collection"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   onClick={() => handleGenerateBrief(selectedCollection)}
                   disabled={generatingBrief}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-cereus-gold/10 text-cereus-gold rounded-lg hover:bg-cereus-gold/20 transition-colors disabled:opacity-50"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors disabled:opacity-50 ${
+                    isDesign
+                      ? 'bg-cereus-gold text-white hover:bg-cereus-gold/90'
+                      : 'bg-cereus-gold/10 text-cereus-gold hover:bg-cereus-gold/20'
+                  }`}
                 >
                   {generatingBrief ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
                   AI Brief
@@ -571,12 +662,12 @@ function CollectionsTab({
             </div>
 
             {/* Meta */}
-            <div className="flex gap-6 mt-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-4 mt-4 text-sm text-muted-foreground">
               <span>{SEASONS.find(s => s.value === selectedCollection.season)?.es} {selectedCollection.year}</span>
-              <span>{selectedCollection.target_pieces || 0} piezas objetivo</span>
-              {selectedCollection.lookbook_code && (
+              <span>{targetPieces} piezas objetivo</span>
+              {lookbookUrl && (
                 <a
-                  href={`/lookbook/${selectedCollection.lookbook_code}`}
+                  href={lookbookUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-cereus-gold hover:underline"
@@ -587,29 +678,74 @@ function CollectionsTab({
               )}
             </div>
 
-            {/* Status Actions */}
-            <div className="flex gap-2 mt-4">
-              {selectedCollection.status === 'concept' && (
+            {/* Progress bar — visible in design & production */}
+            {(isDesign || isProduction) && targetPieces > 0 && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5" />
+                    Progreso: {collectionGarments.length} / {targetPieces} prendas
+                  </span>
+                  <span>{progressPct.toFixed(0)}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      progressPct >= 100 ? 'bg-green-500' : progressPct >= 50 ? 'bg-cereus-gold' : 'bg-blue-500'
+                    }`}
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Status-specific action bar */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              {isConcept && (
                 <button
                   onClick={() => handleStatusChange(selectedCollection, 'design')}
-                  className="text-xs px-3 py-1.5 bg-blue-500/10 text-blue-600 rounded-lg hover:bg-blue-500/20"
+                  disabled={changingStatus}
+                  className="flex items-center gap-2 text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
                 >
+                  {changingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
                   Start Design / Iniciar Diseño
                 </button>
               )}
-              {selectedCollection.status === 'design' && (
-                <button
-                  onClick={() => handleStatusChange(selectedCollection, 'production')}
-                  className="text-xs px-3 py-1.5 bg-purple-500/10 text-purple-600 rounded-lg hover:bg-purple-500/20"
-                >
-                  Send to Production / Enviar a Producción
-                </button>
+              {isDesign && (
+                <>
+                  <button
+                    onClick={() => onNavigateToGarments(selectedCollection.id, true)}
+                    className="flex items-center gap-2 text-sm px-4 py-2 bg-cereus-gold text-white rounded-lg hover:bg-cereus-gold/90 transition-colors font-medium"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Garment / Agregar Prenda
+                  </button>
+                  <button
+                    onClick={() => onNavigateToGarments(selectedCollection.id)}
+                    className="flex items-center gap-2 text-sm px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors"
+                  >
+                    <Shirt className="w-4 h-4" />
+                    View Garments / Ver Prendas
+                  </button>
+                  {collectionGarments.length > 0 && (
+                    <button
+                      onClick={() => handleStatusChange(selectedCollection, 'production')}
+                      disabled={changingStatus}
+                      className="flex items-center gap-2 text-sm px-4 py-2 bg-purple-500/10 text-purple-600 rounded-lg hover:bg-purple-500/20 disabled:opacity-50 transition-colors"
+                    >
+                      {changingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
+                      Send to Production / Enviar a Producción
+                    </button>
+                  )}
+                </>
               )}
-              {selectedCollection.status === 'production' && (
+              {isProduction && (
                 <button
                   onClick={() => handleStatusChange(selectedCollection, 'launched')}
-                  className="text-xs px-3 py-1.5 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500/20"
+                  disabled={changingStatus}
+                  className="flex items-center gap-2 text-sm px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors font-medium"
                 >
+                  {changingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
                   Publish Lookbook / Publicar
                 </button>
               )}
@@ -617,39 +753,183 @@ function CollectionsTab({
           </div>
         </div>
 
-        {/* Mood Board */}
-        {selectedCollection.mood_board_urls && selectedCollection.mood_board_urls.length > 0 && (
-          <div className="bg-card border border-border rounded-xl p-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">Mood Board</h3>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-              {selectedCollection.mood_board_urls.map((url, i) => (
-                <img key={i} src={url} alt="" className="aspect-square rounded-lg object-cover border border-border" />
-              ))}
+        {/* ========== STATUS-CONDITIONAL WORKSPACE ========== */}
+
+        {/* DESIGN MODE: Upload areas always visible */}
+        {isDesign && (
+          <>
+            {/* Mood Board — always show, even empty */}
+            <div className="bg-card border border-border rounded-xl p-4">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Mood Board</h3>
+              {selectedCollection.mood_board_urls && selectedCollection.mood_board_urls.length > 0 ? (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-3">
+                  {selectedCollection.mood_board_urls.map((url, i) => (
+                    <img key={i} src={url} alt="" className="aspect-square rounded-lg object-cover border border-border" />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground mb-3">
+                  Add images to your mood board to define the visual direction.
+                  / Agrega imágenes para definir la dirección visual.
+                </p>
+              )}
+              <ImageUploader
+                bucket="cereus-garment-images"
+                folder="collections/moodboard"
+                onUpload={async (url) => {
+                  const updated = [...(selectedCollection.mood_board_urls || []), url];
+                  await fetch('/api/cereus/collections', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: selectedCollection.id, mood_board_urls: updated }),
+                  });
+                  onUpdateSelectedCollection({ ...selectedCollection, mood_board_urls: updated });
+                  onRefresh();
+                }}
+                multiple
+                compact
+                label="Add to Mood Board"
+                labelEs="Agregar al Mood Board"
+              />
+            </div>
+
+            {/* Inspiration Notes — always show in design */}
+            <div className="bg-card border border-border rounded-xl p-4">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Inspiration Notes / Notas de Inspiración</h3>
+              {selectedCollection.inspiration_notes ? (
+                <p className="text-sm text-foreground/80 whitespace-pre-wrap">{selectedCollection.inspiration_notes}</p>
+              ) : (
+                <div className="flex items-center gap-3 py-3">
+                  <Sparkles className="w-5 h-5 text-cereus-gold/50" />
+                  <p className="text-xs text-muted-foreground">
+                    Use AI Brief to auto-generate inspiration notes, or edit the collection to add your own.
+                    / Usa AI Brief para generar notas o edita la colección para agregar las tuyas.
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* CONCEPT / PRODUCTION / ARCHIVED: Show mood board + notes only if they exist */}
+        {!isDesign && !isLaunched && (
+          <>
+            {selectedCollection.mood_board_urls && selectedCollection.mood_board_urls.length > 0 && (
+              <div className="bg-card border border-border rounded-xl p-4">
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">Mood Board</h3>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                  {selectedCollection.mood_board_urls.map((url, i) => (
+                    <img key={i} src={url} alt="" className="aspect-square rounded-lg object-cover border border-border" />
+                  ))}
+                </div>
+              </div>
+            )}
+            {selectedCollection.inspiration_notes && (
+              <div className="bg-card border border-border rounded-xl p-4">
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Inspiration Notes / Notas de Inspiración</h3>
+                <p className="text-sm text-foreground/80 whitespace-pre-wrap">{selectedCollection.inspiration_notes}</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* PRODUCTION MODE: Readiness summary */}
+        {isProduction && (
+          <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4">
+            <h3 className="text-sm font-medium flex items-center gap-2 text-purple-600 mb-3">
+              <Lock className="w-4 h-4" />
+              Production / Producción
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground">Garments / Prendas</p>
+                <p className="font-bold text-lg">{collectionGarments.length}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Target / Objetivo</p>
+                <p className="font-bold text-lg">{targetPieces}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">With Images / Con Fotos</p>
+                <p className="font-bold text-lg">{collectionGarments.filter(g => g.images?.length > 0).length}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">With Price / Con Precio</p>
+                <p className="font-bold text-lg">{collectionGarments.filter(g => g.base_price).length}</p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Inspiration Notes */}
-        {selectedCollection.inspiration_notes && (
-          <div className="bg-card border border-border rounded-xl p-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Inspiration Notes / Notas de Inspiración</h3>
-            <p className="text-sm text-foreground/80 whitespace-pre-wrap">{selectedCollection.inspiration_notes}</p>
+        {/* LAUNCHED MODE: Lookbook link + share */}
+        {isLaunched && lookbookUrl && (
+          <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4">
+            <h3 className="text-sm font-medium flex items-center gap-2 text-green-600 mb-3">
+              <CheckCircle2 className="w-4 h-4" />
+              Published / Publicada
+            </h3>
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href={lookbookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                View Lookbook / Ver Lookbook
+              </a>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(lookbookUrl);
+                  setCopiedLink(true);
+                  setTimeout(() => setCopiedLink(false), 2000);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-muted text-foreground rounded-lg text-sm hover:bg-muted/80 transition-colors"
+              >
+                {copiedLink ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                {copiedLink ? 'Copied! / ¡Copiado!' : 'Copy Link / Copiar Enlace'}
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3 font-mono break-all">{lookbookUrl}</p>
           </div>
         )}
 
         {/* Garments in Collection */}
         <div>
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">
-            Garments / Prendas ({collectionGarments.length})
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Garments / Prendas ({collectionGarments.length}{targetPieces ? ` / ${targetPieces}` : ''})
+            </h3>
+            {isDesign && (
+              <button
+                onClick={() => onNavigateToGarments(selectedCollection.id, true)}
+                className="flex items-center gap-1.5 text-xs text-cereus-gold hover:text-cereus-gold/80 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add Garment / Agregar
+              </button>
+            )}
+          </div>
           {collectionGarments.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              No garments in this collection yet. / No hay prendas en esta colección aún.
-            </p>
+            <div className="text-center py-8 bg-muted/30 border border-dashed border-border rounded-xl">
+              <Shirt className="w-10 h-10 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground mb-1">
+                No garments in this collection yet. / No hay prendas en esta colección aún.
+              </p>
+              {isDesign && (
+                <button
+                  onClick={() => onNavigateToGarments(selectedCollection.id, true)}
+                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create First Garment / Crear Primera Prenda
+                </button>
+              )}
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {collectionGarments.map(g => (
-                <div key={g.id} className="bg-card border border-border rounded-xl overflow-hidden">
+                <div key={g.id} className="bg-card border border-border rounded-xl overflow-hidden group hover:border-cereus-gold/30 transition-all">
                   {g.images?.[0]?.url ? (
                     <img src={g.images[0].url} alt={g.name} className="w-full aspect-[3/4] object-cover" />
                   ) : (
@@ -658,8 +938,16 @@ function CollectionsTab({
                     </div>
                   )}
                   <div className="p-3">
-                    <p className="text-sm font-medium truncate">{g.name}</p>
-                    <p className="text-xs text-muted-foreground">{g.category}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium truncate group-hover:text-cereus-gold transition-colors">{g.name}</p>
+                      <StatusBadge status={g.status} />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {CATEGORIES.find(c => c.value === g.category)?.es || g.category}
+                    </p>
+                    {g.base_price && (
+                      <p className="text-xs font-medium text-cereus-gold mt-1">{formatPrice(g.base_price)}</p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -882,6 +1170,8 @@ function CollectionsTab({
 function GarmentsTab({
   maisonId, garments, collections, search, onSearch, onRefresh,
   selectedGarment, onSelectGarment, showForm, onShowForm,
+  collectionFilter, onClearCollectionFilter,
+  openFormForCollection, onClearOpenFormForCollection,
 }: {
   maisonId: string;
   garments: Garment[];
@@ -893,6 +1183,10 @@ function GarmentsTab({
   onSelectGarment: (g: Garment | null) => void;
   showForm: boolean;
   onShowForm: (b: boolean) => void;
+  collectionFilter?: string | null;
+  onClearCollectionFilter?: () => void;
+  openFormForCollection?: string | null;
+  onClearOpenFormForCollection?: () => void;
 }) {
   const [saving, setSaving] = useState(false);
 
@@ -911,9 +1205,18 @@ function GarmentsTab({
   const [formImages, setFormImages] = useState<{ url: string; type: string }[]>([]);
   const [formTechSheet, setFormTechSheet] = useState('');
 
+  // Auto-open form when navigated from collections tab
+  useEffect(() => {
+    if (openFormForCollection) {
+      setFormCollectionId(openFormForCollection);
+      onShowForm(true);
+      onClearOpenFormForCollection?.();
+    }
+  }, [openFormForCollection]);
+
   function resetForm() {
     setFormName(''); setFormCode(''); setFormCategory('dress');
-    setFormDescription(''); setFormCollectionId(''); setFormBodyZone('full');
+    setFormDescription(''); setFormCollectionId(collectionFilter || ''); setFormBodyZone('full');
     setFormComplexity(1); setFormLaborHours(0); setFormLaborCost(0);
     setFormBasePrice(0); setFormMarginTarget(0.50);
     setFormImages([]); setFormTechSheet('');
@@ -963,11 +1266,20 @@ function GarmentsTab({
     onRefresh();
   }
 
-  const filtered = garments.filter(g =>
+  // Apply collection filter first, then search
+  const collectionFiltered = collectionFilter
+    ? garments.filter(g => g.collection_id === collectionFilter)
+    : garments;
+
+  const filtered = collectionFiltered.filter(g =>
     !search || g.name.toLowerCase().includes(search.toLowerCase()) ||
     g.code?.toLowerCase().includes(search.toLowerCase()) ||
     g.category.toLowerCase().includes(search.toLowerCase())
   );
+
+  const filterCollection = collectionFilter
+    ? collections.find(c => c.id === collectionFilter)
+    : null;
 
   // Detail view
   if (selectedGarment) {
@@ -1231,7 +1543,11 @@ function GarmentsTab({
           />
         </div>
         <button
-          onClick={() => { resetForm(); onShowForm(true); }}
+          onClick={() => {
+            resetForm();
+            if (collectionFilter) setFormCollectionId(collectionFilter);
+            onShowForm(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -1239,11 +1555,32 @@ function GarmentsTab({
         </button>
       </div>
 
+      {/* Collection filter banner */}
+      {filterCollection && (
+        <div className="flex items-center justify-between bg-cereus-gold/5 border border-cereus-gold/20 rounded-lg px-4 py-2.5">
+          <p className="text-sm">
+            <span className="text-muted-foreground">Filtered by / Filtrado por:</span>{' '}
+            <span className="font-medium">{filterCollection.name}</span>
+          </p>
+          <button
+            onClick={onClearCollectionFilter}
+            className="flex items-center gap-1 text-xs text-cereus-gold hover:text-cereus-gold/80 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+            Clear / Limpiar
+          </button>
+        </div>
+      )}
+
       {filtered.length === 0 ? (
         <div className="text-center py-12 bg-card border border-border rounded-xl">
           <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="font-medium mb-2">No garments yet / Sin prendas</h3>
-          <p className="text-sm text-muted-foreground">Create your first garment to start designing.</p>
+          <p className="text-sm text-muted-foreground">
+            {filterCollection
+              ? `No garments in "${filterCollection.name}" yet. Create one! / Sin prendas en esta colección. ¡Crea una!`
+              : 'Create your first garment to start designing.'}
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
