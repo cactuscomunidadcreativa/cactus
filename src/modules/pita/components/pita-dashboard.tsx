@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SectionFeedback, PresentationSection, PitaThread, PitaAttachment } from '../types';
+import { PdfExportButton } from './pdf-export-button';
 
 interface PitaDashboardProps {
   presentationId: string;
@@ -134,12 +135,21 @@ export function PitaDashboard({
         </div>
       </div>
 
-      {/* Share Link */}
+      {/* Share Link + Export */}
       <div className="flex items-center gap-2 p-4 bg-muted rounded-xl">
         <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         <code className="flex-1 text-sm truncate text-muted-foreground">
           {presentationUrl}
         </code>
+        <PdfExportButton
+          title={title}
+          slug={slug}
+          sections={sections}
+          feedbackData={feedbackData}
+          reviewers={reviewers}
+          threads={threads}
+          attachments={attachments}
+        />
         <button
           onClick={handleCopy}
           className="flex items-center gap-2 px-4 py-2 bg-pita-green text-white rounded-lg text-sm font-medium hover:bg-pita-green/90 transition-all"

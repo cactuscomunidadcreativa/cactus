@@ -12,3 +12,4 @@ export { SectionEditor } from './section-editor';
 export { AIAssistant } from './ai-assistant';
 export { PresentationSettings } from './presentation-settings';
 export { PitaCreatorChat } from './pita-creator-chat';
+export { PdfExportButton } from './pdf-export-button';
