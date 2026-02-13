@@ -512,19 +512,38 @@ function CollectionsTab({
           year: collection.year,
           targetPieces: collection.target_pieces || 12,
           language: 'es',
+          generateMoodImages: true,
         }),
       });
       const data = await res.json();
       if (data.brief) {
-        // Update collection with AI-generated description + notes
+        // Merge AI-generated mood board images with existing ones
+        const existingMoodBoard = collection.mood_board_urls || [];
+        const newMoodBoard = data.moodBoardUrls || [];
+        const mergedMoodBoard = [...existingMoodBoard, ...newMoodBoard];
+
+        // Update collection with AI-generated description + notes + mood board
+        const updatePayload: Record<string, unknown> = {
+          id: collection.id,
+          description: data.brief.description || collection.description,
+          inspiration_notes: data.brief.inspiration_notes || collection.inspiration_notes,
+        };
+        if (mergedMoodBoard.length > 0) {
+          updatePayload.mood_board_urls = mergedMoodBoard;
+        }
+
         await fetch('/api/cereus/collections', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: collection.id,
-            description: data.brief.description || collection.description,
-            inspiration_notes: data.brief.inspiration_notes || collection.inspiration_notes,
-          }),
+          body: JSON.stringify(updatePayload),
+        });
+
+        // Update local state so UI reflects changes immediately
+        onUpdateSelectedCollection({
+          ...collection,
+          description: data.brief.description || collection.description,
+          inspiration_notes: data.brief.inspiration_notes || collection.inspiration_notes,
+          mood_board_urls: mergedMoodBoard.length > 0 ? mergedMoodBoard : collection.mood_board_urls,
         });
         onRefresh();
       }

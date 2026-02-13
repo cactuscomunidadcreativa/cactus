@@ -1,10 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
-import { generateContent } from '@/lib/ai';
-import { COLLECTION_BRIEF_SYSTEM, COLLECTION_BRIEF_USER } from '@/modules/cereus/lib/ai-prompts';
+import { generateContent, generateImages } from '@/lib/ai';
+import { COLLECTION_BRIEF_SYSTEM, COLLECTION_BRIEF_USER, buildMoodBoardPrompts } from '@/modules/cereus/lib/ai-prompts';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-// POST /api/cereus/ai/collection-brief — Generate AI collection concept
+// Download a temporary DALL-E URL and upload to Supabase Storage, return public URL
+async function downloadAndUploadToStorage(
+  imageUrl: string,
+  storagePath: string,
+  db: SupabaseClient
+): Promise<string | null> {
+  try {
+    const res = await fetch(imageUrl);
+    if (!res.ok) return null;
+
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const { error } = await db.storage
+      .from('cereus-garment-images')
+      .upload(storagePath, buffer, {
+        contentType: 'image/png',
+        upsert: false,
+      });
+
+    if (error) {
+      console.error('Storage upload error:', error.message);
+      return null;
+    }
+
+    const { data: urlData } = db.storage
+      .from('cereus-garment-images')
+      .getPublicUrl(storagePath);
+
+    return urlData.publicUrl;
+  } catch (err) {
+    console.error('Download/upload failed:', err);
+    return null;
+  }
+}
+
+// POST /api/cereus/ai/collection-brief — Generate AI collection concept + mood board images
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
@@ -15,7 +50,7 @@ export async function POST(request: NextRequest) {
   if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
 
   const body = await request.json();
-  const { maisonId, season, year, targetPieces, trendContext, language, autoCreate } = body;
+  const { maisonId, season, year, targetPieces, trendContext, language, autoCreate, generateMoodImages } = body;
 
   if (!maisonId || !season || !year) {
     return NextResponse.json({ error: 'maisonId, season, and year required' }, { status: 400 });
@@ -94,6 +129,41 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
+    // ============================================================
+    // Generate mood board images via DALL-E (if requested and brief exists)
+    // ============================================================
+    let moodBoardUrls: string[] = [];
+
+    // Default to true — generate images unless explicitly disabled
+    const shouldGenerateImages = generateMoodImages !== false;
+
+    if (brief && shouldGenerateImages) {
+      try {
+        const imagePrompts = buildMoodBoardPrompts(brief, season, maisonName);
+        const dalleResults = await generateImages(imagePrompts, {
+          size: '1024x1024',
+          quality: 'standard',
+          style: 'vivid',
+        });
+
+        // Download temp DALL-E URLs and upload to permanent Supabase Storage
+        const timestamp = Date.now();
+        const uploadPromises = dalleResults.map((img, i) =>
+          downloadAndUploadToStorage(
+            img.url,
+            `collections/ai-moodboard/${timestamp}_${i}.png`,
+            db
+          )
+        );
+
+        const uploadedUrls = await Promise.all(uploadPromises);
+        moodBoardUrls = uploadedUrls.filter((url): url is string => url !== null);
+      } catch (imgErr) {
+        // Image generation is non-blocking — log and continue with text-only brief
+        console.error('Mood board image generation failed:', imgErr);
+      }
+    }
+
     // Optionally auto-create collection
     let collection = null;
     if (autoCreate && brief) {
@@ -108,7 +178,7 @@ export async function POST(request: NextRequest) {
           season,
           year: parseInt(year),
           inspiration_notes: brief.inspiration_notes || '',
-          mood_board_urls: brief.color_story ? { color_story: brief.color_story } : null,
+          mood_board_urls: moodBoardUrls.length > 0 ? moodBoardUrls : null,
           status: 'concept',
           target_pieces: targetPieces || brief.garment_types?.reduce((sum: number, g: { count: number }) => sum + g.count, 0) || 12,
           avg_price_point: brief.estimated_avg_price || null,
@@ -121,6 +191,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       brief,
+      moodBoardUrls,
       collection,
       provider: result.provider,
       success: true,

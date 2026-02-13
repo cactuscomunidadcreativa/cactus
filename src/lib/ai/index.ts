@@ -7,6 +7,8 @@ import {
 } from './provider-factory';
 
 export type { AIRequest, AIResponse, AIStatus, AIProvider, AIChatMessage };
+export { generateImage, generateImages } from './image';
+export type { ImageGenerationRequest, ImageGenerationResponse } from './image';
 
 export async function generateContent(request: AIRequest): Promise<AIResponse> {
   const provider = request.provider || await getDefaultProvider();

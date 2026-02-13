@@ -295,3 +295,69 @@ Return ONLY a JSON array:
 ]
 
 Write in ${context.language === 'es' ? 'Spanish' : 'English'}.`;
+
+// ============================================================
+// MOOD BOARD IMAGE GENERATION (DALL-E)
+// ============================================================
+
+interface BriefForMoodBoard {
+  mood?: string;
+  description?: string;
+  color_story?: { hex: string; name: string; role: string }[];
+  garment_types?: { category: string; count: number; notes: string }[];
+  inspiration_notes?: string;
+}
+
+/**
+ * Build 4 DALL-E prompts for mood board images based on the AI-generated brief.
+ * Each prompt targets a different aspect of the collection's visual identity.
+ */
+export function buildMoodBoardPrompts(
+  brief: BriefForMoodBoard,
+  season: string,
+  _maisonName: string
+): string[] {
+  const colors = (brief.color_story || [])
+    .map(c => `${c.name} (${c.hex})`)
+    .join(', ');
+
+  const primaryColors = (brief.color_story || [])
+    .filter(c => c.role === 'primary' || c.role === 'statement')
+    .map(c => c.name)
+    .join(' and ');
+
+  const garmentCategories = (brief.garment_types || [])
+    .map(g => g.category)
+    .join(', ');
+
+  const mood = brief.mood || 'luxury and elegance';
+  const desc = brief.description || '';
+
+  const seasonLabel: Record<string, string> = {
+    spring_summer: 'spring/summer warmth, natural light, garden settings',
+    fall_winter: 'autumn/winter atmosphere, moody lighting, rich textures',
+    resort: 'resort luxury, coastal elegance, tropical warmth',
+    cruise: 'nautical elegance, sunset tones, ocean breeze',
+    capsule: 'timeless minimalism, curated essentials',
+    bridal: 'romantic ethereal beauty, soft florals, ceremony elegance',
+    custom: 'bespoke luxury, exclusive craftsmanship',
+  };
+
+  const seasonMood = seasonLabel[season] || 'luxury fashion';
+
+  const baseStyle = 'Professional fashion mood board photography. No text, no logos, no watermarks, no words. High-end editorial quality, luxury fashion aesthetic.';
+
+  return [
+    // 1. Overall mood / atmosphere
+    `${baseStyle} Abstract fashion editorial scene capturing the mood of "${mood}". Color palette dominated by ${colors || 'sophisticated neutral tones'}. ${seasonMood}. Atmospheric, evocative, cinematic lighting. Think Vogue editorial meets fine art. ${desc ? `Inspired by: ${desc.substring(0, 200)}` : ''}`,
+
+    // 2. Fabric & texture close-up
+    `${baseStyle} Extreme close-up of luxury fabrics and haute couture textures. Rich material details showing silk, wool, organza, or structured fabrics in ${primaryColors || 'sophisticated tones'}. ${seasonMood}. Macro photography of textile craftsmanship, visible weave patterns, delicate embroidery details. Inspired by ${mood}.`,
+
+    // 3. Silhouette & form
+    `${baseStyle} Fashion illustration-style image showing elegant ${garmentCategories || 'haute couture'} silhouettes. Artistic representation of ${mood}. Color palette: ${colors || 'monochromatic elegance'}. Architectural fashion forms, dramatic draping, sculptural garment shapes. ${seasonMood}. Painterly, artistic quality.`,
+
+    // 4. Lifestyle / editorial context
+    `${baseStyle} Luxury lifestyle editorial scene for a ${season.replace('_', '/')} haute couture collection. ${primaryColors ? `Tones of ${primaryColors} dominant in the scene.` : ''} Environment suggests ${seasonMood}. Elegant setting — think luxury atelier, grand architecture, or curated interior space. The mood is ${mood}. No models, focus on atmosphere and setting.`,
+  ];
+}
