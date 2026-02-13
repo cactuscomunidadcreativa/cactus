@@ -4,7 +4,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { APP_INFO } from '@/components/marketing';
 import { getTranslations } from 'next-intl/server';
 
-const APP_ORDER = ['ramona', 'tuna', 'agave', 'saguaro', 'pita'] as const;
+const APP_ORDER = ['ramona', 'tuna', 'agave', 'saguaro', 'pita', 'cereus'] as const;
 
 const GRADIENTS: Record<string, string> = {
   ramona: 'from-purple-500/20 to-pink-500/20',
@@ -12,6 +12,7 @@ const GRADIENTS: Record<string, string> = {
   agave: 'from-green-500/20 to-emerald-500/20',
   saguaro: 'from-teal-500/20 to-green-500/20',
   pita: 'from-lime-500/20 to-yellow-500/20',
+  cereus: 'from-amber-500/20 to-yellow-900/20',
 };
 
 export default async function AppsMarketplacePage() {

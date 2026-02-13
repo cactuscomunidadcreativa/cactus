@@ -68,6 +68,11 @@
           "tagline": "Presentation & Co-Creation Vault",
           "description": "Crea presentaciones con IA, recibe feedback en vivo y co-crea con tu audiencia.",
           "features": ["Creación con IA", "Feedback en vivo", "Co-creación", "Bilingüe ES/EN"]
+        },
+        "cereus": {
+          "tagline": "Atelier Algorítmico Emocional",
+          "description": "Sistema operativo de alta costura. Inteligencia emocional, costeo automatizado, tracking de producción y armario digital.",
+          "features": ["Perfil emocional IA", "Costeo por BOM", "Tracking de taller", "Armario digital"]
         }
       }
     },

@@ -204,6 +204,64 @@
         "subtitle": "Start free with your team"
       }
     },
+    "cereus": {
+      "hero": {
+        "badge": "AI-Powered Haute Couture",
+        "title": "The First Algorithmic Atelier.",
+        "titleHighlight": "Emotional.",
+        "subtitle": "CEREUS is the haute couture operating system that integrates emotional intelligence, automated costing, production tracking and digital wardrobe into a single platform."
+      },
+      "tagline": "Fashion is not calculated. It's felt. And then calculated.",
+      "features": {
+        "title": "An end-to-end intelligent atelier",
+        "emotional": {
+          "title": "Emotional Profile",
+          "description": "Style questionnaire + AI that discovers each client's archetype"
+        },
+        "measurements": {
+          "title": "Digital Body Archive",
+          "description": "Versioned measurements with complete history and silhouette analysis"
+        },
+        "costing": {
+          "title": "Costing Engine",
+          "description": "Automatic BOM with material, labor and margin calculations"
+        },
+        "production": {
+          "title": "Production Tracking",
+          "description": "Stage-by-stage workshop tracking with photographic evidence"
+        },
+        "closet": {
+          "title": "Digital Closet",
+          "description": "Garment history, combinations and outfit recommendations"
+        },
+        "advisor": {
+          "title": "AI Advisor",
+          "description": "Personalized recommendations based on emotional profile and wardrobe"
+        }
+      },
+      "howItWorks": {
+        "profile": {
+          "title": "Create the profile",
+          "description": "Measurements, emotional questionnaire and AI photo analysis"
+        },
+        "design": {
+          "title": "Design the garment",
+          "description": "Select from collection or create custom variants"
+        },
+        "produce": {
+          "title": "Produce with tracking",
+          "description": "Track every workshop stage with quality control"
+        },
+        "deliver": {
+          "title": "Deliver to closet",
+          "description": "The garment is automatically added to the digital closet"
+        }
+      },
+      "cta": {
+        "title": "Transform your Maison into an intelligent atelier",
+        "subtitle": "CEREUS x PRIVAT — where emotion meets algorithm"
+      }
+    },
     "agave": {
       "hero": {
         "badge": "Pricing Decisions",

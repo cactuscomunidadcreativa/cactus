@@ -63,6 +63,17 @@ export const APP_INFO = {
     demo: '/pita/own-your-impact',
     app: '/apps/pita',
   },
+  cereus: {
+    id: 'cereus',
+    name: 'CEREUS',
+    emoji: '🖤',
+    logo: '/cereus.png',
+    tagline: 'Emotional Algorithmic Atelier',
+    color: '#B8943A',
+    landing: '/landing/cereus',
+    demo: '/apps/cereus',
+    app: '/apps/cereus',
+  },
 } as const;
 
 export const FOOTER_LINKS = {
@@ -72,6 +83,7 @@ export const FOOTER_LINKS = {
     { href: '/landing/agave', label: 'AGAVE' },
     { href: '/landing/saguaro', label: 'SAGUARO' },
     { href: '/landing/pita', label: 'PITA' },
+    { href: '/landing/cereus', label: 'CEREUS' },
   ],
   community: [
     { href: '/blog', label: 'Blog' },

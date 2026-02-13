@@ -1493,3 +1493,289 @@
 
 .pita-lang-en .lang-es { display: none; }
 .pita-lang-en .lang-en { display: inline; }
+
+/* ============================================
+   CEREUS BRAND COLORS - Noir & Gold Atelier
+   "The First Emotional Algorithmic Atelier"
+   ============================================ */
+@layer base {
+  :root {
+    /* CEREUS Primary - Noir Profond */
+    --cereus-noir: 0 0% 4%;
+    --cereus-noir-light: 0 0% 12%;
+    --cereus-noir-lighter: 0 0% 18%;
+
+    /* CEREUS Secondary - Or Ancien (Antique Gold) */
+    --cereus-gold: 42 60% 45%;
+    --cereus-gold-light: 42 65% 58%;
+    --cereus-gold-lighter: 42 50% 90%;
+
+    /* CEREUS Accent - Ivoire Chaud (Warm Ivory) */
+    --cereus-ivory: 40 30% 92%;
+    --cereus-ivory-warm: 35 25% 85%;
+
+    /* CEREUS Accent 2 - Bordeaux */
+    --cereus-bordeaux: 345 60% 25%;
+    --cereus-bordeaux-light: 345 55% 38%;
+
+    /* CEREUS Neutrals */
+    --cereus-charcoal: 0 0% 22%;
+    --cereus-silver: 0 0% 75%;
+    --cereus-cream: 40 25% 96%;
+  }
+}
+
+/* ============================================
+   CEREUS ANIMATIONS - Luxurious & Editorial
+   ============================================ */
+
+/* Elegant reveal - content appearing like a curtain lift */
+@keyframes cereus-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Gold shimmer - subtle metallic gleam */
+@keyframes cereus-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Atelier float - very subtle, sophisticated movement */
+@keyframes cereus-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Measurement pulse - for body measurement interactions */
+@keyframes cereus-measure {
+  0%, 100% {
+    transform: scaleX(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleX(1.05);
+    opacity: 1;
+  }
+}
+
+/* Status transition - for order status changes */
+@keyframes cereus-status {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Thread stitch animation - production tracking */
+@keyframes cereus-stitch {
+  0% {
+    stroke-dashoffset: 100%;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Glow pulse for highlighted elements */
+@keyframes cereus-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsl(42 60% 45% / 0.2),
+                0 0 10px hsl(42 60% 45% / 0.1);
+  }
+  50% {
+    box-shadow: 0 0 10px hsl(42 60% 45% / 0.4),
+                0 0 20px hsl(42 60% 45% / 0.2),
+                0 0 30px hsl(42 60% 45% / 0.1);
+  }
+}
+
+/* Fabric drape animation */
+@keyframes cereus-drape {
+  0% {
+    transform: rotateX(15deg) translateY(-10px);
+    opacity: 0;
+  }
+  60% {
+    transform: rotateX(-2deg) translateY(2px);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(0) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   CEREUS ANIMATION UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+  .animate-cereus-reveal {
+    animation: cereus-reveal 0.6s ease-out forwards;
+  }
+
+  .animate-cereus-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--cereus-gold)) 0%,
+      hsl(var(--cereus-gold-light)) 50%,
+      hsl(var(--cereus-gold)) 100%
+    );
+    background-size: 200% 100%;
+    animation: cereus-shimmer 3s ease-in-out infinite;
+  }
+
+  .animate-cereus-float {
+    animation: cereus-float 5s ease-in-out infinite;
+  }
+
+  .animate-cereus-measure {
+    animation: cereus-measure 2s ease-in-out infinite;
+  }
+
+  .animate-cereus-status {
+    animation: cereus-status 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  .animate-cereus-glow {
+    animation: cereus-glow 2.5s ease-in-out infinite;
+  }
+
+  .animate-cereus-drape {
+    animation: cereus-drape 0.8s ease-out forwards;
+    transform-origin: top center;
+  }
+}
+
+/* ============================================
+   CEREUS BRAND UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+  /* Backgrounds */
+  .bg-cereus-noir {
+    background-color: hsl(var(--cereus-noir));
+  }
+  .bg-cereus-noir-light {
+    background-color: hsl(var(--cereus-noir-light));
+  }
+  .bg-cereus-noir-lighter {
+    background-color: hsl(var(--cereus-noir-lighter));
+  }
+  .bg-cereus-gold {
+    background-color: hsl(var(--cereus-gold));
+  }
+  .bg-cereus-gold-light {
+    background-color: hsl(var(--cereus-gold-light));
+  }
+  .bg-cereus-gold-lighter {
+    background-color: hsl(var(--cereus-gold-lighter));
+  }
+  .bg-cereus-ivory {
+    background-color: hsl(var(--cereus-ivory));
+  }
+  .bg-cereus-bordeaux {
+    background-color: hsl(var(--cereus-bordeaux));
+  }
+  .bg-cereus-bordeaux-light {
+    background-color: hsl(var(--cereus-bordeaux-light));
+  }
+  .bg-cereus-charcoal {
+    background-color: hsl(var(--cereus-charcoal));
+  }
+  .bg-cereus-cream {
+    background-color: hsl(var(--cereus-cream));
+  }
+
+  /* Text */
+  .text-cereus-noir {
+    color: hsl(var(--cereus-noir));
+  }
+  .text-cereus-gold {
+    color: hsl(var(--cereus-gold));
+  }
+  .text-cereus-gold-light {
+    color: hsl(var(--cereus-gold-light));
+  }
+  .text-cereus-ivory {
+    color: hsl(var(--cereus-ivory));
+  }
+  .text-cereus-bordeaux {
+    color: hsl(var(--cereus-bordeaux));
+  }
+  .text-cereus-silver {
+    color: hsl(var(--cereus-silver));
+  }
+
+  /* Borders */
+  .border-cereus-gold {
+    border-color: hsl(var(--cereus-gold));
+  }
+  .border-cereus-noir {
+    border-color: hsl(var(--cereus-noir));
+  }
+  .border-cereus-bordeaux {
+    border-color: hsl(var(--cereus-bordeaux));
+  }
+  .border-cereus-charcoal {
+    border-color: hsl(var(--cereus-charcoal));
+  }
+
+  /* Ring */
+  .ring-cereus-gold {
+    --tw-ring-color: hsl(var(--cereus-gold));
+  }
+
+  /* Gradients - Dark Mode Dominant Aesthetic */
+  .bg-cereus-gradient {
+    background: linear-gradient(135deg, hsl(0 0% 4%) 0%, hsl(0 0% 12%) 50%, hsl(0 0% 4%) 100%);
+  }
+
+  .bg-cereus-gradient-gold {
+    background: linear-gradient(135deg, hsl(42 60% 45%) 0%, hsl(42 65% 58%) 50%, hsl(42 60% 45%) 100%);
+  }
+
+  .bg-cereus-gradient-editorial {
+    background: linear-gradient(180deg, hsl(0 0% 4%) 0%, hsl(0 0% 8%) 40%, hsl(42 60% 45% / 0.05) 100%);
+  }
+
+  .bg-cereus-gradient-soft {
+    background: linear-gradient(135deg, hsl(40 25% 96%) 0%, hsl(42 50% 92%) 50%, hsl(40 30% 96%) 100%);
+  }
+
+  /* Gold text shimmer on hover */
+  .cereus-gold-text-shimmer {
+    background: linear-gradient(90deg, hsl(var(--cereus-gold)), hsl(var(--cereus-gold-light)), hsl(var(--cereus-gold)));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cereus-gold-text-shimmer:hover {
+    animation: cereus-shimmer 2s linear infinite;
+  }
+}

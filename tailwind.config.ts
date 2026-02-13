@@ -34,6 +34,18 @@ const config: Config = {
           gold: '#C7A54A',
           light: '#F5F7F9',
         },
+        // CEREUS brand - Noir & Gold Atelier
+        cereus: {
+          noir: '#0A0A0A',
+          'noir-light': '#1F1F1F',
+          gold: '#B8943A',
+          'gold-light': '#D4B04E',
+          ivory: '#F0EBE0',
+          bordeaux: '#6B1D34',
+          charcoal: '#383838',
+          silver: '#BFBFBF',
+          cream: '#F7F5F0',
+        },
         // Shared
         accent: {
           DEFAULT: '#F99330',

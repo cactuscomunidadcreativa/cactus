@@ -13,6 +13,7 @@ const APP_LOGOS: Record<string, string> = {
   agave: '/agave.png',
   saguaro: '/saguaro.png',
   pita: '/pita.png',
+  cereus: '/cereus.png',
 };
 
 interface AppTier {
