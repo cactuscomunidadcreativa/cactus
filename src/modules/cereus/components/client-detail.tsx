@@ -8,6 +8,8 @@ import {
   Mail, Phone, MapPin, Calendar, Crown, Clock,
   ChevronDown, ChevronUp, Trash2,
 } from 'lucide-react';
+import { EmotionalQuestionnaire } from './emotional-questionnaire';
+import { EmotionalProfileResults } from './emotional-profile-results';
 
 interface CereusClient {
   id: string;
@@ -162,6 +164,9 @@ export function ClientDetail({ clientId }: { clientId: string }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedHistory, setExpandedHistory] = useState<string | null>(null);
+  const [emotionalProfile, setEmotionalProfile] = useState<Record<string, unknown> | null>(null);
+  const [emotionalPalette, setEmotionalPalette] = useState<Record<string, unknown> | null>(null);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
 
   // Measurement form state
   const [mForm, setMForm] = useState<Record<string, string>>({});
@@ -196,6 +201,16 @@ export function ClientDetail({ clientId }: { clientId: string }) {
       const measRes = await fetch(`/api/cereus/measurements?clientId=${clientId}`);
       const measData = await measRes.json();
       setMeasurements(measData.measurements || []);
+
+      // Get emotional profile
+      try {
+        const profileRes = await fetch(`/api/cereus/emotional-profiles?clientId=${clientId}`);
+        const profileData = await profileRes.json();
+        if (profileData.profile) setEmotionalProfile(profileData.profile);
+        if (profileData.palette) setEmotionalPalette(profileData.palette);
+      } catch {
+        // Profile is optional
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -728,14 +743,41 @@ export function ClientDetail({ clientId }: { clientId: string }) {
 
       {/* Emotional Profile Tab */}
       {activeTab === 'profile' && (
-        <div className="bg-card border border-border rounded-xl p-12 text-center">
-          <Heart className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">Emotional Profile</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            The emotional profile questionnaire captures {client.full_name}&apos;s aesthetic sensibility and emotional connection to fashion.
-          </p>
-          <p className="text-xs text-muted-foreground">Coming soon</p>
-        </div>
+        <>
+          {showQuestionnaire ? (
+            <EmotionalQuestionnaire
+              clientId={clientId}
+              onComplete={(profile) => {
+                setEmotionalProfile(profile);
+                setShowQuestionnaire(false);
+                // Refresh to get palette too
+                fetchData();
+              }}
+              onCancel={() => setShowQuestionnaire(false)}
+            />
+          ) : emotionalProfile ? (
+            <EmotionalProfileResults
+              profile={emotionalProfile as any}
+              palette={emotionalPalette as any}
+              onRegenerate={() => setShowQuestionnaire(true)}
+            />
+          ) : (
+            <div className="bg-card border border-border rounded-xl p-12 text-center">
+              <Heart className="w-16 h-16 mx-auto text-cereus-gold/30 mb-4" />
+              <h3 className="text-lg font-medium mb-2">Perfil Emocional</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                El cuestionario de perfil emocional captura la sensibilidad estetica y conexion emocional de {client.full_name} con la moda.
+              </p>
+              <button
+                onClick={() => setShowQuestionnaire(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-cereus-gold text-white rounded-lg font-medium hover:bg-cereus-gold/90 transition-colors"
+              >
+                <Heart className="w-4 h-4" />
+                Iniciar Cuestionario
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

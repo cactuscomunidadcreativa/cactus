@@ -168,3 +168,130 @@ Provide analysis as JSON:
 }
 
 Write in ${context.language === 'es' ? 'Spanish' : 'English'}.`;
+
+// ============================================================
+// COLLECTION BRIEF GENERATION
+// ============================================================
+
+export const COLLECTION_BRIEF_SYSTEM = `You are the CEREUS Collection Intelligence Engine for a luxury atelier.
+You generate detailed collection briefs based on client emotional data, market trends,
+and the maison's brand identity. Your briefs feel like they come from a top-tier
+fashion house creative director.
+
+Your collection brief should:
+- Be fashion-forward and commercially viable
+- Reflect the emotional makeup of the client base
+- Include specific garment categories with reasoning
+- Suggest a cohesive color story with hex codes
+- Be written in a luxury fashion editorial voice
+- Consider seasonality, occasion needs, and archetype preferences`;
+
+export const COLLECTION_BRIEF_USER = (context: {
+  maison_name: string;
+  season: string;
+  year: number;
+  target_pieces: number;
+  archetype_distribution: { archetype: string; count: number }[];
+  trend_context?: string;
+  available_materials: { name: string; type: string; composition?: string }[];
+  existing_collections: { name: string; season: string; year: number }[];
+  language: string;
+}) => `Generate a collection brief for ${context.maison_name}.
+
+Season: ${context.season} ${context.year}
+Target pieces: ${context.target_pieces}
+
+Client archetype distribution:
+${context.archetype_distribution.map(a => `- ${a.archetype}: ${a.count} clients`).join('\n') || '- No client data yet'}
+
+${context.trend_context ? `Trend context: ${context.trend_context}` : ''}
+
+Available materials:
+${context.available_materials.slice(0, 15).map(m => `- ${m.name} (${m.type}${m.composition ? `, ${m.composition}` : ''})`).join('\n') || '- No materials registered yet'}
+
+Previous collections (avoid repetition):
+${context.existing_collections.map(c => `- ${c.name} (${c.season} ${c.year})`).join('\n') || '- First collection'}
+
+Return as JSON:
+{
+  "name_suggestions": ["name1", "name2", "name3"],
+  "code_suggestion": "XX00",
+  "description": "collection concept description (2-3 sentences)",
+  "mood": "mood/feeling description",
+  "color_story": [
+    {"hex": "#HEXCODE", "name": "Color Name", "role": "primary|accent|neutral|statement"}
+  ],
+  "garment_types": [
+    {"category": "dress|gown|suit|blazer|coat|skirt|pants|blouse|jumpsuit|cape|corset", "count": 0, "notes": "design direction"}
+  ],
+  "target_archetypes": ["archetype1", "archetype2"],
+  "inspiration_notes": "creative inspiration text",
+  "estimated_avg_price": 0
+}
+
+Write in ${context.language === 'es' ? 'Spanish' : 'English'}.`;
+
+// ============================================================
+// RAMONA FASHION CAMPAIGN
+// ============================================================
+
+export const RAMONA_FASHION_CAMPAIGN_SYSTEM = `You are a luxury fashion social media strategist
+for a haute couture atelier. You create compelling social media content that showcases
+collections while maintaining brand exclusivity and emotional resonance.
+
+Your content should:
+- Feel aspirational and exclusive
+- Reference craftsmanship, materials, and emotional design
+- Use fashion-specific language naturally
+- Create desire without being pushy
+- Maintain the maison's elevated tone
+- Include relevant hashtags for fashion discovery
+
+Respond ONLY with a valid JSON array, no markdown formatting.`;
+
+export const RAMONA_FASHION_CAMPAIGN_USER = (context: {
+  maison_name: string;
+  collection_name: string;
+  collection_description: string;
+  collection_mood: string;
+  garments: { name: string; category: string; description?: string }[];
+  materials: string[];
+  color_story: string[];
+  platforms: string[];
+  count: number;
+  themes?: string[];
+  language: string;
+}) => `Generate ${context.count} social media content pieces for the collection launch.
+
+Maison: ${context.maison_name}
+Collection: ${context.collection_name}
+Description: ${context.collection_description}
+Mood: ${context.collection_mood}
+
+Key garments:
+${context.garments.slice(0, 10).map(g => `- ${g.name} (${g.category})${g.description ? `: ${g.description}` : ''}`).join('\n')}
+
+Featured materials: ${context.materials.join(', ')}
+Color story: ${context.color_story.join(', ')}
+Platforms: ${context.platforms.join(', ')}
+${context.themes?.length ? `Themes: ${context.themes.join(', ')}` : ''}
+
+For each piece generate:
+1. A short internal title (3-5 words)
+2. The complete content ready to publish
+3. 3-5 relevant hashtags
+4. The best platform
+5. Content type (post, story, carousel, reel_script)
+
+Return ONLY a JSON array:
+[
+  {
+    "title": "...",
+    "content": "...",
+    "hashtags": ["#tag1", "#tag2"],
+    "platform": "instagram|facebook|tiktok|linkedin",
+    "content_type": "post|story|carousel|reel_script"
+  }
+]
+
+Write in ${context.language === 'es' ? 'Spanish' : 'English'}.`;
