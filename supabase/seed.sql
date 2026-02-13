@@ -7,7 +7,12 @@ INSERT INTO public.apps (id, name, description, icon, color, category, base_pric
   ('weekflow', 'WeekFlow', 'Team check-ins & weekly meetings', '🌊', '#6366F1', 'productivity', 900, 9000, true, 30, 'live', '["Team check-ins", "Weekly tasks board", "Mood tracking with Plutchik wheel", "Team pulse analytics", "Presenter mode", "Multi-language (ES/EN)"]', 1),
   ('ramona', 'Ramona Social', 'Tu departamento de marketing con IA', '🌵', '#9A4E9A', 'marketing', 5900, 59000, true, 14, 'beta', '["AI content generation", "Market intelligence", "Content calendar", "Multi-platform publishing", "Voice profile", "Lead conversion"]', 2),
   ('legal-ai', 'Legal AI', 'Asistente legal inteligente para contratos y documentos', '⚖️', '#DC2626', 'legal', 7900, 79000, true, 7, 'coming-soon', '["Contract analysis", "Document generation", "Legal compliance checks", "Template library", "Multi-jurisdiction support"]', 3),
-  ('analytics-pro', 'Analytics Pro', 'Análisis avanzado y reportes para tu negocio', '📊', '#0EA5E9', 'analytics', 4900, 49000, true, 14, 'coming-soon', '["Custom dashboards", "Automated reports", "Data visualization", "KPI tracking", "Export to PDF/Excel", "Team sharing"]', 4);
+  ('analytics-pro', 'Analytics Pro', 'Análisis avanzado y reportes para tu negocio', '📊', '#0EA5E9', 'analytics', 4900, 49000, true, 14, 'coming-soon', '["Custom dashboards", "Automated reports", "Data visualization", "KPI tracking", "Export to PDF/Excel", "Team sharing"]', 4),
+  ('tuna', 'TUNA', 'Cierre de campaña agrícola consolidado', '🍇', '#0891B2', 'agriculture', 0, 0, true, 30, 'beta', '["Consolidación automática", "Validación inteligente", "Reportes ejecutivos", "Ratios financieros"]', 5),
+  ('agave', 'AGAVE', 'Decisión de precios asistida por IA', '💎', '#16A34A', 'pricing', 0, 0, true, 30, 'beta', '["Modo rápido", "Simulación", "Control de márgenes", "Aprendizaje histórico"]', 6),
+  ('saguaro', 'SAGUARO', 'Estructura de tareas y flujo de trabajo', '🔷', '#059669', 'productivity', 900, 9000, true, 30, 'beta', '["Gestión de tareas", "Estado de flow", "Prioridades claras", "Colaboración"]', 7),
+  ('pita', 'PITA', 'Presentaciones con feedback en tiempo real', '📄', '#6B8F23', 'presentations', 0, 0, true, 30, 'live', '["Link mágico", "Feedback por sección", "Dashboard de resultados", "Bilingüe ES/EN"]', 8),
+  ('cereus', 'CEREUS', 'Sistema operativo de alta costura con IA', '🖤', '#B8943A', 'fashion', 0, 0, true, 30, 'beta', '["Perfil emocional IA", "Motor de costeo BOM", "Tracking de taller", "Armario digital"]', 9);
 
 -- WeekFlow: single tier
 INSERT INTO public.app_tiers (app_id, name, display_name, price_monthly, price_yearly, is_default, features, limits, sort_order) VALUES

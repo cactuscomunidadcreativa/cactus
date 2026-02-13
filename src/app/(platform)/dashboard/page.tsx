@@ -11,6 +11,7 @@ const APP_LOGOS: Record<string, string> = {
   agave: '/agave.png',
   saguaro: '/saguaro.png',
   pita: '/pita.png',
+  cereus: '/cereus.png',
 };
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';

@@ -118,6 +118,23 @@ const apps = [
     featuresEs: ['Link magico', 'Feedback por seccion', 'Dashboard de resultados'],
     featuresEn: ['Magic link', 'Section feedback', 'Results dashboard'],
   },
+  {
+    id: 'cereus',
+    name: 'CEREUS',
+    emoji: '🖤',
+    color: '#B8943A',
+    attribute: 'Emocion',
+    taglineEs: 'La moda no se calcula. Se siente. Y despues se calcula.',
+    taglineEn: 'Fashion is not calculated. It\'s felt. And then calculated.',
+    titleEs: 'Atelier Algoritmico Emocional',
+    titleEn: 'Emotional Algorithmic Atelier',
+    descriptionEs: 'Sistema operativo de alta costura. Inteligencia emocional, costeo automatizado, tracking de produccion y armario digital en una sola plataforma.',
+    descriptionEn: 'Haute couture operating system. Emotional intelligence, automated costing, production tracking and digital wardrobe in a single platform.',
+    link: '/landing/cereus',
+    demoLink: '/apps/cereus',
+    featuresEs: ['Perfil emocional IA', 'Motor de costeo', 'Tracking de taller'],
+    featuresEn: ['AI emotional profile', 'Costing engine', 'Workshop tracking'],
+  },
 ];
 
 // ═══════════════════════════════════════
@@ -278,7 +295,7 @@ export default async function HomePage() {
 
         {/* App Species Cards */}
         <div className="max-w-5xl mx-auto mt-20 relative">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {apps.map((app) => (
               <Link
                 key={app.id}
