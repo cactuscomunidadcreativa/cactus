@@ -1,4 +1,4 @@
-// Navegación centralizada para el sitio de marketing
+// Centralized navigation for the marketing site
 
 export const MARKETING_NAV = [
   { href: '/', label: 'Inicio' },
@@ -12,7 +12,8 @@ export const APP_INFO = {
     id: 'ramona',
     name: 'RAMONA',
     emoji: '🎨',
-    tagline: 'Tu Asistente de Arte con IA',
+    logo: '/ramona.png',
+    tagline: 'Tu Asistente de Marketing con IA',
     color: '#9A4E9A',
     landing: '/landing/ramona',
     demo: '/apps/ramona/demo',
@@ -22,7 +23,8 @@ export const APP_INFO = {
     id: 'tuna',
     name: 'TUNA',
     emoji: '🐟',
-    tagline: 'Gestión Inteligente de Proyectos',
+    logo: '/tuna.png',
+    tagline: 'Inteligencia Agrícola',
     color: '#0891B2',
     landing: '/landing/tuna',
     demo: '/apps/tuna/demo',
@@ -32,6 +34,7 @@ export const APP_INFO = {
     id: 'agave',
     name: 'AGAVE',
     emoji: '🌵',
+    logo: '/agave.png',
     tagline: 'Asistente de Precios Inteligente',
     color: '#16A34A',
     landing: '/landing/agave',
@@ -42,11 +45,34 @@ export const APP_INFO = {
     id: 'saguaro',
     name: 'SAGUARO',
     emoji: '🌿',
-    tagline: 'Bienestar y Productividad',
+    logo: '/saguaro.png',
+    tagline: 'Flujo de Trabajo en Flow',
     color: '#059669',
     landing: '/landing/saguaro',
     demo: '/apps/saguaro/demo',
     app: '/apps/saguaro',
+  },
+  pita: {
+    id: 'pita',
+    name: 'PITA',
+    emoji: '🎤',
+    logo: '/pita.png',
+    tagline: 'Presentation & Co-Creation Vault',
+    color: '#6B8F23',
+    landing: '/landing/pita',
+    demo: '/pita/own-your-impact',
+    app: '/apps/pita',
+  },
+  weekflow: {
+    id: 'weekflow',
+    name: 'WEEKFLOW',
+    emoji: '📅',
+    logo: null as string | null,
+    tagline: 'Planificación Semanal de Equipos',
+    color: '#6366F1',
+    landing: '/landing/saguaro',
+    demo: '/apps/saguaro/demo',
+    app: '/apps/weekflow',
   },
 } as const;
 
@@ -56,6 +82,7 @@ export const FOOTER_LINKS = {
     { href: '/landing/tuna', label: 'TUNA' },
     { href: '/landing/agave', label: 'AGAVE' },
     { href: '/landing/saguaro', label: 'SAGUARO' },
+    { href: '/landing/pita', label: 'PITA' },
   ],
   community: [
     { href: '/blog', label: 'Blog' },

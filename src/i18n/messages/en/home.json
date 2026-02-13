@@ -33,6 +33,49 @@
         "price": "Coming soon"
       }
     },
+    "appsPage": {
+      "badge": "AI-Powered App Ecosystem",
+      "title": "Our Apps",
+      "subtitle": "Artificial intelligence tools designed to boost your creativity, optimize your processes and connect you with a community that grows together.",
+      "tryDemo": "Try Demo",
+      "moreInfo": "More Info",
+      "ctaTitle": "Ready to transform your work?",
+      "ctaSubtitle": "Join our community and access all our AI tools designed to boost your creativity and productivity.",
+      "createAccount": "Create Free Account",
+      "contact": "Contact Us",
+      "apps": {
+        "ramona": {
+          "tagline": "Your AI Marketing Assistant",
+          "description": "Generate content, schedule posts and convert followers into customers. All automatic.",
+          "features": ["Content generation", "Smart scheduling", "Deep analytics", "Brand voice"]
+        },
+        "tuna": {
+          "tagline": "Agricultural Intelligence",
+          "description": "Consolidate Production, Costs, Sales and Budget. Automatic cross-validation with AI.",
+          "features": ["Auto consolidation", "Smart validation", "Executive reports", "Financial ratios"]
+        },
+        "agave": {
+          "tagline": "Smart Pricing Assistant",
+          "description": "Analyzes costs, history and margins to give you the optimal price in seconds.",
+          "features": ["Margin calculation", "Scenario simulation", "Optimal prices", "Annual impact"]
+        },
+        "saguaro": {
+          "tagline": "Workflow in Flow",
+          "description": "Mental clarity to manage tasks and keep your team focused on what matters.",
+          "features": ["Task management", "Flow state", "Clear priorities", "Collaboration"]
+        },
+        "pita": {
+          "tagline": "Presentation & Co-Creation Vault",
+          "description": "Create presentations with AI, get live feedback and co-create with your audience.",
+          "features": ["AI creation", "Live feedback", "Co-creation", "Bilingual ES/EN"]
+        },
+        "weekflow": {
+          "tagline": "Weekly Team Planning",
+          "description": "Plan your team's week with clarity. Check-ins, assignments and tracking.",
+          "features": ["Weekly planning", "Check-ins", "Assignments", "Tracking"]
+        }
+      }
+    },
     "footer": {
       "brand": "Cactus Creative Community"
     }

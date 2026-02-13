@@ -1,7 +1,17 @@
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Store, ArrowRight } from 'lucide-react';
+
+// Map app IDs to logo files in /public
+const APP_LOGOS: Record<string, string> = {
+  ramona: '/ramona.png',
+  tuna: '/tuna.png',
+  agave: '/agave.png',
+  saguaro: '/saguaro.png',
+  pita: '/pita.png',
+};
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { MoodChart } from '@/components/dashboard/mood-chart';
@@ -87,14 +97,24 @@ export default async function DashboardPage() {
                 className="bg-card border border-border rounded-lg p-5 hover:border-cactus-green/50 transition-colors group"
               >
                 <div className="flex items-start gap-3">
-                  <span
-                    className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
-                    style={{
-                      backgroundColor: (sub.apps?.color || '#888') + '15',
-                    }}
-                  >
-                    {sub.apps?.icon || '\uD83D\uDCE6'}
-                  </span>
+                  {APP_LOGOS[sub.app_id] ? (
+                    <Image
+                      src={APP_LOGOS[sub.app_id]}
+                      alt={sub.apps?.name || sub.app_id}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-lg object-contain"
+                    />
+                  ) : (
+                    <span
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
+                      style={{
+                        backgroundColor: (sub.apps?.color || '#888') + '15',
+                      }}
+                    >
+                      {sub.apps?.icon || '\uD83D\uDCE6'}
+                    </span>
+                  )}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium group-hover:text-cactus-green transition-colors">
                       {sub.apps?.name || sub.app_id}

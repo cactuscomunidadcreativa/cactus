@@ -4,6 +4,16 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { formatPrice } from '@/lib/utils';
 import { Check, Sparkles } from 'lucide-react';
+import Image from 'next/image';
+
+// Map app IDs to logo files in /public
+const APP_LOGOS: Record<string, string> = {
+  ramona: '/ramona.png',
+  tuna: '/tuna.png',
+  agave: '/agave.png',
+  saguaro: '/saguaro.png',
+  pita: '/pita.png',
+};
 
 interface AppTier {
   id: string;
@@ -73,12 +83,22 @@ export function AppCard({ app, tiers, subscription }: AppCardProps) {
         style={{ borderTop: `3px solid ${app.color}` }}
       >
         <div className="flex items-start gap-3 mb-3">
-          <span
-            className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
-            style={{ backgroundColor: app.color + '15' }}
-          >
-            {app.icon}
-          </span>
+          {APP_LOGOS[app.id] ? (
+            <Image
+              src={APP_LOGOS[app.id]}
+              alt={app.name}
+              width={48}
+              height={48}
+              className="w-12 h-12 rounded-lg object-contain"
+            />
+          ) : (
+            <span
+              className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
+              style={{ backgroundColor: app.color + '15' }}
+            >
+              {app.icon}
+            </span>
+          )}
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="font-display font-semibold text-lg">{app.name}</h3>
