@@ -212,9 +212,10 @@ export function PitaViewer({
 
     try {
       // Load all feedback data for the presentation
+      // For static presentations, threads are stored with slug as presentation_id
       const [fbRes, threadsRes, attachmentsRes, reviewersRes] = await Promise.all([
         fetch(`/api/pita/feedback?presentationId=${presentationId}`),
-        fetch(`/api/pita/threads?presentationId=${presentationId}`),
+        fetch(`/api/pita/threads?presentationId=${slug}`),
         fetch(`/api/pita/attachments?presentationId=${presentationId}`),
         fetch(`/api/pita/reviewers?presentationId=${presentationId}`),
       ]);
