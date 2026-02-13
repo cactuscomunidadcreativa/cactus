@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 
 // GET /api/cereus/clients?maisonId=xxx&search=xxx
 export async function GET(request: NextRequest) {
@@ -9,6 +10,9 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const db = createServiceClient();
+  if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
+
   const { searchParams } = new URL(request.url);
   const maisonId = searchParams.get('maisonId');
   const search = searchParams.get('search') || '';
@@ -17,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   if (!maisonId) return NextResponse.json({ error: 'maisonId required' }, { status: 400 });
 
-  let query = supabase
+  let query = db
     .from('cereus_clients')
     .select('*, cereus_emotional_profiles(id, primary_archetype), cereus_body_measurements(id, is_current)', { count: 'exact' })
     .eq('maison_id', maisonId)
@@ -44,6 +48,9 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const db = createServiceClient();
+  if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
+
   const body = await request.json();
   const { maisonId, ...clientData } = body;
 
@@ -51,7 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'maisonId and full_name required' }, { status: 400 });
   }
 
-  const { data: client, error } = await supabase
+  const { data: client, error } = await db
     .from('cereus_clients')
     .insert({
       maison_id: maisonId,
@@ -87,12 +94,15 @@ export async function PUT(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const db = createServiceClient();
+  if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
+
   const body = await request.json();
   const { id, ...updates } = body;
 
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-  const { data: client, error } = await supabase
+  const { data: client, error } = await db
     .from('cereus_clients')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -112,12 +122,15 @@ export async function DELETE(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const db = createServiceClient();
+  if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-  const { error } = await supabase
+  const { error } = await db
     .from('cereus_clients')
     .update({ activo: false, updated_at: new Date().toISOString() })
     .eq('id', id);
