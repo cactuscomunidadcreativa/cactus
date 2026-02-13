@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { OWN_YOUR_IMPACT_SECTIONS, INCLUSION_BY_DESIGN_SECTIONS } from '@/modules/pita/lib/presentations';
-import Link from 'next/link';
 import Image from 'next/image';
-import { ExternalLink, Pencil } from 'lucide-react';
-import { PitaDashboardClient } from './dashboard-client';
+import { PitaDashboardView } from './pita-dashboard-view';
 
 export default async function PitaPage() {
   const supabase = await createClient();
@@ -47,58 +45,12 @@ export default async function PitaPage() {
         </div>
       </div>
 
-      {/* All Presentations */}
-      <div className="mb-6 space-y-3">
-        <p className="text-xs font-medium tracking-widest uppercase text-muted-foreground">Presentations</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* DB Presentations */}
-          {dbPresentations.map((pres: any) => (
-            <div
-              key={pres.id}
-              className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:border-pita-green/30 transition-all"
-            >
-              <div>
-                <p className="text-sm font-semibold">{pres.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  /{pres.slug} · {pres.pita_sections?.[0]?.count || 0} slides
-                  {pres.is_active ? (
-                    <span className="ml-1 text-pita-green">· Live</span>
-                  ) : (
-                    <span className="ml-1 text-amber-500">· Draft</span>
-                  )}
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Link
-                  href={`/apps/pita/editor/${pres.id}`}
-                  className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  title="Edit"
-                >
-                  <Pencil className="w-4 h-4" />
-                </Link>
-                {pres.is_active && (
-                  <Link
-                    href={`/pita/${pres.slug}`}
-                    target="_blank"
-                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                    title="View"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Link>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {/* Static Presentations (not yet in DB) */}
-          {staticPresentations
-            .filter(sp => !dbSlugs.includes(sp.slug))
-            .map((pres) => (
-              <PitaDashboardClient key={pres.id} presentation={pres} />
-            ))
-          }
-        </div>
-      </div>
+      {/* Dashboard with Tabs */}
+      <PitaDashboardView
+        dbPresentations={dbPresentations}
+        staticPresentations={staticPresentations}
+        dbSlugs={dbSlugs}
+      />
     </div>
   );
 }
