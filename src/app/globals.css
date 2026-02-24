@@ -1779,3 +1779,52 @@
     animation: cereus-shimmer 2s linear infinite;
   }
 }
+
+/* ============================================
+   EQ LATAM MASTER COST BRAND COLORS
+   Trust Blue & Premium Gold
+   ============================================ */
+@layer base {
+  :root {
+    /* EQ Primary - Trust Blue */
+    --eq-blue: 196 63% 33%;
+    --eq-blue-light: 196 60% 43%;
+    --eq-blue-dark: 196 63% 25%;
+
+    /* EQ Secondary - Premium Gold */
+    --eq-gold: 45 56% 49%;
+    --eq-gold-light: 45 60% 57%;
+
+    /* EQ Neutrals */
+    --eq-navy: 202 61% 15%;
+    --eq-teal: 172 67% 32%;
+    --eq-cream: 40 50% 97%;
+  }
+}
+
+/* EQ LATAM Utility Classes */
+@layer utilities {
+  .bg-eq-blue { background-color: hsl(var(--eq-blue)); }
+  .bg-eq-blue-light { background-color: hsl(var(--eq-blue-light)); }
+  .bg-eq-gold { background-color: hsl(var(--eq-gold)); }
+  .bg-eq-navy { background-color: hsl(var(--eq-navy)); }
+  .bg-eq-teal { background-color: hsl(var(--eq-teal)); }
+  .bg-eq-cream { background-color: hsl(var(--eq-cream)); }
+
+  .text-eq-blue { color: hsl(var(--eq-blue)); }
+  .text-eq-blue-light { color: hsl(var(--eq-blue-light)); }
+  .text-eq-gold { color: hsl(var(--eq-gold)); }
+  .text-eq-navy { color: hsl(var(--eq-navy)); }
+  .text-eq-teal { color: hsl(var(--eq-teal)); }
+
+  .border-eq-blue { border-color: hsl(var(--eq-blue)); }
+  .border-eq-gold { border-color: hsl(var(--eq-gold)); }
+  .border-eq-navy { border-color: hsl(var(--eq-navy)); }
+
+  .bg-eq-gradient {
+    background: linear-gradient(135deg, hsl(var(--eq-navy)) 0%, hsl(var(--eq-blue)) 50%, hsl(var(--eq-teal)) 100%);
+  }
+  .bg-eq-gradient-soft {
+    background: linear-gradient(135deg, hsl(var(--eq-cream)) 0%, hsl(45 50% 95%) 50%, hsl(var(--eq-cream)) 100%);
+  }
+}

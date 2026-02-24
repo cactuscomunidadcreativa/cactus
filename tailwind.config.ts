@@ -46,6 +46,17 @@ const config: Config = {
           silver: '#BFBFBF',
           cream: '#F7F5F0',
         },
+        // EQ LATAM brand - Trust Blue & Premium Gold
+        eq: {
+          blue: '#1E6B8A',
+          'blue-light': '#2D8CB0',
+          'blue-dark': '#14516B',
+          gold: '#C4A035',
+          'gold-light': '#D4B84E',
+          navy: '#0F2B3D',
+          teal: '#1A8A7A',
+          cream: '#FBF8F0',
+        },
         // Shared
         accent: {
           DEFAULT: '#F99330',
