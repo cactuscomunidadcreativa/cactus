@@ -105,16 +105,6 @@ ${analysis.viabilityReason}
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    if (!supabase) {
-      return NextResponse.json({ error: 'Error de conexion' }, { status: 500 });
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
     const body = await request.json();
     const { message } = body;
 
@@ -131,13 +121,24 @@ export async function POST(request: NextRequest) {
     }
 
     // STEP 3: Use AI to interpret
-    const { data: configData } = await supabase
-      .from('platform_config')
-      .select('value')
-      .eq('key', 'anthropic_api_key')
-      .single();
+    let apiKey = process.env.ANTHROPIC_API_KEY;
 
-    const apiKey = configData?.value || process.env.ANTHROPIC_API_KEY;
+    // Try to get API key from Supabase config if not in env
+    if (!apiKey) {
+      try {
+        const supabase = await createClient();
+        if (supabase) {
+          const { data: configData } = await supabase
+            .from('platform_config')
+            .select('value')
+            .eq('key', 'anthropic_api_key')
+            .single();
+          apiKey = configData?.value;
+        }
+      } catch {
+        // Supabase not available, continue with env key only
+      }
+    }
 
     if (!apiKey) {
       return NextResponse.json({
