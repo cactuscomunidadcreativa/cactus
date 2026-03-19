@@ -159,7 +159,7 @@ function formatPrice(n: number) {
 // ============================================================
 
 export function DesignerPage() {
-  const [tab, setTab] = useState<'studio' | 'collections' | 'garments' | 'variants'>('studio');
+  const [tab, setTab] = useState<'collections' | 'garments' | 'variants'>('collections');
   const [loading, setLoading] = useState(true);
   const [maisonId, setMaisonId] = useState<string | null>(null);
 
@@ -255,7 +255,6 @@ export function DesignerPage() {
   }
 
   const tabs = [
-    { id: 'studio' as const, icon: Edit3, en: 'Design Studio', es: 'Crear Pieza', count: '' },
     { id: 'collections' as const, icon: Layers, en: 'Collections', es: 'Colecciones', count: collections.length },
     { id: 'garments' as const, icon: Shirt, en: 'Garments', es: 'Prendas', count: garments.length },
     { id: 'variants' as const, icon: Palette, en: 'Variants', es: 'Variantes', count: variants.length },
@@ -300,18 +299,6 @@ export function DesignerPage() {
       </div>
 
       {/* Content */}
-      {tab === 'studio' && maisonId && (
-        <DesignStudio
-          maisonId={maisonId}
-          onSaveDesign={(data) => {
-            // TODO: Save design to garments API
-            console.log('Design saved:', data);
-            setTab('garments');
-            refresh();
-          }}
-        />
-      )}
-
       {tab === 'collections' && (
         <CollectionsTab
           maisonId={maisonId!}
@@ -335,6 +322,7 @@ export function DesignerPage() {
             if (openForm) setOpenGarmentFormForCollection(collectionId);
             setTab('garments');
           }}
+          onRefreshGarments={refresh}
         />
       )}
 
@@ -389,7 +377,7 @@ function CollectionsTab({
   selectedCollection, onSelectCollection, onUpdateSelectedCollection,
   showForm, onShowForm,
   editingCollection, onEditCollection, garments,
-  onNavigateToGarments,
+  onNavigateToGarments, onRefreshGarments,
 }: {
   maisonId: string;
   collections: Collection[];
@@ -405,11 +393,13 @@ function CollectionsTab({
   onEditCollection: (c: Collection | null) => void;
   garments: Garment[];
   onNavigateToGarments: (collectionId: string, openForm?: boolean) => void;
+  onRefreshGarments: () => void;
 }) {
   const [saving, setSaving] = useState(false);
   const [generatingBrief, setGeneratingBrief] = useState(false);
   const [changingStatus, setChangingStatus] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showDesignStudio, setShowDesignStudio] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -747,11 +737,11 @@ function CollectionsTab({
               {isDesign && (
                 <>
                   <button
-                    onClick={() => onNavigateToGarments(selectedCollection.id, true)}
+                    onClick={() => setShowDesignStudio(true)}
                     className="flex items-center gap-2 text-sm px-4 py-2 bg-cereus-gold text-white rounded-lg hover:bg-cereus-gold/90 transition-colors font-medium"
                   >
-                    <Plus className="w-4 h-4" />
-                    Add Garment / Agregar Prenda
+                    <Edit3 className="w-4 h-4" />
+                    Crear Pieza / Design Piece
                   </button>
                   <button
                     onClick={() => onNavigateToGarments(selectedCollection.id)}
@@ -927,6 +917,59 @@ function CollectionsTab({
           </div>
         )}
 
+        {/* Design Studio — opens inline when creating a new piece */}
+        {showDesignStudio && isDesign && (
+          <div className="bg-card border border-cereus-gold/20 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display font-bold text-lg flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-cereus-gold" />
+                Crear Pieza — {selectedCollection.name}
+              </h3>
+              <button
+                onClick={() => setShowDesignStudio(false)}
+                className="p-1 hover:bg-muted rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <DesignStudio
+              maisonId={maisonId}
+              onSaveDesign={async (data) => {
+                // Create garment linked to this collection
+                const category = data.template === 'dress' ? 'dress'
+                  : data.template === 'blouse' ? 'blouse'
+                  : data.template === 'skirt' ? 'skirt'
+                  : data.template === 'pants' ? 'pants'
+                  : data.template === 'jacket' ? 'blazer'
+                  : data.template === 'top' ? 'shirt'
+                  : 'other';
+
+                await fetch('/api/cereus/garments', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    maisonId,
+                    name: data.name,
+                    category,
+                    collection_id: selectedCollection.id,
+                    description: `Fabric: ${data.fabric || 'N/A'}. Colors: ${data.colors.join(', ')}`,
+                    body_zone: ['skirt', 'pants'].includes(data.template) ? 'lower'
+                      : ['blouse', 'top'].includes(data.template) ? 'upper' : 'full',
+                    complexity_level: 1,
+                    base_labor_hours: 0,
+                    base_labor_cost: 0,
+                    images: data.canvasData ? [{ url: data.canvasData, type: 'sketch' }] : [],
+                  }),
+                });
+
+                setShowDesignStudio(false);
+                onRefresh();
+                onRefreshGarments();
+              }}
+            />
+          </div>
+        )}
+
         {/* Garments in Collection */}
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -935,11 +978,11 @@ function CollectionsTab({
             </h3>
             {isDesign && (
               <button
-                onClick={() => onNavigateToGarments(selectedCollection.id, true)}
+                onClick={() => setShowDesignStudio(true)}
                 className="flex items-center gap-1.5 text-xs text-cereus-gold hover:text-cereus-gold/80 transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
-                Add Garment / Agregar
+                <Edit3 className="w-3.5 h-3.5" />
+                Crear Pieza / New Piece
               </button>
             )}
           </div>
@@ -951,11 +994,11 @@ function CollectionsTab({
               </p>
               {isDesign && (
                 <button
-                  onClick={() => onNavigateToGarments(selectedCollection.id, true)}
+                  onClick={() => setShowDesignStudio(true)}
                   className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 transition-colors"
                 >
-                  <Plus className="w-4 h-4" />
-                  Create First Garment / Crear Primera Prenda
+                  <Edit3 className="w-4 h-4" />
+                  Crear Primera Pieza / Create First Piece
                 </button>
               )}
             </div>
