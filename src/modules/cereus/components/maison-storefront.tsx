@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { MaisonConfig } from '@/modules/cereus/types';
 import { MaisonChatbot } from './maison-chatbot';
+import { CartProvider, useCart } from '@/modules/cereus/context/cart-context';
+import { CartDrawer } from './cart-drawer';
 import {
   Search, ShoppingBag, Heart, Menu, X, ChevronRight, ChevronDown,
   Instagram, Phone, MapPin, Mail, ArrowRight, Star,
@@ -84,6 +86,7 @@ function TopBar() {
 
 function NavBar({ maisonName, onMenuToggle }: { maisonName: string; onMenuToggle: () => void }) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { count, openCart } = useCart();
 
   return (
     <header className="bg-[#0a0a0a] text-white sticky top-0 z-50">
@@ -114,11 +117,13 @@ function NavBar({ maisonName, onMenuToggle }: { maisonName: string; onMenuToggle
             <button className="p-1 hover:opacity-70 transition-opacity">
               <Heart className="w-5 h-5" />
             </button>
-            <button className="p-1 hover:opacity-70 transition-opacity relative">
+            <button onClick={openCart} className="p-1 hover:opacity-70 transition-opacity relative">
               <ShoppingBag className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 bg-white text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                0
-              </span>
+              {count > 0 && (
+                <span className="absolute -top-1 -right-1 bg-white text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {count}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -226,6 +231,19 @@ function HeroBanner() {
 
 function ProductCard({ product }: { product: { name: string; price: number; image: string; badge: string | null } }) {
   const [hovered, setHovered] = useState(false);
+  const [added, setAdded] = useState(false);
+  const { addItem } = useCart();
+
+  function handleAddToCart() {
+    addItem({
+      id: product.name.toLowerCase().replace(/\s+/g, '-'),
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  }
 
   return (
     <div
@@ -247,8 +265,13 @@ function ProductCard({ product }: { product: { name: string; price: number; imag
           </span>
         )}
         <div className={`absolute bottom-0 left-0 right-0 p-3 transition-all duration-300 ${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-          <button className="w-full py-2.5 bg-black text-white text-xs font-medium tracking-widest uppercase hover:bg-gray-900 transition-colors">
-            Agregar al Carrito
+          <button
+            onClick={handleAddToCart}
+            className={`w-full py-2.5 text-white text-xs font-medium tracking-widest uppercase transition-colors ${
+              added ? 'bg-green-600' : 'bg-black hover:bg-gray-900'
+            }`}
+          >
+            {added ? 'Agregado!' : 'Agregar al Carrito'}
           </button>
         </div>
         <button className={`absolute top-3 right-3 p-2 bg-white/90 rounded-full transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`}>
@@ -337,28 +360,110 @@ function CollectionBanner() {
 }
 
 function SizeGuide() {
-  const sizes = [
-    { size: 'XS', chest: 'Hasta 92cm' },
-    { size: 'S', chest: 'Hasta 96cm' },
-    { size: 'M', chest: 'Hasta 104cm' },
-    { size: 'L', chest: 'Hasta 112cm' },
-    { size: 'XL', chest: 'Hasta 116cm' },
-    { size: 'XXL', chest: 'Hasta 120cm' },
+  const womenSizes = [
+    { size: 'XS', espalda: 36, busto: 88, talleDel: 42, talleEsp: 39, cintura: 68, cadera: 92 },
+    { size: 'S', espalda: 37, busto: 92, talleDel: 43, talleEsp: 39, cintura: 72, cadera: 96 },
+    { size: 'M', espalda: 38, busto: 98, talleDel: 45, talleEsp: 40, cintura: 76, cadera: 102 },
+    { size: 'L', espalda: 39, busto: 102, talleDel: 45, talleEsp: 40, cintura: 80, cadera: 108 },
+    { size: 'XL', espalda: 40, busto: 106, talleDel: 45, talleEsp: 40, cintura: 88, cadera: 112 },
+    { size: 'XXL', espalda: 41, busto: 110, talleDel: 46, talleEsp: 41, cintura: 98, cadera: 120 },
   ];
+
+  const menSizes = [
+    { size: 'S', pecho: 92, cintura: 78, cadera: 94, hombro: 44 },
+    { size: 'M', pecho: 98, cintura: 84, cadera: 100, hombro: 46 },
+    { size: 'L', pecho: 104, cintura: 90, cadera: 106, hombro: 48 },
+    { size: 'XL', pecho: 110, cintura: 96, cadera: 112, hombro: 50 },
+    { size: 'XXL', pecho: 116, cintura: 102, cadera: 118, hombro: 52 },
+  ];
+
+  const [tab, setTab] = useState<'mujer' | 'hombre'>('mujer');
 
   return (
     <section className="py-16 bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-        <h2 className="text-xl font-display font-bold tracking-wide mb-2">Guia de Tallas</h2>
-        <p className="text-sm text-gray-500 mb-8">Camisas Clasicas</p>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-          {sizes.map(s => (
-            <div key={s.size} className="bg-white border border-gray-200 rounded-lg p-4">
-              <p className="font-display font-bold text-lg">{s.size}</p>
-              <p className="text-xs text-gray-500 mt-1">{s.chest}</p>
-            </div>
-          ))}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <h2 className="text-xl font-display font-bold tracking-wide mb-2 text-center">Tabla de Medidas</h2>
+        <p className="text-sm text-gray-500 mb-6 text-center">Todas las medidas en centimetros (cm)</p>
+
+        {/* Tabs */}
+        <div className="flex justify-center gap-2 mb-8">
+          <button
+            onClick={() => setTab('mujer')}
+            className={`px-6 py-2 text-sm font-medium rounded-full transition-colors ${
+              tab === 'mujer' ? 'bg-black text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Mujer
+          </button>
+          <button
+            onClick={() => setTab('hombre')}
+            className={`px-6 py-2 text-sm font-medium rounded-full transition-colors ${
+              tab === 'hombre' ? 'bg-black text-white' : 'bg-white border text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Hombre
+          </button>
         </div>
+
+        {/* Women's table */}
+        {tab === 'mujer' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm bg-white rounded-xl border overflow-hidden">
+              <thead>
+                <tr className="bg-[#0a0a0a] text-white">
+                  <th className="px-4 py-3 text-left font-medium">Talla</th>
+                  <th className="px-4 py-3 text-center font-medium">Espalda</th>
+                  <th className="px-4 py-3 text-center font-medium">Busto</th>
+                  <th className="px-4 py-3 text-center font-medium">Talle Del.</th>
+                  <th className="px-4 py-3 text-center font-medium">Talle Esp.</th>
+                  <th className="px-4 py-3 text-center font-medium">Cintura</th>
+                  <th className="px-4 py-3 text-center font-medium">Cadera</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {womenSizes.map((s, i) => (
+                  <tr key={s.size} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-4 py-3 font-display font-bold">{s.size}</td>
+                    <td className="px-4 py-3 text-center">{s.espalda}</td>
+                    <td className="px-4 py-3 text-center">{s.busto}</td>
+                    <td className="px-4 py-3 text-center">{s.talleDel}</td>
+                    <td className="px-4 py-3 text-center">{s.talleEsp}</td>
+                    <td className="px-4 py-3 text-center">{s.cintura}</td>
+                    <td className="px-4 py-3 text-center font-medium">{s.cadera}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Men's table */}
+        {tab === 'hombre' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm bg-white rounded-xl border overflow-hidden">
+              <thead>
+                <tr className="bg-[#0a0a0a] text-white">
+                  <th className="px-4 py-3 text-left font-medium">Talla</th>
+                  <th className="px-4 py-3 text-center font-medium">Pecho</th>
+                  <th className="px-4 py-3 text-center font-medium">Cintura</th>
+                  <th className="px-4 py-3 text-center font-medium">Cadera</th>
+                  <th className="px-4 py-3 text-center font-medium">Hombro</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {menSizes.map((s, i) => (
+                  <tr key={s.size} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-4 py-3 font-display font-bold">{s.size}</td>
+                    <td className="px-4 py-3 text-center">{s.pecho}</td>
+                    <td className="px-4 py-3 text-center">{s.cintura}</td>
+                    <td className="px-4 py-3 text-center">{s.cadera}</td>
+                    <td className="px-4 py-3 text-center">{s.hombro}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -503,6 +608,22 @@ export function MaisonStorefront({
   maisonName: string;
   config: MaisonConfig;
 }) {
+  return (
+    <CartProvider>
+      <StorefrontInner maisonId={maisonId} maisonName={maisonName} config={config} />
+    </CartProvider>
+  );
+}
+
+function StorefrontInner({
+  maisonId,
+  maisonName,
+  config,
+}: {
+  maisonId: string;
+  maisonName: string;
+  config: MaisonConfig;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const accentColor = config.branding?.accent_color || '#C9A84C';
 
@@ -518,6 +639,7 @@ export function MaisonStorefront({
       <TopBar />
       <NavBar maisonName={maisonName} onMenuToggle={() => setMenuOpen(true)} />
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <CartDrawer accentColor={accentColor} />
 
       <HeroBanner />
 
@@ -552,6 +674,7 @@ export function MaisonStorefront({
         <MaisonChatbot
           chatbotConfig={config.chatbot}
           maisonName={maisonName}
+          maisonId={maisonId}
         />
       )}
     </div>

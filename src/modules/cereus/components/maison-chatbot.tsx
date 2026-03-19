@@ -21,9 +21,11 @@ interface ChatbotConfig {
 export function MaisonChatbot({
   chatbotConfig,
   maisonName,
+  maisonId,
 }: {
   chatbotConfig: ChatbotConfig;
   maisonName: string;
+  maisonId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -36,6 +38,7 @@ export function MaisonChatbot({
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [convId, setConvId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -64,26 +67,42 @@ export function MaisonChatbot({
     setInput('');
     setLoading(true);
 
-    // Simulate AI response (will be replaced with real API later)
-    setTimeout(() => {
-      const responses = [
-        `Gracias por tu mensaje! Estoy aqui para ayudarte con cualquier consulta sobre ${maisonName}.`,
-        `Excelente pregunta! Dejame revisar eso por ti. Puedes contactarnos al 960 139 383 para una atencion mas personalizada.`,
-        `Me encanta que te interese! En ${maisonName} tenemos las mejores colecciones de la temporada. Quieres que te cuente mas?`,
-        `Claro! Nuestro equipo de atelier estara encantado de ayudarte. Puedes agendar una cita para una experiencia personalizada.`,
-        `Esa es una gran eleccion! Te recomiendo visitar nuestra coleccion POSITANO Summer '25, tiene piezas increibles.`,
-      ];
+    // Call real chat API
+    try {
+      const res = await fetch('/api/cereus/store/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          maisonId,
+          message: input.trim(),
+          conversationId: convId,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.conversationId && !convId) {
+        setConvId(data.conversationId);
+      }
 
       const botMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: responses[Math.floor(Math.random() * responses.length)],
+        content: data.reply || 'Disculpa, no pude procesar tu mensaje.',
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, botMsg]);
+    } catch {
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Gracias por escribirnos. Para atencion personalizada, contactanos al 960 139 383 o a hola@privat.pe.`,
+        timestamp: new Date(),
+      }]);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   }
 
   if (!chatbotConfig.enabled) return null;
