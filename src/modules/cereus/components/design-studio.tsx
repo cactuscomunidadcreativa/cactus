@@ -209,6 +209,8 @@ export function DesignStudio({
   const [designName, setDesignName] = useState('');
   const [activePanel, setActivePanel] = useState<'templates' | 'fabrics' | 'colors' | 'layers'>('templates');
   const [step, setStep] = useState(1); // 1: Template, 2: Sketch, 3: Texture/Color, 4: Save
+  const [generatingAI, setGeneratingAI] = useState(false);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
 
   // Initialize canvas
   useEffect(() => {
@@ -577,11 +579,81 @@ export function DesignStudio({
               Guardar Diseno
             </button>
             <button
-              className="w-full flex items-center justify-center gap-2 py-2 border rounded-lg text-sm hover:bg-muted transition-colors"
+              onClick={async () => {
+                setGeneratingAI(true);
+                setAiMessage(null);
+                try {
+                  const fabricName = selectedFabric
+                    ? FABRIC_TEXTURES.find(f => f.id === selectedFabric)?.name || selectedFabric
+                    : '';
+                  const res = await fetch('/api/cereus/ai/generate-sketch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      template: selectedTemplate || 'dress',
+                      fabric: fabricName,
+                      colors: selectedColors,
+                      style: 'haute couture pencil sketch',
+                    }),
+                  });
+                  const data = await res.json();
+
+                  const canvas = canvasRef.current;
+                  if (!canvas) return;
+                  const ctx = canvas.getContext('2d');
+                  if (!ctx) return;
+
+                  if (data.imageUrl) {
+                    // DALL-E image
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                      ctx.clearRect(0, 0, canvas.width, canvas.height);
+                      ctx.fillStyle = '#FFFFFF';
+                      ctx.fillRect(0, 0, canvas.width, canvas.height);
+                      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                      setStep(2);
+                      setAiMessage('Boceto generado con DALL-E');
+                    };
+                    img.src = data.imageUrl;
+                  } else if (data.svgData) {
+                    // SVG fallback
+                    const svgBlob = new Blob([data.svgData], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(svgBlob);
+                    const img = new Image();
+                    img.onload = () => {
+                      ctx.clearRect(0, 0, canvas.width, canvas.height);
+                      ctx.fillStyle = '#FFFFFF';
+                      ctx.fillRect(0, 0, canvas.width, canvas.height);
+                      // Center the SVG on canvas
+                      const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.9;
+                      const x = (canvas.width - img.width * scale) / 2;
+                      const y = (canvas.height - img.height * scale) / 2;
+                      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                      URL.revokeObjectURL(url);
+                      setStep(2);
+                      setAiMessage(data.message || 'Boceto generado');
+                    };
+                    img.src = url;
+                  }
+                } catch {
+                  setAiMessage('Error al generar. Intenta de nuevo.');
+                } finally {
+                  setGeneratingAI(false);
+                }
+              }}
+              disabled={generatingAI}
+              className="w-full flex items-center justify-center gap-2 py-2 border rounded-lg text-sm hover:bg-muted transition-colors disabled:opacity-50"
             >
-              <Sparkles className="w-4 h-4" />
-              Generar con IA
+              {generatingAI ? (
+                <><div className="w-4 h-4 border-2 border-cereus-gold border-t-transparent rounded-full animate-spin" /> Generando...</>
+              ) : (
+                <><Sparkles className="w-4 h-4" /> Generar con IA</>
+              )}
             </button>
+            {aiMessage && (
+              <p className="text-xs text-center text-muted-foreground">{aiMessage}</p>
+            )}
           </div>
         </div>
       </div>
