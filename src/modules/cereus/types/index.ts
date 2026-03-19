@@ -1078,8 +1078,13 @@ export interface MaisonConfig {
   production_tracking: boolean;
   branding: {
     logo_url?: string;
+    favicon_url?: string;
     primary_color: string;
     accent_color: string;
+    background_color?: string;
+    text_color?: string;
+    meta_title?: string;
+    og_image_url?: string;
   };
 }
 

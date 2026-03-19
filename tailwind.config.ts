@@ -46,6 +46,13 @@ const config: Config = {
           silver: '#BFBFBF',
           cream: '#F7F5F0',
         },
+        // Maison white-label (dynamic CSS variables, set per-tenant)
+        maison: {
+          primary: 'var(--maison-primary, #0A0A0A)',
+          accent: 'var(--maison-accent, #B8943A)',
+          bg: 'var(--maison-bg, #FFFFFF)',
+          text: 'var(--maison-text, #0A0A0A)',
+        },
         // EQ LATAM brand - Trust Blue & Premium Gold
         eq: {
           blue: '#1E6B8A',
