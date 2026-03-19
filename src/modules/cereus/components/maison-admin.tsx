@@ -620,11 +620,120 @@ function ChatbotTrainer({ maisonId, maisonName, accentColor }: { maisonId: strin
 // ─── SETTINGS ───────────────────────────────────────────────
 
 function AdminSettings({ maisonId, config, accentColor }: { maisonId: string; config: MaisonConfig; accentColor: string }) {
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState<string | null>(null);
+  const [openaiKey, setOpenaiKey] = useState((config as any)?.api_keys?.openai || '');
+  const [showKey, setShowKey] = useState(false);
+
+  async function saveConfig(updates: Record<string, unknown>) {
+    setSaving(true);
+    try {
+      const currentConfig = { ...config, ...updates };
+      await fetch('/api/cereus/maison', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ maisonId, config: currentConfig }),
+      });
+      setSaved('Guardado');
+      setTimeout(() => setSaved(null), 2000);
+    } catch {
+      setSaved('Error al guardar');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-display font-bold mb-6">Configuracion</h2>
 
       <div className="space-y-6">
+        {/* API Keys */}
+        <div className="bg-white rounded-xl border p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center">
+              <Settings className="w-4.5 h-4.5 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-medium">API Keys</h3>
+              <p className="text-xs text-gray-500">Conecta servicios de IA para generacion de bocetos, chatbot inteligente y mas.</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">OpenAI API Key</label>
+              <p className="text-xs text-gray-400 mb-2">Necesaria para: Generar bocetos con DALL-E, chatbot inteligente con GPT-4, AI Brief de colecciones, recomendaciones de estilo.</p>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type={showKey ? 'text' : 'password'}
+                    value={openaiKey}
+                    onChange={e => setOpenaiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono pr-20"
+                  />
+                  <button
+                    onClick={() => setShowKey(!showKey)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    {showKey ? 'Ocultar' : 'Mostrar'}
+                  </button>
+                </div>
+                <button
+                  onClick={() => saveConfig({ api_keys: { openai: openaiKey } })}
+                  disabled={saving}
+                  className="px-4 py-2 text-white text-sm rounded-lg disabled:opacity-50"
+                  style={{ backgroundColor: accentColor }}
+                >
+                  {saving ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+              {openaiKey && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${openaiKey.startsWith('sk-') ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  <span className="text-xs text-gray-500">
+                    {openaiKey.startsWith('sk-') ? 'Key configurada correctamente' : 'El formato de la key no parece correcto'}
+                  </span>
+                </div>
+              )}
+              {!openaiKey && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-gray-300" />
+                  <span className="text-xs text-gray-400">Sin configurar — las funciones de IA usaran fallbacks basicos</span>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs font-medium text-gray-600 mb-2">Funciones que se activan con OpenAI:</p>
+              <ul className="text-xs text-gray-500 space-y-1">
+                <li className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full ${openaiKey ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  Generacion de bocetos con DALL-E 3 (Design Studio)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full ${openaiKey ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  Chatbot inteligente Ramona (respuestas contextuales con GPT-4)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full ${openaiKey ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  AI Brief para colecciones (inspiracion + mood board)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full ${openaiKey ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  Perfiles emocionales por foto (analisis de estilo)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className={`w-1.5 h-1.5 rounded-full ${openaiKey ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  Recomendaciones de estilo personalizadas (Advisor)
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Branding */}
         <div className="bg-white rounded-xl border p-6">
           <h3 className="font-medium mb-4">Branding</h3>
           <div className="grid md:grid-cols-2 gap-4">
@@ -653,6 +762,7 @@ function AdminSettings({ maisonId, config, accentColor }: { maisonId: string; co
           </div>
         </div>
 
+        {/* Domain */}
         <div className="bg-white rounded-xl border p-6">
           <h3 className="font-medium mb-4">Dominio Custom</h3>
           <p className="text-sm text-gray-500 mb-3">
@@ -669,6 +779,7 @@ function AdminSettings({ maisonId, config, accentColor }: { maisonId: string; co
           </p>
         </div>
 
+        {/* Chatbot */}
         <div className="bg-white rounded-xl border p-6">
           <h3 className="font-medium mb-4">Chatbot</h3>
           <div className="grid md:grid-cols-2 gap-4">
@@ -682,6 +793,12 @@ function AdminSettings({ maisonId, config, accentColor }: { maisonId: string; co
             </div>
           </div>
         </div>
+
+        {saved && (
+          <div className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg text-sm shadow-lg">
+            {saved}
+          </div>
+        )}
       </div>
     </div>
   );
