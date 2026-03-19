@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   Users, Ruler, DollarSign, Factory, Shirt, Brain,
   Plus, Search, Sparkles, ChevronRight, Loader2,
-  Layers, Eye,
+  Layers, Eye, ShoppingBag, MessageCircle, Globe, Settings,
 } from 'lucide-react';
 
 interface Maison {
@@ -93,6 +93,8 @@ export function CereusDashboard() {
     );
   }
 
+  const maisonId = maison?.id || '';
+
   const modules = [
     { icon: Users, label: 'Clients', count: totalClients, href: '/apps/cereus/clients', color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
     { icon: Layers, label: 'Designer', count: '-', href: '/apps/cereus/designer', color: 'text-pink-500', bg: 'bg-pink-500/10' },
@@ -102,6 +104,13 @@ export function CereusDashboard() {
     { icon: Brain, label: 'Advisor', count: '-', href: '/apps/cereus/advisor', color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
     { icon: Eye, label: 'Catalog', count: '-', href: '/apps/cereus/catalog', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
     { icon: Ruler, label: 'Measurements', count: '-', href: '/apps/cereus/clients', color: 'text-cereus-bordeaux', bg: 'bg-cereus-bordeaux/10' },
+  ];
+
+  const adminModules = [
+    { icon: ShoppingBag, label: 'Tienda', description: 'Administrar storefront, productos y catalogo', href: `/maison/${maisonId}/admin`, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { icon: MessageCircle, label: 'Chatbot IA', description: 'Entrenar a Ramona con conocimiento de tu marca', href: `/maison/${maisonId}/admin`, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { icon: Globe, label: 'Dominio', description: 'Conectar dominio custom y branding white-label', href: `/maison/${maisonId}/admin`, color: 'text-green-500', bg: 'bg-green-500/10' },
+    { icon: Users, label: 'Portal Cliente', description: 'Vista que ven las clientas: closet, advisor, medidas', href: `/maison/${maisonId}/portal`, color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
   ];
 
   return (
@@ -139,6 +148,29 @@ export function CereusDashboard() {
             </Link>
           );
         })}
+      </div>
+
+      {/* Admin & Store Management */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Administracion</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {adminModules.map((mod) => {
+            const Icon = mod.icon;
+            return (
+              <Link
+                key={mod.label}
+                href={mod.href}
+                className="group p-5 rounded-xl border bg-card hover:border-cereus-gold/30 transition-all"
+              >
+                <div className={`w-10 h-10 rounded-lg ${mod.bg} flex items-center justify-center mb-3`}>
+                  <Icon className={`w-5 h-5 ${mod.color}`} />
+                </div>
+                <p className="font-medium group-hover:text-cereus-gold transition-colors">{mod.label}</p>
+                <p className="text-xs text-muted-foreground mt-1">{mod.description}</p>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {/* Recent Clients */}
