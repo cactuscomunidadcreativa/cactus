@@ -1086,6 +1086,13 @@ export interface MaisonConfig {
     meta_title?: string;
     og_image_url?: string;
   };
+  chatbot?: {
+    enabled: boolean;
+    name: string;
+    greeting: string;
+    avatar_emoji: string;
+    accent_color: string;
+  };
 }
 
 // ============================================================
