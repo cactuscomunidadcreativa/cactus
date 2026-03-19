@@ -8,6 +8,7 @@ import {
   Target, Link2, Lock, Rocket, Share2, Copy, CheckCircle2,
 } from 'lucide-react';
 import { ImageUploader } from './image-uploader';
+import { DesignStudio } from './design-studio';
 
 // ============================================================
 // Types
@@ -158,7 +159,7 @@ function formatPrice(n: number) {
 // ============================================================
 
 export function DesignerPage() {
-  const [tab, setTab] = useState<'collections' | 'garments' | 'variants'>('collections');
+  const [tab, setTab] = useState<'studio' | 'collections' | 'garments' | 'variants'>('studio');
   const [loading, setLoading] = useState(true);
   const [maisonId, setMaisonId] = useState<string | null>(null);
 
@@ -254,6 +255,7 @@ export function DesignerPage() {
   }
 
   const tabs = [
+    { id: 'studio' as const, icon: Edit3, en: 'Design Studio', es: 'Crear Pieza', count: '' },
     { id: 'collections' as const, icon: Layers, en: 'Collections', es: 'Colecciones', count: collections.length },
     { id: 'garments' as const, icon: Shirt, en: 'Garments', es: 'Prendas', count: garments.length },
     { id: 'variants' as const, icon: Palette, en: 'Variants', es: 'Variantes', count: variants.length },
@@ -298,6 +300,18 @@ export function DesignerPage() {
       </div>
 
       {/* Content */}
+      {tab === 'studio' && maisonId && (
+        <DesignStudio
+          maisonId={maisonId}
+          onSaveDesign={(data) => {
+            // TODO: Save design to garments API
+            console.log('Design saved:', data);
+            setTab('garments');
+            refresh();
+          }}
+        />
+      )}
+
       {tab === 'collections' && (
         <CollectionsTab
           maisonId={maisonId!}

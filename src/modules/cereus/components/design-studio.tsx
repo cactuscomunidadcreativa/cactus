@@ -1,0 +1,590 @@
+'use client';
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  Pencil, Eraser, Undo2, Redo2, Download, Save, Layers, Palette,
+  Plus, Trash2, Eye, EyeOff, Upload, Image as ImageIcon, Square,
+  Circle, Minus, type LucideIcon, ZoomIn, ZoomOut, RotateCcw,
+  Shirt, Scissors, ChevronRight, Sparkles, X, Check, Move,
+} from 'lucide-react';
+
+// ─── TYPES ──────────────────────────────────────────────────
+
+interface DesignLayer {
+  id: string;
+  name: string;
+  type: 'sketch' | 'texture' | 'color' | 'image';
+  visible: boolean;
+  opacity: number;
+  data?: string; // base64 canvas data or image URL
+  color?: string;
+  textureUrl?: string;
+}
+
+interface TextureItem {
+  id: string;
+  name: string;
+  url: string;
+  category: string;
+}
+
+interface ColorPalette {
+  name: string;
+  colors: string[];
+}
+
+// ─── PRESET DATA ────────────────────────────────────────────
+
+const GARMENT_TEMPLATES = [
+  { id: 'dress', name: 'Vestido', icon: '👗', silhouette: 'M 120,40 C 100,40 80,60 75,100 L 70,200 C 70,250 60,300 50,350 L 190,350 C 180,300 170,250 170,200 L 165,100 C 160,60 140,40 120,40 Z' },
+  { id: 'blouse', name: 'Blusa', icon: '👚', silhouette: 'M 120,40 C 95,40 70,55 65,80 L 40,120 L 65,130 L 60,200 L 180,200 L 175,130 L 200,120 L 175,80 C 170,55 145,40 120,40 Z' },
+  { id: 'skirt', name: 'Falda', icon: '🩳', silhouette: 'M 70,80 L 65,100 C 60,180 50,260 40,340 L 200,340 C 190,260 180,180 175,100 L 170,80 Z' },
+  { id: 'pants', name: 'Pantalon', icon: '👖', silhouette: 'M 80,60 L 75,160 L 60,340 L 110,340 L 120,180 L 130,340 L 180,340 L 165,160 L 160,60 Z' },
+  { id: 'jacket', name: 'Chaqueta', icon: '🧥', silhouette: 'M 120,30 C 95,30 70,50 65,80 L 30,110 L 55,140 L 50,250 L 90,250 L 95,150 L 120,140 L 145,150 L 150,250 L 190,250 L 185,140 L 210,110 L 175,80 C 170,50 145,30 120,30 Z' },
+  { id: 'top', name: 'Top', icon: '👕', silhouette: 'M 120,50 C 100,50 80,60 75,80 L 55,100 L 75,110 L 70,180 L 170,180 L 165,110 L 185,100 L 165,80 C 160,60 140,50 120,50 Z' },
+];
+
+const FABRIC_TEXTURES: TextureItem[] = [
+  { id: 'silk', name: 'Seda', url: '', category: 'Delicados' },
+  { id: 'cotton', name: 'Algodon', url: '', category: 'Basicos' },
+  { id: 'linen', name: 'Lino', url: '', category: 'Basicos' },
+  { id: 'taffeta', name: 'Taffeta', url: '', category: 'Formales' },
+  { id: 'velvet', name: 'Terciopelo', url: '', category: 'Formales' },
+  { id: 'chiffon', name: 'Chiffon', url: '', category: 'Delicados' },
+  { id: 'organza', name: 'Organza', url: '', category: 'Delicados' },
+  { id: 'denim', name: 'Denim', url: '', category: 'Casual' },
+  { id: 'leather', name: 'Cuero', url: '', category: 'Especiales' },
+  { id: 'lace', name: 'Encaje', url: '', category: 'Delicados' },
+  { id: 'shantung', name: 'Shantung', url: '', category: 'Formales' },
+  { id: 'crepe', name: 'Crepe', url: '', category: 'Basicos' },
+];
+
+const COLOR_PALETTES: ColorPalette[] = [
+  { name: 'Positano', colors: ['#FFFFFF', '#F5E6D3', '#E8B87A', '#D4956A', '#8B4513', '#2F1810'] },
+  { name: 'Equilibrium', colors: ['#0A0A0A', '#2C2C2C', '#5A5A5A', '#969696', '#C8C8C8', '#F0F0F0'] },
+  { name: 'Origenes', colors: ['#6B1D34', '#8B2E4A', '#A04060', '#C4A035', '#D4B84E', '#F0EBE0'] },
+  { name: 'Oceano', colors: ['#0C2340', '#1B4569', '#2D7D9F', '#5BB5CF', '#A8D8EA', '#E0F0F5'] },
+  { name: 'Tierra', colors: ['#3E2723', '#5D4037', '#795548', '#A1887F', '#BCAAA4', '#D7CCC8'] },
+  { name: 'Jardin', colors: ['#1B5E20', '#2E7D32', '#4CAF50', '#81C784', '#A5D6A7', '#E8F5E9'] },
+];
+
+const BRUSH_SIZES = [2, 4, 8, 12, 20, 32];
+
+// ─── CANVAS DRAWING ─────────────────────────────────────────
+
+function useCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [tool, setTool] = useState<'pencil' | 'eraser' | 'move'>('pencil');
+  const [brushSize, setBrushSize] = useState(4);
+  const [color, setColor] = useState('#0A0A0A');
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const saveState = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const data = canvas.toDataURL();
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(data);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }, [canvasRef, history, historyIndex]);
+
+  const undo = useCallback(() => {
+    if (historyIndex <= 0) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const newIndex = historyIndex - 1;
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = history[newIndex];
+    setHistoryIndex(newIndex);
+  }, [canvasRef, history, historyIndex]);
+
+  const redo = useCallback(() => {
+    if (historyIndex >= history.length - 1) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const newIndex = historyIndex + 1;
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = history[newIndex];
+    setHistoryIndex(newIndex);
+  }, [canvasRef, history, historyIndex]);
+
+  const clearCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    saveState();
+  }, [canvasRef, saveState]);
+
+  const startDrawing = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas || tool === 'move') return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (tool === 'eraser') {
+      ctx.globalCompositeOperation = 'destination-out';
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = color;
+    }
+
+    setIsDrawing(true);
+  }, [canvasRef, tool, brushSize, color]);
+
+  const draw = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }, [isDrawing, canvasRef]);
+
+  const stopDrawing = useCallback(() => {
+    if (isDrawing) {
+      setIsDrawing(false);
+      saveState();
+    }
+  }, [isDrawing, saveState]);
+
+  return {
+    tool, setTool, brushSize, setBrushSize, color, setColor,
+    startDrawing, draw, stopDrawing, undo, redo, clearCanvas,
+    canUndo: historyIndex > 0, canRedo: historyIndex < history.length - 1,
+  };
+}
+
+// ─── DESIGN STUDIO COMPONENT ───────────────────────────────
+
+export function DesignStudio({
+  maisonId,
+  onSaveDesign,
+}: {
+  maisonId: string;
+  onSaveDesign?: (data: { name: string; canvasData: string; template: string; fabric: string; colors: string[] }) => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const {
+    tool, setTool, brushSize, setBrushSize, color, setColor,
+    startDrawing, draw, stopDrawing, undo, redo, clearCanvas,
+    canUndo, canRedo,
+  } = useCanvas(canvasRef);
+
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedFabric, setSelectedFabric] = useState<string | null>(null);
+  const [selectedColors, setSelectedColors] = useState<string[]>(['#0A0A0A']);
+  const [activePalette, setActivePalette] = useState(0);
+  const [designName, setDesignName] = useState('');
+  const [activePanel, setActivePanel] = useState<'templates' | 'fabrics' | 'colors' | 'layers'>('templates');
+  const [step, setStep] = useState(1); // 1: Template, 2: Sketch, 3: Texture/Color, 4: Save
+
+  // Initialize canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.width = 600;
+    canvas.height = 800;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, 600, 800);
+    }
+  }, []);
+
+  // Draw template silhouette
+  function applyTemplate(templateId: string) {
+    setSelectedTemplate(templateId);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw silhouette as pencil sketch
+    const template = GARMENT_TEMPLATES.find(t => t.id === templateId);
+    if (!template) return;
+
+    const path = new Path2D(template.silhouette);
+
+    // Scale to canvas
+    ctx.save();
+    ctx.translate(canvas.width / 2 - 120, canvas.height / 2 - 200);
+    ctx.scale(2.5, 2.5);
+
+    // Sketch style — light pencil strokes
+    ctx.strokeStyle = '#B0B0B0';
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([4, 3]);
+    ctx.stroke(path);
+
+    // Second pass — slightly offset for hand-drawn feel
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#808080';
+    ctx.lineWidth = 0.5;
+    ctx.translate(0.5, 0.3);
+    ctx.stroke(path);
+
+    ctx.restore();
+
+    setStep(2);
+  }
+
+  function handleSave() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const canvasData = canvas.toDataURL('image/png');
+
+    onSaveDesign?.({
+      name: designName || 'Sin Nombre',
+      canvasData,
+      template: selectedTemplate || '',
+      fabric: selectedFabric || '',
+      colors: selectedColors,
+    });
+  }
+
+  const steps = [
+    { num: 1, label: 'Silueta', active: step >= 1 },
+    { num: 2, label: 'Boceto', active: step >= 2 },
+    { num: 3, label: 'Texturas y Color', active: step >= 3 },
+    { num: 4, label: 'Guardar', active: step >= 4 },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Steps */}
+      <div className="flex items-center gap-2">
+        {steps.map((s, i) => (
+          <div key={s.num} className="flex items-center gap-2">
+            <button
+              onClick={() => setStep(s.num)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                step === s.num
+                  ? 'bg-cereus-gold text-white'
+                  : s.active
+                  ? 'bg-cereus-gold/10 text-cereus-gold'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              <span className="w-5 h-5 rounded-full bg-current/10 flex items-center justify-center text-[10px]">
+                {s.num}
+              </span>
+              {s.label}
+            </button>
+            {i < steps.length - 1 && <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-6">
+        {/* ─── LEFT: Canvas ─────────────────────────── */}
+        <div className="flex-1">
+          {/* Toolbar */}
+          {step >= 2 && (
+            <div className="flex items-center gap-2 mb-3 p-2 bg-card border rounded-xl">
+              <div className="flex items-center gap-1 border-r pr-2">
+                <button
+                  onClick={() => setTool('pencil')}
+                  className={`p-2 rounded-lg transition-colors ${tool === 'pencil' ? 'bg-cereus-gold/10 text-cereus-gold' : 'hover:bg-muted'}`}
+                  title="Lapiz"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setTool('eraser')}
+                  className={`p-2 rounded-lg transition-colors ${tool === 'eraser' ? 'bg-cereus-gold/10 text-cereus-gold' : 'hover:bg-muted'}`}
+                  title="Borrador"
+                >
+                  <Eraser className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Brush sizes */}
+              <div className="flex items-center gap-1 border-r pr-2">
+                {BRUSH_SIZES.map(size => (
+                  <button
+                    key={size}
+                    onClick={() => setBrushSize(size)}
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                      brushSize === size ? 'bg-cereus-gold/10' : 'hover:bg-muted'
+                    }`}
+                  >
+                    <div
+                      className="rounded-full bg-current"
+                      style={{ width: Math.min(size, 16), height: Math.min(size, 16) }}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              {/* Current color */}
+              <div className="flex items-center gap-1 border-r pr-2">
+                <input
+                  type="color"
+                  value={color}
+                  onChange={e => setColor(e.target.value)}
+                  className="w-7 h-7 rounded cursor-pointer border-0"
+                />
+                {selectedColors.map((c, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setColor(c)}
+                    className={`w-6 h-6 rounded-full border-2 ${color === c ? 'border-cereus-gold' : 'border-gray-200'}`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+
+              {/* Undo/Redo */}
+              <div className="flex items-center gap-1">
+                <button onClick={undo} disabled={!canUndo} className="p-2 rounded-lg hover:bg-muted disabled:opacity-30">
+                  <Undo2 className="w-4 h-4" />
+                </button>
+                <button onClick={redo} disabled={!canRedo} className="p-2 rounded-lg hover:bg-muted disabled:opacity-30">
+                  <Redo2 className="w-4 h-4" />
+                </button>
+                <button onClick={clearCanvas} className="p-2 rounded-lg hover:bg-muted text-red-500" title="Limpiar">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Canvas area */}
+          <div className="relative bg-white border rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+            {step === 1 ? (
+              /* Template Selection */
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                <Scissors className="w-10 h-10 text-muted-foreground mb-4" />
+                <h3 className="font-display font-bold text-lg mb-2">Elige una Silueta Base</h3>
+                <p className="text-sm text-muted-foreground text-center mb-6">
+                  Comienza con una plantilla de silueta que se dibujara como boceto a lapiz.
+                </p>
+                <div className="grid grid-cols-3 gap-3 w-full max-w-sm">
+                  {GARMENT_TEMPLATES.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => applyTemplate(t.id)}
+                      className={`p-4 rounded-xl border-2 transition-all hover:border-cereus-gold/50 text-center ${
+                        selectedTemplate === t.id ? 'border-cereus-gold bg-cereus-gold/5' : 'border-border'
+                      }`}
+                    >
+                      <span className="text-3xl">{t.icon}</span>
+                      <p className="text-xs font-medium mt-2">{t.name}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <canvas
+                ref={canvasRef}
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                className="w-full h-full cursor-crosshair"
+                style={{ touchAction: 'none' }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* ─── RIGHT: Panel ─────────────────────────── */}
+        <div className="w-72 flex-shrink-0 space-y-4">
+          {/* Panel tabs */}
+          <div className="flex gap-1 bg-muted rounded-lg p-1">
+            {[
+              { id: 'templates' as const, icon: Shirt, label: 'Siluetas' },
+              { id: 'fabrics' as const, icon: Layers, label: 'Texturas' },
+              { id: 'colors' as const, icon: Palette, label: 'Colores' },
+            ].map(p => (
+              <button
+                key={p.id}
+                onClick={() => { setActivePanel(p.id); if (p.id === 'fabrics' || p.id === 'colors') setStep(3); }}
+                className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-md text-xs font-medium transition-colors ${
+                  activePanel === p.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                }`}
+              >
+                <p.icon className="w-3.5 h-3.5" />
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Templates Panel */}
+          {activePanel === 'templates' && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">Click para aplicar como boceto base</p>
+              {GARMENT_TEMPLATES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => applyTemplate(t.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                    selectedTemplate === t.id ? 'border-cereus-gold bg-cereus-gold/5' : 'hover:bg-muted'
+                  }`}
+                >
+                  <span className="text-2xl">{t.icon}</span>
+                  <span className="text-sm font-medium">{t.name}</span>
+                  {selectedTemplate === t.id && <Check className="w-4 h-4 text-cereus-gold ml-auto" />}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Fabrics Panel */}
+          {activePanel === 'fabrics' && (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">Selecciona la tela principal</p>
+
+              {['Basicos', 'Delicados', 'Formales', 'Casual', 'Especiales'].map(cat => {
+                const items = FABRIC_TEXTURES.filter(f => f.category === cat);
+                if (items.length === 0) return null;
+                return (
+                  <div key={cat}>
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{cat}</p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {items.map(f => (
+                        <button
+                          key={f.id}
+                          onClick={() => setSelectedFabric(f.id)}
+                          className={`p-2.5 rounded-lg border text-xs font-medium text-left transition-all ${
+                            selectedFabric === f.id ? 'border-cereus-gold bg-cereus-gold/5 text-cereus-gold' : 'hover:bg-muted'
+                          }`}
+                        >
+                          {f.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+
+              <button className="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-xl text-sm text-muted-foreground hover:border-cereus-gold/50 hover:text-cereus-gold transition-colors">
+                <Upload className="w-4 h-4" />
+                Subir Textura
+              </button>
+            </div>
+          )}
+
+          {/* Colors Panel */}
+          {activePanel === 'colors' && (
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">Paletas de colores predefinidas</p>
+
+              {COLOR_PALETTES.map((palette, pi) => (
+                <div key={palette.name}>
+                  <button
+                    onClick={() => { setActivePalette(pi); setSelectedColors(palette.colors); }}
+                    className={`w-full text-left mb-1.5 ${activePalette === pi ? 'font-medium' : 'text-muted-foreground'}`}
+                  >
+                    <span className="text-xs">{palette.name}</span>
+                  </button>
+                  <div className="flex gap-1">
+                    {palette.colors.map((c, ci) => (
+                      <button
+                        key={ci}
+                        onClick={() => { setColor(c); if (!selectedColors.includes(c)) setSelectedColors([...selectedColors, c]); }}
+                        className={`flex-1 h-8 rounded-md border-2 transition-all ${
+                          color === c ? 'border-cereus-gold scale-110' : 'border-transparent hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: c }}
+                        title={c}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Colores seleccionados</p>
+                <div className="flex gap-1 flex-wrap">
+                  {selectedColors.map((c, i) => (
+                    <div key={i} className="relative group">
+                      <div className="w-8 h-8 rounded-lg border" style={{ backgroundColor: c }} />
+                      <button
+                        onClick={() => setSelectedColors(selectedColors.filter((_, j) => j !== i))}
+                        className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full items-center justify-center text-[8px] hidden group-hover:flex"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  ))}
+                  <input
+                    type="color"
+                    onChange={e => setSelectedColors([...selectedColors, e.target.value])}
+                    className="w-8 h-8 rounded-lg cursor-pointer opacity-50 hover:opacity-100"
+                    title="Agregar color"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Save section */}
+          <div className="border-t pt-4 space-y-3">
+            <input
+              value={designName}
+              onChange={e => setDesignName(e.target.value)}
+              placeholder="Nombre del diseno..."
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            />
+            <div className="text-xs text-muted-foreground space-y-1">
+              {selectedTemplate && <p>Silueta: {GARMENT_TEMPLATES.find(t => t.id === selectedTemplate)?.name}</p>}
+              {selectedFabric && <p>Tela: {FABRIC_TEXTURES.find(f => f.id === selectedFabric)?.name}</p>}
+              {selectedColors.length > 0 && <p>Colores: {selectedColors.length} seleccionados</p>}
+            </div>
+            <button
+              onClick={() => { setStep(4); handleSave(); }}
+              disabled={!designName && !selectedTemplate}
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 disabled:opacity-50 transition-colors"
+            >
+              <Save className="w-4 h-4" />
+              Guardar Diseno
+            </button>
+            <button
+              className="w-full flex items-center justify-center gap-2 py-2 border rounded-lg text-sm hover:bg-muted transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              Generar con IA
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
