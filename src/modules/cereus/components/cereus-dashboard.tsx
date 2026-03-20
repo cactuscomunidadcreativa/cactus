@@ -46,6 +46,13 @@ export function CereusDashboard() {
     fetchData();
   }, []);
 
+  // Initialize openaiKey from maison config once loaded
+  useEffect(() => {
+    if (maison?.config) {
+      setOpenaiKey((maison.config as any)?.api_keys?.openai || '');
+    }
+  }, [maison]);
+
   async function fetchData() {
     try {
       setLoading(true);
@@ -111,13 +118,6 @@ export function CereusDashboard() {
     { icon: Eye, label: 'Catalog', count: '-', href: '/apps/cereus/catalog', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
     { icon: Ruler, label: 'Measurements', count: '-', href: '/apps/cereus/clients', color: 'text-cereus-bordeaux', bg: 'bg-cereus-bordeaux/10' },
   ];
-
-  // Initialize openaiKey from maison config once loaded
-  useEffect(() => {
-    if (maison?.config) {
-      setOpenaiKey((maison.config as any)?.api_keys?.openai || '');
-    }
-  }, [maison]);
 
   async function saveApiKey() {
     setSavingKey(true);
