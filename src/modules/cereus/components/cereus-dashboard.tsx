@@ -36,6 +36,11 @@ export function CereusDashboard() {
   const [clients, setClients] = useState<CereusClient[]>([]);
   const [totalClients, setTotalClients] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [savingKey, setSavingKey] = useState(false);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -107,11 +112,12 @@ export function CereusDashboard() {
     { icon: Ruler, label: 'Measurements', count: '-', href: '/apps/cereus/clients', color: 'text-cereus-bordeaux', bg: 'bg-cereus-bordeaux/10' },
   ];
 
-  const [showSettings, setShowSettings] = useState(false);
-  const [openaiKey, setOpenaiKey] = useState((maison?.config as any)?.api_keys?.openai || '');
-  const [showKey, setShowKey] = useState(false);
-  const [savingKey, setSavingKey] = useState(false);
-  const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  // Initialize openaiKey from maison config once loaded
+  useEffect(() => {
+    if (maison?.config) {
+      setOpenaiKey((maison.config as any)?.api_keys?.openai || '');
+    }
+  }, [maison]);
 
   async function saveApiKey() {
     setSavingKey(true);
