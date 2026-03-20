@@ -17,6 +17,9 @@ import type {
   DetailTrend,
 } from '../lib/trend-engine';
 import TrendExplorer from './trend-explorer';
+import CollectionBriefEditor from './collection-brief-editor';
+import FabricStudio from './fabric-studio';
+import PieceCreator from './piece-creator';
 
 // ============================================================
 // Types
@@ -114,6 +117,33 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
     },
     [],
   );
+
+  const handleBriefComplete = useCallback(
+    (collectionId: string, brief: CollectionBrief) => {
+      setWorkflow((prev) => ({
+        ...prev,
+        collectionId,
+        collectionBrief: brief,
+        step: 3,
+      }));
+    },
+    [],
+  );
+
+  const handleFabricsComplete = useCallback(
+    (materialIds: string[]) => {
+      setWorkflow((prev) => ({
+        ...prev,
+        selectedFabrics: materialIds,
+        step: 4,
+      }));
+    },
+    [],
+  );
+
+  const handlePiecesComplete = useCallback(() => {
+    setWorkflow((prev) => ({ ...prev, step: 5 }));
+  }, []);
 
   // Determine which steps are completed
   const isStepCompleted = (stepNumber: number): boolean => {
@@ -225,43 +255,43 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
         return <TrendExplorer onComplete={handleTrendComplete} />;
 
       case 2:
-        return (
-          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
-            <Lightbulb className="w-12 h-12 mx-auto mb-4 text-cereus-gold" />
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">
-              Paso 2: Concepto de Coleccion
-            </h2>
-            <p className="text-stone-500">
-              Define el brief creativo, nombre y objetivos de tu coleccion.
-            </p>
-          </div>
-        );
+        return workflow.pinnedTrends && workflow.selectedSeason && workflow.selectedYear ? (
+          <CollectionBriefEditor
+            maisonId={maisonId}
+            season={workflow.selectedSeason}
+            year={workflow.selectedYear}
+            pinnedTrends={workflow.pinnedTrends}
+            onComplete={handleBriefComplete}
+            onBack={goBack}
+          />
+        ) : null;
 
       case 3:
         return (
-          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
-            <Layers className="w-12 h-12 mx-auto mb-4 text-cereus-gold" />
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">
-              Paso 3: Diseno de Telas
-            </h2>
-            <p className="text-stone-500">
-              Selecciona y personaliza las telas para tu coleccion.
-            </p>
-          </div>
+          <FabricStudio
+            maisonId={maisonId}
+            collectionConcept={workflow.collectionBrief?.description || ''}
+            colorStory={workflow.pinnedTrends?.colorStories?.flatMap(cs =>
+              cs.colors.map((hex, i) => ({ hex, name: `${cs.name} ${i + 1}` }))
+            ) || []}
+            season={workflow.selectedSeason || 'spring_summer'}
+            onComplete={handleFabricsComplete}
+            onBack={goBack}
+          />
         );
 
       case 4:
-        return (
-          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
-            <Shirt className="w-12 h-12 mx-auto mb-4 text-cereus-gold" />
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">
-              Paso 4: Crear Piezas
-            </h2>
-            <p className="text-stone-500">
-              Disena cada pieza de la coleccion con IA generativa.
-            </p>
-          </div>
-        );
+        return workflow.collectionId ? (
+          <PieceCreator
+            maisonId={maisonId}
+            collectionId={workflow.collectionId}
+            collectionName={workflow.collectionBrief?.name || 'Coleccion'}
+            season={workflow.selectedSeason || 'spring_summer'}
+            selectedMaterialIds={workflow.selectedFabrics}
+            onComplete={handlePiecesComplete}
+            onBack={goBack}
+          />
+        ) : null;
 
       case 5:
         return (
