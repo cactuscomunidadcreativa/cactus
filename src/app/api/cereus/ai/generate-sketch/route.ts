@@ -260,13 +260,6 @@ function generateTrendSVG(
 
     <defs>
       ${fabricPatterns}
-      <filter id="pencil" x="-2%" y="-2%" width="104%" height="104%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" seed="5" result="noise"/>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.6" xChannelSelector="R" yChannelSelector="G"/>
-      </filter>
-      <filter id="soft">
-        <feGaussianBlur stdDeviation="0.3"/>
-      </filter>
     </defs>
 
     <!-- Page frame -->
@@ -288,7 +281,7 @@ function generateTrendSVG(
     </text>
 
     <!-- Fashion figure with garment -->
-    <g filter="url(#pencil)" transform="translate(0, 8)">
+    <g transform="translate(0, 8)">
       ${garmentSVG}
     </g>
 
