@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ImageUploader } from './image-uploader';
 import { DesignStudio } from './design-studio';
+import { DesignerWorkflow } from './designer-workflow';
 
 // ============================================================
 // Types
@@ -159,6 +160,7 @@ function formatPrice(n: number) {
 // ============================================================
 
 export function DesignerPage() {
+  const [mode, setMode] = useState<'workflow' | 'manage'>('workflow');
   const [tab, setTab] = useState<'collections' | 'garments' | 'variants'>('collections');
   const [loading, setLoading] = useState(true);
   const [maisonId, setMaisonId] = useState<string | null>(null);
@@ -268,7 +270,33 @@ export function DesignerPage() {
           <h1 className="text-2xl font-display font-bold">Designer Studio</h1>
           <p className="text-sm text-muted-foreground">Estudio del Diseñador</p>
         </div>
+        <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
+          <button
+            onClick={() => setMode('workflow')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              mode === 'workflow' ? 'bg-cereus-gold text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Flujo Creativo
+          </button>
+          <button
+            onClick={() => setMode('manage')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              mode === 'manage' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Gestion
+          </button>
+        </div>
       </div>
+
+      {/* Workflow Mode */}
+      {mode === 'workflow' && maisonId && (
+        <DesignerWorkflow maisonId={maisonId} />
+      )}
+
+      {/* Management Mode (existing tabs) */}
+      {mode === 'manage' && (<>
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-muted/50 rounded-xl">
@@ -364,6 +392,8 @@ export function DesignerPage() {
           onShowForm={setShowVariantForm}
         />
       )}
+
+      </>)}
     </div>
   );
 }
