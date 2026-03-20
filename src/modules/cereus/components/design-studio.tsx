@@ -193,7 +193,8 @@ export function DesignStudio({
   onSaveDesign,
 }: {
   maisonId: string;
-  onSaveDesign?: (data: { name: string; canvasData: string; template: string; fabric: string; colors: string[] }) => void;
+  collectionId?: string | null;
+  onSaveDesign?: (data: { name: string; canvasData: string; template: string; fabric: string; colors: string[] }) => void | Promise<void>;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const {
@@ -211,6 +212,8 @@ export function DesignStudio({
   const [step, setStep] = useState(1); // 1: Template, 2: Sketch, 3: Texture/Color, 4: Save
   const [generatingAI, setGeneratingAI] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   // Initialize canvas
   useEffect(() => {
@@ -266,18 +269,30 @@ export function DesignStudio({
     setStep(2);
   }
 
-  function handleSave() {
+  async function handleSave() {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    setSaving(true);
+    setSaveMessage(null);
     const canvasData = canvas.toDataURL('image/png');
 
-    onSaveDesign?.({
-      name: designName || 'Sin Nombre',
-      canvasData,
-      template: selectedTemplate || '',
-      fabric: selectedFabric || '',
-      colors: selectedColors,
-    });
+    try {
+      if (onSaveDesign) {
+        await onSaveDesign({
+          name: designName || 'Sin Nombre',
+          canvasData,
+          template: selectedTemplate || '',
+          fabric: selectedFabric || '',
+          colors: selectedColors,
+        });
+      }
+      setSaveMessage('Diseno guardado exitosamente');
+      setTimeout(() => setSaveMessage(null), 4000);
+    } catch {
+      setSaveMessage('Error al guardar');
+    } finally {
+      setSaving(false);
+    }
   }
 
   const steps = [
@@ -572,12 +587,20 @@ export function DesignStudio({
             </div>
             <button
               onClick={() => { setStep(4); handleSave(); }}
-              disabled={!designName && !selectedTemplate}
+              disabled={saving || (!designName && !selectedTemplate)}
               className="w-full flex items-center justify-center gap-2 py-2.5 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 disabled:opacity-50 transition-colors"
             >
-              <Save className="w-4 h-4" />
-              Guardar Diseno
+              {saving ? (
+                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Guardando...</>
+              ) : (
+                <><Save className="w-4 h-4" /> Guardar Diseno</>
+              )}
             </button>
+            {saveMessage && (
+              <p className={`text-xs text-center ${saveMessage.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>
+                {saveMessage.includes('Error') ? '' : '✓ '}{saveMessage}
+              </p>
+            )}
             <button
               onClick={async () => {
                 setGeneratingAI(true);
@@ -594,6 +617,7 @@ export function DesignStudio({
                       fabric: fabricName,
                       colors: selectedColors,
                       style: 'haute couture pencil sketch',
+                      maisonId,
                     }),
                   });
                   const data = await res.json();
