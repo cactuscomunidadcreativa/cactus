@@ -659,8 +659,10 @@ export function DesignStudio({
                     };
                     img.src = data.imageUrl;
                   } else if (data.svgData) {
-                    const svgBlob = new Blob([data.svgData], { type: 'image/svg+xml' });
-                    const url = URL.createObjectURL(svgBlob);
+                    // Use base64 data URI — more reliable than blob URL for SVG
+                    const svgStr = data.svgData as string;
+                    const base64 = btoa(unescape(encodeURIComponent(svgStr)));
+                    const dataUri = `data:image/svg+xml;base64,${base64}`;
                     const img = new Image();
                     img.onload = () => {
                       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -670,11 +672,14 @@ export function DesignStudio({
                       const x = (canvas.width - img.width * scale) / 2;
                       const y = (canvas.height - img.height * scale) / 2;
                       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-                      URL.revokeObjectURL(url);
                       setStep(2);
                       setAiMessage(data.message || 'Boceto generado con tendencias');
                     };
-                    img.src = url;
+                    img.onerror = () => {
+                      setAiMessage('Error renderizando boceto SVG. Intenta de nuevo.');
+                      setGeneratingAI(false);
+                    };
+                    img.src = dataUri;
                   }
                 } catch {
                   setAiMessage('Error al generar. Intenta de nuevo.');

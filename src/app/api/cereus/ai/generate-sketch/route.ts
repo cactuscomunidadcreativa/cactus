@@ -228,19 +228,23 @@ function generateTrendSVG(
   // Construction annotations based on trend/brief
   const annotations = brief?.constructionDetails || suggestions.details.flatMap(d => d.elements.slice(0, 2));
 
+  // Sanitize text for SVG XML
+  function esc(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+
   const annotationSVG = annotations.slice(0, 4).map((note, i) => {
     const y = 100 + i * 90;
     const side = i % 2 === 0 ? 'right' : 'left';
     const lineX = side === 'right' ? 300 : 100;
     const textX = side === 'right' ? 310 : 10;
     const dotX = side === 'right' ? 260 : 140;
-    const textAnchor = side === 'right' ? 'start' : 'start';
+    const safeNote = esc(note.length > 22 ? note.substring(0, 22) + '...' : note);
     return `
-      <!-- Annotation ${i + 1} -->
       <circle cx="${dotX}" cy="${y}" r="2" fill="${accent}" opacity="0.6"/>
       <line x1="${dotX}" y1="${y}" x2="${lineX}" y2="${y}" stroke="${accent}" stroke-width="0.4" stroke-dasharray="3,3" opacity="0.4"/>
-      <text x="${textX}" y="${y + 3}" font-family="'Inter', sans-serif" font-size="7" fill="${primary}" opacity="0.5" text-anchor="${textAnchor}">
-        ${note.length > 22 ? note.substring(0, 22) + '...' : note}
+      <text x="${textX}" y="${y + 3}" font-family="sans-serif" font-size="7" fill="${primary}" opacity="0.5">
+        ${safeNote}
       </text>
     `;
   }).join('');
@@ -252,8 +256,8 @@ function generateTrendSVG(
   ).join('');
 
   // Trend badge
-  const trendName = suggestions.silhouette?.name || 'Haute Couture';
-  const moodText = suggestions.colorStory?.mood || 'sophisticated';
+  const trendName = esc(suggestions.silhouette?.name || 'Haute Couture');
+  const moodText = esc(suggestions.colorStory?.mood || 'sophisticated');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" width="600" height="780">
     <rect width="400" height="520" fill="${bg}"/>
@@ -276,8 +280,8 @@ function generateTrendSVG(
     <line x1="380" y1="500" x2="380" y2="482" stroke="${primary}" stroke-width="0.3" opacity="0.15"/>
 
     <!-- Trend label top -->
-    <text x="200" y="32" text-anchor="middle" font-family="'Inter', sans-serif" font-size="6.5" fill="${accent}" opacity="0.6" letter-spacing="3">
-      ${trendName.toUpperCase()} — ${suggestions.colorStory?.name?.toUpperCase() || 'COLLECTION'}
+    <text x="200" y="32" text-anchor="middle" font-family="sans-serif" font-size="6.5" fill="${accent}" opacity="0.6" letter-spacing="3">
+      ${trendName.toUpperCase()} - ${esc(suggestions.colorStory?.name?.toUpperCase() || 'COLLECTION')}
     </text>
 
     <!-- Fashion figure with garment -->
@@ -294,13 +298,13 @@ function generateTrendSVG(
     ${swatches}
 
     <!-- Fabric + Mood label -->
-    <text x="200" y="500" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="9" fill="${primary}" opacity="0.35" letter-spacing="1.5">
-      ${(fabric || 'Silk').toUpperCase()} · ${moodText.toUpperCase()}
+    <text x="200" y="500" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="${primary}" opacity="0.35" letter-spacing="1.5">
+      ${esc((fabric || 'Silk').toUpperCase())} - ${moodText.toUpperCase()}
     </text>
 
     <!-- Trend season -->
-    <text x="200" y="512" text-anchor="middle" font-family="'Inter', sans-serif" font-size="6" fill="${accent}" opacity="0.3" letter-spacing="2">
-      ${suggestions.silhouette?.keywords?.slice(0, 3).join(' · ').toUpperCase() || 'HAUTE COUTURE'}
+    <text x="200" y="512" text-anchor="middle" font-family="sans-serif" font-size="6" fill="${accent}" opacity="0.3" letter-spacing="2">
+      ${esc(suggestions.silhouette?.keywords?.slice(0, 3).join(' - ').toUpperCase() || 'HAUTE COUTURE')}
     </text>
   </svg>`;
 }
