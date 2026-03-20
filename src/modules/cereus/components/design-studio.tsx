@@ -204,7 +204,7 @@ export function DesignStudio({
   } = useCanvas(canvasRef);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [selectedFabric, setSelectedFabric] = useState<string | null>(null);
+  const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>(['#0A0A0A']);
   const [activePalette, setActivePalette] = useState(0);
   const [designName, setDesignName] = useState('');
@@ -294,7 +294,7 @@ export function DesignStudio({
           name: designName || 'Sin Nombre',
           canvasData,
           template: selectedTemplate || '',
-          fabric: selectedFabric || '',
+          fabric: selectedFabrics.join(', '),
           colors: selectedColors,
         });
       }
@@ -495,10 +495,26 @@ export function DesignStudio({
             </div>
           )}
 
-          {/* Fabrics Panel */}
+          {/* Fabrics Panel — Multi-select */}
           {activePanel === 'fabrics' && (
             <div className="space-y-3">
-              <p className="text-xs text-muted-foreground">Selecciona la tela principal</p>
+              <p className="text-xs text-muted-foreground">Selecciona una o mas telas (click para agregar/quitar)</p>
+
+              {selectedFabrics.length > 0 && (
+                <div className="flex flex-wrap gap-1 pb-2 border-b">
+                  {selectedFabrics.map(fid => {
+                    const f = FABRIC_TEXTURES.find(t => t.id === fid);
+                    return (
+                      <span key={fid} className="inline-flex items-center gap-1 px-2 py-1 bg-cereus-gold/10 text-cereus-gold rounded-full text-[10px] font-medium">
+                        {f?.name || fid}
+                        <button onClick={() => setSelectedFabrics(selectedFabrics.filter(x => x !== fid))} className="hover:text-red-500">
+                          <X className="w-2.5 h-2.5" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
 
               {['Basicos', 'Delicados', 'Formales', 'Casual', 'Especiales'].map(cat => {
                 const items = FABRIC_TEXTURES.filter(f => f.category === cat);
@@ -507,17 +523,27 @@ export function DesignStudio({
                   <div key={cat}>
                     <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{cat}</p>
                     <div className="grid grid-cols-2 gap-1.5">
-                      {items.map(f => (
-                        <button
-                          key={f.id}
-                          onClick={() => setSelectedFabric(f.id)}
-                          className={`p-2.5 rounded-lg border text-xs font-medium text-left transition-all ${
-                            selectedFabric === f.id ? 'border-cereus-gold bg-cereus-gold/5 text-cereus-gold' : 'hover:bg-muted'
-                          }`}
-                        >
-                          {f.name}
-                        </button>
-                      ))}
+                      {items.map(f => {
+                        const isSelected = selectedFabrics.includes(f.id);
+                        return (
+                          <button
+                            key={f.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedFabrics(selectedFabrics.filter(x => x !== f.id));
+                              } else {
+                                setSelectedFabrics([...selectedFabrics, f.id]);
+                              }
+                            }}
+                            className={`p-2.5 rounded-lg border text-xs font-medium text-left transition-all flex items-center justify-between ${
+                              isSelected ? 'border-cereus-gold bg-cereus-gold/5 text-cereus-gold' : 'hover:bg-muted'
+                            }`}
+                          >
+                            {f.name}
+                            {isSelected && <Check className="w-3 h-3" />}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -594,7 +620,7 @@ export function DesignStudio({
             />
             <div className="text-xs text-muted-foreground space-y-1">
               {selectedTemplate && <p>Silueta: {GARMENT_TEMPLATES.find(t => t.id === selectedTemplate)?.name}</p>}
-              {selectedFabric && <p>Tela: {FABRIC_TEXTURES.find(f => f.id === selectedFabric)?.name}</p>}
+              {selectedFabrics.length > 0 && <p>Telas: {selectedFabrics.map(fid => FABRIC_TEXTURES.find(f => f.id === fid)?.name || fid).join(', ')}</p>}
               {selectedColors.length > 0 && <p>Colores: {selectedColors.length} seleccionados</p>}
             </div>
             <button
@@ -618,18 +644,19 @@ export function DesignStudio({
                 setGeneratingAI(true);
                 setAiMessage(null);
                 try {
-                  const fabricName = selectedFabric
-                    ? FABRIC_TEXTURES.find(f => f.id === selectedFabric)?.name || selectedFabric
-                    : '';
+                  const fabricNames = selectedFabrics.map(fid =>
+                    FABRIC_TEXTURES.find(f => f.id === fid)?.name || fid
+                  );
                   const res = await fetch('/api/cereus/ai/generate-sketch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       template: selectedTemplate || 'dress',
-                      fabric: fabricName,
+                      fabrics: fabricNames.length > 0 ? fabricNames : ['Seda'],
                       colors: selectedColors,
                       style: 'haute couture pencil sketch',
                       maisonId,
+                      lang: 'es',
                     }),
                   });
                   const data = await res.json();
@@ -659,27 +686,62 @@ export function DesignStudio({
                     };
                     img.src = data.imageUrl;
                   } else if (data.svgData) {
-                    // Use base64 data URI — more reliable than blob URL for SVG
-                    const svgStr = data.svgData as string;
-                    const base64 = btoa(unescape(encodeURIComponent(svgStr)));
-                    const dataUri = `data:image/svg+xml;base64,${base64}`;
-                    const img = new Image();
-                    img.onload = () => {
-                      ctx.clearRect(0, 0, canvas.width, canvas.height);
-                      ctx.fillStyle = '#FAFAF7';
-                      ctx.fillRect(0, 0, canvas.width, canvas.height);
-                      const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.95;
-                      const x = (canvas.width - img.width * scale) / 2;
-                      const y = (canvas.height - img.height * scale) / 2;
-                      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                    // Remove XML comments that can break rendering
+                    const cleanSvg = (data.svgData as string).replace(/<!--[\s\S]*?-->/g, '');
+
+                    // Try multiple rendering approaches
+                    const renderSVG = (svgStr: string): Promise<void> => {
+                      return new Promise((resolve, reject) => {
+                        // Approach 1: URL-encoded data URI (safest for special chars)
+                        const encoded = encodeURIComponent(svgStr)
+                          .replace(/'/g, '%27')
+                          .replace(/"/g, '%22');
+                        const dataUri = `data:image/svg+xml,${encoded}`;
+
+                        const img = new Image();
+                        img.onload = () => {
+                          ctx.clearRect(0, 0, canvas.width, canvas.height);
+                          ctx.fillStyle = '#FAFAF7';
+                          ctx.fillRect(0, 0, canvas.width, canvas.height);
+                          const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.95;
+                          const x = (canvas.width - img.width * scale) / 2;
+                          const y = (canvas.height - img.height * scale) / 2;
+                          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                          resolve();
+                        };
+                        img.onerror = () => reject(new Error('SVG render failed'));
+                        img.src = dataUri;
+                      });
+                    };
+
+                    try {
+                      await renderSVG(cleanSvg);
                       setStep(2);
                       setAiMessage(data.message || 'Boceto generado con tendencias');
-                    };
-                    img.onerror = () => {
-                      setAiMessage('Error renderizando boceto SVG. Intenta de nuevo.');
-                      setGeneratingAI(false);
-                    };
-                    img.src = dataUri;
+                    } catch {
+                      // Approach 2: Blob URL fallback
+                      try {
+                        const blob = new Blob([cleanSvg], { type: 'image/svg+xml;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const img2 = new Image();
+                        img2.onload = () => {
+                          ctx.clearRect(0, 0, canvas.width, canvas.height);
+                          ctx.fillStyle = '#FAFAF7';
+                          ctx.fillRect(0, 0, canvas.width, canvas.height);
+                          ctx.drawImage(img2, 0, 0, canvas.width, canvas.height);
+                          URL.revokeObjectURL(url);
+                          setStep(2);
+                          setAiMessage(data.message || 'Boceto generado');
+                        };
+                        img2.onerror = () => {
+                          URL.revokeObjectURL(url);
+                          setAiMessage('Error renderizando SVG. Configura OpenAI key para DALL-E.');
+                        };
+                        img2.src = url;
+                      } catch {
+                        setAiMessage('Error renderizando SVG.');
+                      }
+                    }
                   }
                 } catch {
                   setAiMessage('Error al generar. Intenta de nuevo.');

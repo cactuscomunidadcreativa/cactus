@@ -9,14 +9,17 @@ import { getTrendSuggestions, getTrendData, buildDesignPrompt } from '@/modules/
  */
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { template, fabric, colors, collectionName, season } = body;
+  const { template, fabric, fabrics, colors, collectionName, season, lang } = body;
 
   if (!template) {
     return NextResponse.json({ error: 'template required' }, { status: 400 });
   }
 
-  const fabricName = fabric || 'silk';
+  // Support single fabric or array of fabrics
+  const fabricList: string[] = fabrics || (fabric ? [fabric] : ['silk']);
+  const fabricName = fabricList.join(', ');
   const colorList = colors || ['#0A0A0A', '#B8943A'];
+  const language = lang || 'es'; // Default to Spanish
 
   // Get trend data
   const trends = getTrendData(season);
@@ -28,7 +31,7 @@ export async function POST(request: NextRequest) {
   try {
     const anthropicKey = await getAPIKey('claude');
     if (anthropicKey) {
-      designBrief = await generateDesignBrief(anthropicKey, template, fabricName, colorList, season, collectionName);
+      designBrief = await generateDesignBrief(anthropicKey, template, fabricName, colorList, season, collectionName, language);
     }
   } catch {
     // Continue without Claude brief
@@ -79,7 +82,9 @@ export async function POST(request: NextRequest) {
   }
 
   // ─── Step 3: Enhanced SVG with trend data ─────────────────
-  const svgSketch = generateTrendSVG(template, colorList, fabricName, suggestions, designBrief);
+  const svgRaw = generateTrendSVG(template, colorList, fabricName, suggestions, designBrief);
+  // Strip XML comments that can break image rendering in browsers
+  const svgSketch = svgRaw.replace(/<!--[\s\S]*?-->/g, '');
 
   return NextResponse.json({
     svgData: svgSketch,
@@ -120,20 +125,54 @@ async function generateDesignBrief(
   colors: string[],
   season?: string,
   collectionName?: string,
+  language: string = 'es',
 ): Promise<DesignBrief> {
   const trends = getTrendData(season);
   const suggestions = getTrendSuggestions(template, fabric, season);
 
-  const systemPrompt = `You are an expert haute couture fashion designer and trend forecaster. You analyze trends and create design concepts for luxury fashion pieces. Always respond in JSON format. Be specific, creative, and trend-forward.`;
+  const isSpanish = language === 'es';
 
-  const userPrompt = `Create a design brief for a ${template} in ${fabric} using these colors: ${colors.join(', ')}.
+  const garmentNamesES: Record<string, string> = {
+    dress: 'vestido', blouse: 'blusa', skirt: 'falda',
+    pants: 'pantalon', jacket: 'chaqueta', top: 'top',
+  };
+  const garmentLabel = isSpanish ? (garmentNamesES[template] || template) : template;
+
+  const systemPrompt = isSpanish
+    ? `Eres un disenador de alta costura experto y pronosticador de tendencias de moda. Analizas tendencias y creas conceptos de diseno para piezas de moda de lujo. SIEMPRE responde en espanol. Responde SOLO en formato JSON. Se especifico, creativo y vanguardista.`
+    : `You are an expert haute couture fashion designer and trend forecaster. You analyze trends and create design concepts for luxury fashion pieces. Always respond in JSON format. Be specific, creative, and trend-forward.`;
+
+  const userPrompt = isSpanish
+    ? `Crea un brief de diseno para un/una ${garmentLabel} en ${fabric} usando estos colores: ${colors.join(', ')}.
+
+Temporada: ${trends.season} ${trends.year}
+${collectionName ? `Coleccion: "${collectionName}"` : ''}
+
+Tendencias actuales:
+- Silueta en tendencia: ${suggestions.silhouette?.name} - ${suggestions.silhouette?.description}
+- Tela en tendencia: ${suggestions.fabricTrend?.name} - ${suggestions.fabricTrend?.description}
+- Detalles: ${suggestions.details.map(d => `${d.name}: ${d.elements.join(', ')}`).join('; ')}
+- Mood: ${trends.moodKeywords.join(', ')}
+
+IMPORTANTE: Responde TODO en espanol. Responde SOLO con este JSON:
+{
+  "concept": "Una frase creativa describiendo el concepto de esta pieza (en espanol)",
+  "silhouetteNotes": "Descripcion especifica de la silueta con proporciones (en espanol)",
+  "fabricNotes": "Como usar la tela, caida, peso, consideraciones (en espanol)",
+  "colorNotes": "Como aplicar los colores en la prenda (en espanol)",
+  "constructionDetails": ["detalle 1 en espanol", "detalle 2", "detalle 3", "detalle 4"],
+  "trendAlignment": "Como esta pieza se alinea con las tendencias ${trends.season} ${trends.year} (en espanol)",
+  "designerTips": "Tip profesional para que esta pieza destaque en pasarela (en espanol)",
+  "dallePrompt": "A detailed DALL-E prompt in ENGLISH for generating a fashion sketch of this specific design (include: haute couture pencil sketch, white paper, fashion illustration proportions, specific construction details)"
+}`
+    : `Create a design brief for a ${template} in ${fabric} using these colors: ${colors.join(', ')}.
 
 Season: ${trends.season} ${trends.year}
 ${collectionName ? `Collection: "${collectionName}"` : ''}
 
 Current trends:
-- Silhouette trend: ${suggestions.silhouette?.name} — ${suggestions.silhouette?.description}
-- Fabric trend: ${suggestions.fabricTrend?.name} — ${suggestions.fabricTrend?.description}
+- Silhouette trend: ${suggestions.silhouette?.name} - ${suggestions.silhouette?.description}
+- Fabric trend: ${suggestions.fabricTrend?.name} - ${suggestions.fabricTrend?.description}
 - Details: ${suggestions.details.map(d => `${d.name}: ${d.elements.join(', ')}`).join('; ')}
 - Mood: ${trends.moodKeywords.join(', ')}
 
@@ -146,7 +185,7 @@ Respond with this JSON structure:
   "constructionDetails": ["detail 1", "detail 2", "detail 3", "detail 4"],
   "trendAlignment": "How this piece aligns with current ${trends.season} ${trends.year} trends",
   "designerTips": "Pro tip for making this piece stand out on the runway",
-  "dallePrompt": "A detailed DALL-E prompt for generating a fashion sketch of this specific design (include: haute couture pencil sketch, white paper, fashion illustration proportions, specific construction details)"
+  "dallePrompt": "A detailed DALL-E prompt for generating a fashion sketch of this specific design"
 }`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
