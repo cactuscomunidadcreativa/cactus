@@ -7,6 +7,7 @@ import {
   Users, Ruler, DollarSign, Factory, Shirt, Brain,
   Plus, Search, Sparkles, ChevronRight, Loader2,
   Layers, Eye, ShoppingBag, MessageCircle, Globe, Settings,
+  Key, Check, ExternalLink, Save,
 } from 'lucide-react';
 
 interface Maison {
@@ -106,11 +107,37 @@ export function CereusDashboard() {
     { icon: Ruler, label: 'Measurements', count: '-', href: '/apps/cereus/clients', color: 'text-cereus-bordeaux', bg: 'bg-cereus-bordeaux/10' },
   ];
 
+  const [showSettings, setShowSettings] = useState(false);
+  const [openaiKey, setOpenaiKey] = useState((maison?.config as any)?.api_keys?.openai || '');
+  const [showKey, setShowKey] = useState(false);
+  const [savingKey, setSavingKey] = useState(false);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
+
+  async function saveApiKey() {
+    setSavingKey(true);
+    try {
+      await fetch('/api/cereus/maison', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          maisonId,
+          config: { ...(maison?.config || {}), api_keys: { openai: openaiKey } },
+        }),
+      });
+      setSavedMsg('API Key guardada');
+      setTimeout(() => setSavedMsg(null), 3000);
+    } catch {
+      setSavedMsg('Error al guardar');
+    } finally {
+      setSavingKey(false);
+    }
+  }
+
   const adminModules = [
-    { icon: ShoppingBag, label: 'Tienda', description: 'Administrar storefront, productos y catalogo', href: `/maison/${maisonId}/admin`, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-    { icon: MessageCircle, label: 'Chatbot IA', description: 'Entrenar a Ramona con conocimiento de tu marca', href: `/maison/${maisonId}/admin`, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-    { icon: Globe, label: 'Dominio', description: 'Conectar dominio custom y branding white-label', href: `/maison/${maisonId}/admin`, color: 'text-green-500', bg: 'bg-green-500/10' },
-    { icon: Users, label: 'Portal Cliente', description: 'Vista que ven las clientas: closet, advisor, medidas', href: `/maison/${maisonId}/portal`, color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
+    { icon: ShoppingBag, label: 'Tienda', description: 'Storefront, productos y catalogo', href: `/maison/${maisonId}/admin`, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { icon: MessageCircle, label: 'Chatbot IA', description: 'Entrenar a Ramona', href: `/maison/${maisonId}/admin`, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { icon: Globe, label: 'Ver Tienda', description: 'Storefront publico', href: `/maison/${maisonId}`, color: 'text-green-500', bg: 'bg-green-500/10' },
+    { icon: Users, label: 'Portal Cliente', description: 'Vista de clientas', href: `/maison/${maisonId}/portal`, color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
   ];
 
   return (
@@ -171,6 +198,106 @@ export function CereusDashboard() {
             );
           })}
         </div>
+      </div>
+
+      {/* API Key & Settings */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          className="w-full flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-cereus-gold/10 flex items-center justify-center">
+              <Key className={`w-4.5 h-4.5 ${openaiKey ? 'text-green-500' : 'text-cereus-gold'}`} />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-sm">Configuracion & API Keys</p>
+              <p className="text-xs text-muted-foreground">
+                {openaiKey ? 'OpenAI conectado — IA activa' : 'Configura OpenAI para activar funciones de IA'}
+              </p>
+            </div>
+          </div>
+          <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showSettings ? 'rotate-90' : ''}`} />
+        </button>
+
+        {showSettings && (
+          <div className="mt-4 pt-4 border-t space-y-4">
+            {/* OpenAI Key */}
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">OpenAI API Key</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type={showKey ? 'text' : 'password'}
+                    value={openaiKey}
+                    onChange={e => setOpenaiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm font-mono bg-background pr-16"
+                  />
+                  <button
+                    onClick={() => setShowKey(!showKey)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    {showKey ? 'Ocultar' : 'Mostrar'}
+                  </button>
+                </div>
+                <button
+                  onClick={saveApiKey}
+                  disabled={savingKey}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-cereus-gold text-white text-sm rounded-lg hover:bg-cereus-gold/90 disabled:opacity-50 transition-colors"
+                >
+                  {savingKey ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  Guardar
+                </button>
+              </div>
+              {openaiKey ? (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${openaiKey.startsWith('sk-') ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  <span className="text-xs text-muted-foreground">
+                    {openaiKey.startsWith('sk-') ? 'Key configurada — DALL-E, GPT-4, AI Brief activos' : 'Formato incorrecto'}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Sin OpenAI: bocetos usan SVG fallback, chatbot usa respuestas basicas.
+                  <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-cereus-gold hover:underline ml-1">
+                    Obtener key
+                  </a>
+                </p>
+              )}
+            </div>
+
+            {/* Quick links */}
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`/maison/${maisonId}/admin`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 p-3 border rounded-lg text-sm hover:bg-muted transition-colors"
+              >
+                <Settings className="w-4 h-4 text-muted-foreground" />
+                Admin Panel Completo
+                <ExternalLink className="w-3 h-3 text-muted-foreground ml-auto" />
+              </a>
+              <a
+                href={`/maison/${maisonId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 p-3 border rounded-lg text-sm hover:bg-muted transition-colors"
+              >
+                <Globe className="w-4 h-4 text-muted-foreground" />
+                Ver Storefront
+                <ExternalLink className="w-3 h-3 text-muted-foreground ml-auto" />
+              </a>
+            </div>
+          </div>
+        )}
+
+        {savedMsg && (
+          <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
+            <Check className="w-4 h-4" /> {savedMsg}
+          </div>
+        )}
       </div>
 
       {/* Recent Clients */}
