@@ -214,6 +214,18 @@ export function DesignStudio({
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [designBrief, setDesignBrief] = useState<{
+    concept?: string;
+    silhouetteNotes?: string;
+    fabricNotes?: string;
+    trendAlignment?: string;
+    constructionDetails?: string[];
+    designerTips?: string;
+  } | null>(null);
+  const [trendInfo, setTrendInfo] = useState<{
+    silhouette?: { name: string; description: string };
+    mood?: string[];
+  } | null>(null);
 
   // Initialize canvas
   useEffect(() => {
@@ -622,13 +634,19 @@ export function DesignStudio({
                   });
                   const data = await res.json();
 
+                  // Store trend + brief info
+                  if (data.designBrief) setDesignBrief(data.designBrief);
+                  if (data.trends) setTrendInfo({
+                    silhouette: data.trends.silhouette,
+                    mood: data.trends.mood,
+                  });
+
                   const canvas = canvasRef.current;
                   if (!canvas) return;
                   const ctx = canvas.getContext('2d');
                   if (!ctx) return;
 
                   if (data.imageUrl) {
-                    // DALL-E image
                     const img = new Image();
                     img.crossOrigin = 'anonymous';
                     img.onload = () => {
@@ -637,26 +655,24 @@ export function DesignStudio({
                       ctx.fillRect(0, 0, canvas.width, canvas.height);
                       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                       setStep(2);
-                      setAiMessage('Boceto generado con DALL-E');
+                      setAiMessage('Boceto generado con DALL-E + tendencias');
                     };
                     img.src = data.imageUrl;
                   } else if (data.svgData) {
-                    // SVG fallback
                     const svgBlob = new Blob([data.svgData], { type: 'image/svg+xml' });
                     const url = URL.createObjectURL(svgBlob);
                     const img = new Image();
                     img.onload = () => {
                       ctx.clearRect(0, 0, canvas.width, canvas.height);
-                      ctx.fillStyle = '#FFFFFF';
+                      ctx.fillStyle = '#FAFAF7';
                       ctx.fillRect(0, 0, canvas.width, canvas.height);
-                      // Center the SVG on canvas
-                      const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.9;
+                      const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.95;
                       const x = (canvas.width - img.width * scale) / 2;
                       const y = (canvas.height - img.height * scale) / 2;
                       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
                       URL.revokeObjectURL(url);
                       setStep(2);
-                      setAiMessage(data.message || 'Boceto generado');
+                      setAiMessage(data.message || 'Boceto generado con tendencias');
                     };
                     img.src = url;
                   }
@@ -677,6 +693,54 @@ export function DesignStudio({
             </button>
             {aiMessage && (
               <p className="text-xs text-center text-muted-foreground">{aiMessage}</p>
+            )}
+
+            {/* Design Brief from AI */}
+            {designBrief && (
+              <div className="mt-3 p-3 bg-cereus-gold/5 border border-cereus-gold/20 rounded-xl space-y-2">
+                <p className="text-[10px] font-medium text-cereus-gold uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" /> Concepto IA
+                </p>
+                {designBrief.concept && (
+                  <p className="text-xs font-medium text-foreground">{designBrief.concept}</p>
+                )}
+                {designBrief.trendAlignment && (
+                  <p className="text-[11px] text-muted-foreground">{designBrief.trendAlignment}</p>
+                )}
+                {designBrief.constructionDetails && designBrief.constructionDetails.length > 0 && (
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase">Detalles</p>
+                    {designBrief.constructionDetails.slice(0, 4).map((d, i) => (
+                      <p key={i} className="text-[11px] text-muted-foreground flex items-start gap-1">
+                        <span className="text-cereus-gold mt-0.5">•</span> {d}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                {designBrief.designerTips && (
+                  <p className="text-[11px] italic text-cereus-gold/80">Tip: {designBrief.designerTips}</p>
+                )}
+              </div>
+            )}
+
+            {/* Trend Info */}
+            {trendInfo && !designBrief && (
+              <div className="mt-3 p-3 bg-muted/50 rounded-xl space-y-1.5">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Tendencias aplicadas</p>
+                {trendInfo.silhouette && (
+                  <div>
+                    <p className="text-xs font-medium">{trendInfo.silhouette.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{trendInfo.silhouette.description}</p>
+                  </div>
+                )}
+                {trendInfo.mood && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {trendInfo.mood.slice(0, 4).map((m, i) => (
+                      <span key={i} className="text-[9px] px-1.5 py-0.5 bg-cereus-gold/10 text-cereus-gold rounded-full">{m}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
