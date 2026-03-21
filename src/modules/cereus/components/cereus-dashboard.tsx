@@ -112,11 +112,11 @@ export function CereusDashboard() {
     { icon: Users, label: 'Clients', count: totalClients, href: '/apps/cereus/clients', color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
     { icon: Layers, label: 'Designer', count: '-', href: '/apps/cereus/designer', color: 'text-pink-500', bg: 'bg-pink-500/10' },
     { icon: DollarSign, label: 'Costing', count: '-', href: '/apps/cereus/costing', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { icon: Factory, label: 'Production', count: '-', href: '/apps/cereus/production', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { icon: Factory, label: 'Produccion', count: '-', href: '/apps/cereus/production', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { icon: Ruler, label: 'Moldes', count: '-', href: '/apps/cereus/patterns', color: 'text-orange-500', bg: 'bg-orange-500/10' },
     { icon: Shirt, label: 'Closet', count: '-', href: '/apps/cereus/closet', color: 'text-purple-500', bg: 'bg-purple-500/10' },
     { icon: Brain, label: 'Advisor', count: '-', href: '/apps/cereus/advisor', color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
-    { icon: Eye, label: 'Catalog', count: '-', href: '/apps/cereus/catalog', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-    { icon: Ruler, label: 'Measurements', count: '-', href: '/apps/cereus/clients', color: 'text-cereus-bordeaux', bg: 'bg-cereus-bordeaux/10' },
+    { icon: Eye, label: 'Catalogo', count: '-', href: '/apps/cereus/catalog', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
   ];
 
   async function saveApiKey() {
