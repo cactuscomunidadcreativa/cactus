@@ -119,6 +119,50 @@ const GARMENT_TEMPLATES = [
 
 type TemplateId = (typeof GARMENT_TEMPLATES)[number]['id'];
 
+// ─── Default Pattern Pieces per Template ────────────────────
+function getDefaultPiecesForTemplate(templateId: string): { id: string; name: string; fabric_meters: number; notes: string; status: string }[] {
+  const piecesMap: Record<string, string[]> = {
+    dress: ['Panel Frontal', 'Panel Trasero', 'Manga Izq', 'Manga Der', 'Cuello', 'Forro'],
+    blouse: ['Frente', 'Espalda', 'Manga Izq', 'Manga Der', 'Cuello', 'Puno Izq', 'Puno Der'],
+    shirt: ['Frente', 'Espalda', 'Manga Izq', 'Manga Der', 'Cuello', 'Puno Izq', 'Puno Der'],
+    top: ['Frente', 'Espalda', 'Manga Izq', 'Manga Der', 'Cuello', 'Puno Izq', 'Puno Der'],
+    skirt: ['Panel Frontal', 'Panel Trasero', 'Pretina', 'Forro'],
+    pants: ['Panel Frontal Izq', 'Panel Frontal Der', 'Panel Trasero Izq', 'Panel Trasero Der', 'Pretina', 'Bolsillo'],
+    jacket: ['Frente Izq', 'Frente Der', 'Espalda', 'Manga Izq', 'Manga Der', 'Solapa', 'Cuello', 'Forro'],
+    coat: ['Frente Izq', 'Frente Der', 'Espalda', 'Manga Izq', 'Manga Der', 'Solapa', 'Cuello', 'Forro'],
+    suit: ['Frente Izq', 'Frente Der', 'Espalda', 'Manga Izq', 'Manga Der', 'Solapa', 'Cuello', 'Forro'],
+    jumpsuit: ['Corpino Frente', 'Corpino Espalda', 'Pantalon Frente', 'Pantalon Espalda', 'Manga Izq', 'Manga Der'],
+    cape: ['Panel Principal', 'Cuello/Capucha', 'Forro'],
+    corset: ['Panel Frontal', 'Panel Lateral Izq', 'Panel Lateral Der', 'Panel Trasero', 'Ballenas'],
+    gown: ['Corpino Frente', 'Corpino Espalda', 'Falda Frente', 'Falda Espalda', 'Manga Izq', 'Manga Der', 'Cola', 'Forro Corpino', 'Forro Falda'],
+    shoes: ['Pieza Principal', 'Forro/Interior'],
+    bag: ['Pieza Principal', 'Forro/Interior'],
+    belt: ['Pieza Principal', 'Forro/Interior'],
+    hat: ['Pieza Principal', 'Forro/Interior'],
+    scarf: ['Pieza Principal', 'Forro/Interior'],
+    jewelry: ['Pieza Principal', 'Forro/Interior'],
+    glasses: ['Pieza Principal', 'Forro/Interior'],
+  };
+
+  const names = piecesMap[templateId] || ['Pieza Principal', 'Forro/Interior'];
+  return names.map((name) => ({
+    id: crypto.randomUUID(),
+    name,
+    fabric_meters: 0,
+    notes: '',
+    status: 'pendiente',
+  }));
+}
+
+function generateDefaultPatternData(templateId: string, pieceName: string, constructionDetails?: string[]) {
+  return {
+    sizeSystem: 'international',
+    measurements: {},
+    pieces: getDefaultPiecesForTemplate(templateId),
+    constructionNotes: constructionDetails?.filter(Boolean).join('\n') || '',
+  };
+}
+
 // ─── Component ──────────────────────────────────────────────
 
 export default function PieceCreator({
@@ -266,6 +310,15 @@ export default function PieceCreator({
       .join('. ');
 
     try {
+      // Build sketch image for images array
+      let sketchImageUrl: string | null = null;
+      if (sketchResponse?.imageUrl) {
+        sketchImageUrl = sketchResponse.imageUrl;
+      } else if (sketchResponse?.svgData) {
+        const sanitized = sanitizeSVG(sketchResponse.svgData);
+        sketchImageUrl = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(sanitized)))}`;
+      }
+
       const res = await fetch('/api/cereus/garments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -278,6 +331,23 @@ export default function PieceCreator({
           body_zone: tmpl.bodyZone,
           season,
           tags: assignedMaterials,
+          design_brief: {
+            concept: brief.concept,
+            silhouetteNotes: brief.silhouetteNotes,
+            fabricNotes: brief.fabricNotes,
+            colorNotes: brief.colorNotes,
+            constructionDetails: brief.constructionDetails,
+            trendAlignment: brief.trendAlignment,
+            designerTips: brief.designerTips,
+          },
+          brief_approved: true,
+          sketch_source: sketchResponse?.source || 'svg',
+          images: sketchImageUrl ? [{ url: sketchImageUrl, type: 'sketch' }] : [],
+          pattern_data: generateDefaultPatternData(
+            selectedTemplate,
+            pieceName.trim(),
+            brief.constructionDetails,
+          ),
         }),
       });
       const data = await res.json();
