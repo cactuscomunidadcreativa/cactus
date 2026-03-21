@@ -16,7 +16,7 @@ import type {
   FabricTrend,
   DetailTrend,
 } from '../lib/trend-engine';
-import TrendExplorer from './trend-explorer';
+import CollectionContext from './collection-context';
 import CollectionBriefEditor from './collection-brief-editor';
 import FabricStudio from './fabric-studio';
 import PieceCreator from './piece-creator';
@@ -25,11 +25,25 @@ import PieceCreator from './piece-creator';
 // Types
 // ============================================================
 
+export interface MarketContext {
+  city: string;
+  country: string;
+  avgTemp: number;
+  humidity: string;
+  targetArchetypes: string[];
+  budgetMin: number;
+  budgetMax: number;
+  targetPieces: number;
+  referenceImageUrls: string[];
+  notes: string;
+}
+
 export interface WorkflowState {
   step: number;
   selectedSeason: string | null;
   selectedYear: number | null;
   pinnedTrends: PinnedTrends | null;
+  marketContext: MarketContext | null;
   collectionId: string | null;
   collectionBrief: CollectionBrief | null;
   selectedFabrics: string[];
@@ -66,7 +80,7 @@ export interface PieceEntry {
 // ============================================================
 
 const STEPS = [
-  { number: 1, label: 'Tendencias', icon: TrendingUp },
+  { number: 1, label: 'Contexto', icon: TrendingUp },
   { number: 2, label: 'Concepto', icon: Lightbulb },
   { number: 3, label: 'Telas', icon: Layers },
   { number: 4, label: 'Piezas', icon: Shirt },
@@ -87,6 +101,7 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
     selectedSeason: null,
     selectedYear: null,
     pinnedTrends: null,
+    marketContext: null,
     collectionId: null,
     collectionBrief: null,
     selectedFabrics: [],
@@ -106,12 +121,13 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
   }, []);
 
   const handleTrendComplete = useCallback(
-    (pinned: PinnedTrends, season: string, year: number) => {
+    (pinned: PinnedTrends, season: string, year: number, market?: MarketContext) => {
       setWorkflow((prev) => ({
         ...prev,
         selectedSeason: season,
         selectedYear: year,
         pinnedTrends: pinned,
+        marketContext: market || null,
         step: 2,
       }));
     },
@@ -252,7 +268,7 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
   const renderStepContent = () => {
     switch (workflow.step) {
       case 1:
-        return <TrendExplorer onComplete={handleTrendComplete} />;
+        return <CollectionContext maisonId={maisonId} onComplete={handleTrendComplete} />;
 
       case 2:
         return workflow.pinnedTrends && workflow.selectedSeason && workflow.selectedYear ? (

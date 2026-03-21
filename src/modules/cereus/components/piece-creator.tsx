@@ -19,13 +19,28 @@ import { sanitizeSVG } from '../lib/svg-utils';
 
 // ─── Category Mapping ───────────────────────────────────────
 // Maps template IDs to valid cereus_garment_category enum values
+// DB enum: dress, gown, suit, blazer, coat, skirt, pants, blouse, shirt, jumpsuit, cape, corset, accessory, other
 const CATEGORY_MAP: Record<string, string> = {
   dress: 'dress',
+  gown: 'gown',
   blouse: 'blouse',
+  shirt: 'shirt',
+  top: 'shirt',
   skirt: 'skirt',
   pants: 'pants',
-  jacket: 'blazer',  // DB enum has 'blazer' not 'jacket'
-  top: 'shirt',      // DB enum has 'shirt' not 'top'
+  jacket: 'blazer',
+  coat: 'coat',
+  suit: 'suit',
+  jumpsuit: 'jumpsuit',
+  cape: 'cape',
+  corset: 'corset',
+  shoes: 'accessory',
+  bag: 'accessory',
+  belt: 'accessory',
+  hat: 'accessory',
+  scarf: 'accessory',
+  jewelry: 'accessory',
+  glasses: 'accessory',
 };
 
 // ─── Types ──────────────────────────────────────────────────
@@ -78,12 +93,28 @@ interface SavedPiece {
 // ─── Constants ──────────────────────────────────────────────
 
 const GARMENT_TEMPLATES = [
+  // Prendas principales
   { id: 'dress', name: 'Vestido', icon: '\uD83D\uDC57', bodyZone: 'full' },
+  { id: 'gown', name: 'Vestido de Gala', icon: '\uD83D\uDC57', bodyZone: 'full' },
   { id: 'blouse', name: 'Blusa', icon: '\uD83D\uDC5A', bodyZone: 'upper' },
+  { id: 'shirt', name: 'Camisa', icon: '\uD83D\uDC54', bodyZone: 'upper' },
+  { id: 'top', name: 'Top', icon: '\uD83D\uDC55', bodyZone: 'upper' },
   { id: 'skirt', name: 'Falda', icon: '\uD83E\uDE73', bodyZone: 'lower' },
   { id: 'pants', name: 'Pantalon', icon: '\uD83D\uDC56', bodyZone: 'lower' },
-  { id: 'jacket', name: 'Chaqueta', icon: '\uD83E\uDDE5', bodyZone: 'upper' },
-  { id: 'top', name: 'Top', icon: '\uD83D\uDC55', bodyZone: 'upper' },
+  { id: 'jacket', name: 'Chaqueta/Blazer', icon: '\uD83E\uDDE5', bodyZone: 'upper' },
+  { id: 'coat', name: 'Abrigo', icon: '\uD83E\uDDE5', bodyZone: 'full' },
+  { id: 'suit', name: 'Traje', icon: '\uD83D\uDC54', bodyZone: 'full' },
+  { id: 'jumpsuit', name: 'Jumpsuit', icon: '\uD83E\uDE73', bodyZone: 'full' },
+  { id: 'cape', name: 'Capa', icon: '\uD83E\uDDE3', bodyZone: 'upper' },
+  { id: 'corset', name: 'Corse', icon: '\uD83D\uDC59', bodyZone: 'upper' },
+  // Accesorios
+  { id: 'shoes', name: 'Zapatos', icon: '\uD83D\uDC60', bodyZone: 'accessory' },
+  { id: 'bag', name: 'Bolso/Cartera', icon: '\uD83D\uDC5C', bodyZone: 'accessory' },
+  { id: 'belt', name: 'Correa/Cinturon', icon: '\uD83E\uDE75', bodyZone: 'accessory' },
+  { id: 'hat', name: 'Sombrero', icon: '\uD83E\uDDE2', bodyZone: 'accessory' },
+  { id: 'scarf', name: 'Panuelo/Bufanda', icon: '\uD83E\uDDE3', bodyZone: 'accessory' },
+  { id: 'jewelry', name: 'Joyeria', icon: '\uD83D\uDC8D', bodyZone: 'accessory' },
+  { id: 'glasses', name: 'Lentes', icon: '\uD83D\uDC53', bodyZone: 'accessory' },
 ] as const;
 
 type TemplateId = (typeof GARMENT_TEMPLATES)[number]['id'];
