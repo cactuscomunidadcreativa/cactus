@@ -202,7 +202,6 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
   const toggleArchetype = useCallback((id: string) => {
     setSelectedArchetypes((prev) => {
       if (prev.includes(id)) return prev.filter((a) => a !== id);
-      if (prev.length >= 3) return prev;
       return [...prev, id];
     });
   }, []);
@@ -620,7 +619,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                   Arquetipos de Cliente
                 </h2>
                 <p className="text-[11px] text-white/35 mt-0.5">
-                  Selecciona entre 1 y 3 arquetipos
+                  Selecciona los arquetipos de tu cliente ideal
                 </p>
               </div>
             </div>
@@ -629,14 +628,11 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               {ARCHETYPES.map((arch) => {
                 const selected = selectedArchetypes.includes(arch.id);
                 const Icon = arch.icon;
-                const disabled = !selected && selectedArchetypes.length >= 3;
-
                 return (
                   <button
                     key={arch.id}
                     type="button"
-                    onClick={() => !disabled && toggleArchetype(arch.id)}
-                    disabled={disabled}
+                    onClick={() => toggleArchetype(arch.id)}
                     className={cn(
                       'group relative flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all duration-300',
                       selected

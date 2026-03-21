@@ -20,6 +20,7 @@ import CollectionContext from './collection-context';
 import CollectionBriefEditor from './collection-brief-editor';
 import FabricStudio from './fabric-studio';
 import PieceCreator from './piece-creator';
+import { CereusCostingPage } from './costing-page';
 
 // ============================================================
 // Types
@@ -310,17 +311,7 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
         ) : null;
 
       case 5:
-        return (
-          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
-            <DollarSign className="w-12 h-12 mx-auto mb-4 text-cereus-gold" />
-            <h2 className="text-xl font-semibold text-stone-800 mb-2">
-              Paso 5: Costeo
-            </h2>
-            <p className="text-stone-500">
-              Calcula costos, margenes y precio de venta de cada pieza.
-            </p>
-          </div>
-        );
+        return <CereusCostingPage />;
 
       default:
         return null;
