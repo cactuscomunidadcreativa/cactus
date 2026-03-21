@@ -621,7 +621,7 @@ export default function CollectionBriefEditor({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-medium text-stone-500 mb-1.5">
-              Precio Promedio (MXN)
+              Precio Promedio (USD)
             </label>
             <input
               type="number"
@@ -655,7 +655,7 @@ export default function CollectionBriefEditor({
           <div className="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between">
             <span className="text-xs text-stone-500">Ingreso estimado</span>
             <span className="text-sm font-semibold text-cereus-gold">
-              ${(avgPrice * targetPieces).toLocaleString('es-MX')} MXN
+              ${(avgPrice * targetPieces).toLocaleString('en-US')} USD
             </span>
           </div>
         )}

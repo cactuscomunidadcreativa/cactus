@@ -1,7 +1,7 @@
 /**
  * CEREUS Trend Engine
- * Fashion trend data organized by season, year, and category.
- * Powers the AI-assisted design generation with real trend context.
+ * Datos de tendencias de moda organizados por temporada, ano y categoria.
+ * Alimenta la generacion de diseno asistida por IA con contexto de tendencias reales.
  */
 
 export interface TrendData {
@@ -42,271 +42,351 @@ export interface DetailTrend {
   placement: string[];
 }
 
-// ─── 2026 Trend Data ────────────────────────────────────────
+// ─── Datos de Tendencias 2026 ───────────────────────────────
 
 const TRENDS_2026: Record<string, TrendData> = {
   spring_summer: {
-    season: 'Spring/Summer',
+    season: 'Primavera/Verano',
     year: 2026,
     silhouettes: [
       {
-        name: 'Liquid Drape',
-        description: 'Flowing, body-skimming silhouettes that move with the body. Asymmetric hemlines, cowl necklines, bias cuts.',
+        name: 'Drapeado Liquido',
+        description: 'Siluetas fluidas que acarician el cuerpo y se mueven con el. Dobladillos asimetricos, escotes drapeados, cortes al bies.',
         garmentTypes: ['dress', 'blouse', 'skirt'],
-        keywords: ['fluid', 'asymmetric', 'bias-cut', 'cowl', 'draped'],
+        keywords: ['fluido', 'asimetrico', 'al bies', 'drapeado', 'cowl'],
       },
       {
-        name: 'Structured Soft',
-        description: 'Sharp tailoring meets soft fabrics. Oversized blazers, wide-leg trousers, deconstructed suits.',
+        name: 'Estructura Suave',
+        description: 'Sastreria afilada con telas suaves. Blazers oversize, pantalones anchos, trajes deconstruidos.',
         garmentTypes: ['jacket', 'pants', 'suit'],
-        keywords: ['oversized', 'deconstructed', 'wide-leg', 'relaxed tailoring'],
+        keywords: ['oversize', 'deconstruido', 'pierna ancha', 'sastreria relajada'],
       },
       {
-        name: 'Micro Architecture',
-        description: 'Sculptural details at small scale. Origami folds, pleated inserts, structured ruffles.',
+        name: 'Micro Arquitectura',
+        description: 'Detalles esculturales a pequena escala. Pliegues origami, inserciones plisadas, volantes estructurados.',
         garmentTypes: ['top', 'dress', 'skirt'],
-        keywords: ['origami', 'sculptural', 'pleated', 'structured', 'geometric'],
+        keywords: ['origami', 'escultural', 'plisado', 'estructurado', 'geometrico'],
       },
       {
-        name: 'Second Skin',
-        description: 'Body-conscious, minimalist. Clean lines, minimal seams, invisible construction.',
+        name: 'Segunda Piel',
+        description: 'Silueta ceñida al cuerpo, minimalista. Lineas limpias, costuras minimas, construccion invisible.',
         garmentTypes: ['dress', 'top', 'pants'],
-        keywords: ['minimal', 'body-con', 'sleek', 'clean', 'seamless'],
+        keywords: ['minimal', 'ceñido', 'elegante', 'limpio', 'sin costuras'],
       },
     ],
     colorStories: [
       {
-        name: 'Digital Sunset',
-        description: 'Warm gradient tones inspired by filtered sunsets',
+        name: 'Atardecer Digital',
+        description: 'Tonos calidos en degradado inspirados en atardeceres filtrados',
         colors: ['#FF6B35', '#F7C59F', '#FFE0B2', '#E8A87C', '#D4956A', '#CC5803'],
-        mood: 'warm, optimistic, golden hour',
+        mood: 'calido, optimista, hora dorada',
       },
       {
-        name: 'Ocean Protocol',
-        description: 'Deep oceanic blues meeting technological silver',
+        name: 'Protocolo Oceano',
+        description: 'Azules oceanicos profundos encontrandose con plata tecnologica',
         colors: ['#0B3D91', '#1565C0', '#42A5F5', '#B0BEC5', '#CFD8DC', '#ECEFF1'],
-        mood: 'futuristic, calm, depth',
+        mood: 'futurista, sereno, profundidad',
       },
       {
         name: 'Terra Nova',
-        description: 'Earthy neutrals with unexpected botanical accents',
+        description: 'Neutros terrosos con acentos botanicos inesperados',
         colors: ['#3E2723', '#6D4C41', '#A1887F', '#C5CAE9', '#81C784', '#F5F5DC'],
-        mood: 'grounded, natural, sophisticated',
+        mood: 'arraigado, natural, sofisticado',
       },
       {
-        name: 'Neo Blush',
-        description: 'Evolved pastels with depth and complexity',
+        name: 'Neo Rubor',
+        description: 'Pasteles evolucionados con profundidad y complejidad',
         colors: ['#F8BBD0', '#CE93D8', '#B39DDB', '#F5F5F5', '#FFCCBC', '#FFE0B2'],
-        mood: 'romantic, modern, ethereal',
+        mood: 'romantico, moderno, etereo',
       },
     ],
     fabricTrends: [
       {
-        name: 'Liquid Satin',
-        description: 'High-shine satins and liquid-effect fabrics that catch and reflect light',
-        fabrics: ['duchess satin', 'charmeuse', 'hammered silk'],
-        finish: 'high gloss, reflective',
+        name: 'Satin Liquido',
+        description: 'Satenes de alto brillo y telas con efecto liquido que capturan y reflejan la luz',
+        fabrics: ['satin duquesa', 'charmeuse', 'seda martillada'],
+        finish: 'alto brillo, reflectante',
       },
       {
-        name: 'Organic Textures',
-        description: 'Natural, tactile fabrics with visible weave and handcraft feel',
-        fabrics: ['raw silk', 'handwoven linen', 'bouclé', 'slub cotton'],
-        finish: 'matte, textured, artisanal',
+        name: 'Texturas Organicas',
+        description: 'Telas naturales y tactiles con tejido visible y sensacion artesanal',
+        fabrics: ['seda cruda', 'lino tejido a mano', 'boucle', 'algodon slub'],
+        finish: 'mate, texturado, artesanal',
       },
       {
         name: 'Tech Luxe',
-        description: 'Performance fabrics elevated to luxury status',
-        fabrics: ['scuba neoprene', 'bonded jersey', 'laser-cut mesh'],
-        finish: 'structured, clean edges',
+        description: 'Telas tecnicas elevadas a estatus de lujo',
+        fabrics: ['neopreno scuba', 'jersey laminado', 'mesh cortado laser'],
+        finish: 'estructurado, bordes limpios',
       },
       {
-        name: 'Sheer Layers',
-        description: 'Transparent and semi-transparent fabrics for layered depth',
-        fabrics: ['organza', 'tulle', 'chiffon', 'sheer knit'],
-        finish: 'ethereal, layered, light',
+        name: 'Capas Transparentes',
+        description: 'Telas transparentes y semitransparentes para profundidad en capas',
+        fabrics: ['organza', 'tul', 'chiffon', 'punto transparente'],
+        finish: 'etereo, en capas, ligero',
       },
     ],
     details: [
       {
-        name: 'Artisan Embellishment',
-        description: 'Hand-crafted details that show the maker\'s touch',
-        elements: ['hand embroidery', 'beading clusters', 'raw edge appliqué', 'thread painting'],
-        placement: ['shoulders', 'cuffs', 'hemline', 'collar'],
+        name: 'Bordado Artesanal',
+        description: 'Detalles hechos a mano que muestran el toque del artesano',
+        elements: ['bordado a mano', 'clusters de pedreria', 'aplique de borde crudo', 'pintura con hilo'],
+        placement: ['hombros', 'punos', 'dobladillo', 'cuello'],
       },
       {
-        name: 'Functional Hardware',
-        description: 'Visible closures and hardware as design elements',
-        elements: ['oversized zippers', 'ring pulls', 'metal grommets', 'exposed snaps'],
-        placement: ['front closure', 'sleeves', 'pockets', 'waist'],
+        name: 'Herraje Funcional',
+        description: 'Cierres visibles y herrajes como elementos de diseno',
+        elements: ['cierres oversize', 'tiradores de anilla', 'ojales metalicos', 'broches expuestos'],
+        placement: ['cierre frontal', 'mangas', 'bolsillos', 'cintura'],
       },
       {
-        name: 'Cut & Reveal',
-        description: 'Strategic cutouts and negative space',
-        elements: ['shoulder cutouts', 'back reveals', 'side slits', 'keyhole details'],
-        placement: ['back', 'shoulders', 'sides', 'waist'],
+        name: 'Corte y Revelacion',
+        description: 'Recortes estrategicos y espacio negativo',
+        elements: ['recortes en hombros', 'espalda descubierta', 'aberturas laterales', 'detalles keyhole'],
+        placement: ['espalda', 'hombros', 'costados', 'cintura'],
       },
       {
-        name: 'Volume Play',
-        description: 'Exaggerated proportions in specific zones',
-        elements: ['puff sleeves', 'bubble hems', 'gathered shoulders', 'ballooned shapes'],
-        placement: ['sleeves', 'hem', 'shoulders', 'skirt'],
+        name: 'Juego de Volumenes',
+        description: 'Proporciones exageradas en zonas especificas',
+        elements: ['mangas abullonadas', 'dobladillos globo', 'hombros fruncidos', 'formas infladas'],
+        placement: ['mangas', 'dobladillo', 'hombros', 'falda'],
       },
     ],
-    moodKeywords: ['effortless glamour', 'sun-drenched', 'fluid movement', 'modern romance', 'coastal sophistication', 'art-meets-fashion'],
+    moodKeywords: ['glamour sin esfuerzo', 'banado por el sol', 'movimiento fluido', 'romance moderno', 'sofisticacion costera', 'arte y moda'],
   },
   fall_winter: {
-    season: 'Fall/Winter',
+    season: 'Otono/Invierno',
     year: 2026,
     silhouettes: [
       {
-        name: 'Power Cocoon',
-        description: 'Enveloping, cocoon-like shapes. Oversized coats, wrap silhouettes, generous volumes.',
+        name: 'Capullo de Poder',
+        description: 'Formas envolventes tipo capullo. Abrigos oversize, siluetas cruzadas, volumenes generosos.',
         garmentTypes: ['jacket', 'dress', 'coat'],
-        keywords: ['cocoon', 'oversized', 'wrap', 'enveloping', 'volume'],
+        keywords: ['capullo', 'oversize', 'cruzado', 'envolvente', 'volumen'],
       },
       {
-        name: 'Sharp Edge',
-        description: 'Precision tailoring with extreme angles. Angular shoulders, geometric cuts, crisp lines.',
+        name: 'Filo Cortante',
+        description: 'Sastreria de precision con angulos extremos. Hombros angulares, cortes geometricos, lineas definidas.',
         garmentTypes: ['suit', 'blazer', 'pants'],
-        keywords: ['angular', 'sharp', 'geometric', 'precision', 'structured'],
+        keywords: ['angular', 'afilado', 'geometrico', 'precision', 'estructurado'],
       },
       {
-        name: 'Layered Narrative',
-        description: 'Multiple visible layers creating depth and story. Sheer over opaque, light over heavy.',
+        name: 'Narrativa en Capas',
+        description: 'Multiples capas visibles creando profundidad y narrativa. Transparente sobre opaco, ligero sobre pesado.',
         garmentTypes: ['dress', 'blouse', 'skirt'],
-        keywords: ['layered', 'transparent', 'depth', 'textural contrast'],
+        keywords: ['en capas', 'transparente', 'profundidad', 'contraste textural'],
       },
       {
-        name: 'Column',
-        description: 'Elongated vertical lines, floor-length, narrow silhouettes creating drama.',
+        name: 'Columna',
+        description: 'Lineas verticales elongadas, largo hasta el piso, siluetas estrechas que crean drama.',
         garmentTypes: ['dress', 'skirt', 'coat'],
-        keywords: ['elongated', 'narrow', 'column', 'floor-length', 'dramatic'],
+        keywords: ['elongado', 'estrecho', 'columna', 'hasta el piso', 'dramatico'],
       },
     ],
     colorStories: [
       {
-        name: 'Midnight Library',
-        description: 'Deep, intellectual tones evoking late-night reading rooms',
+        name: 'Biblioteca de Medianoche',
+        description: 'Tonos profundos e intelectuales evocando salas de lectura nocturnas',
         colors: ['#1A1A2E', '#16213E', '#0F3460', '#533A71', '#C8B6A6', '#F1DCA7'],
-        mood: 'mysterious, intellectual, warm amber',
+        mood: 'misterioso, intelectual, ambar calido',
       },
       {
-        name: 'Volcanic',
-        description: 'Deep earth tones punctuated by fiery reds',
+        name: 'Volcanico',
+        description: 'Tonos tierra profundos puntuados por rojos ardientes',
         colors: ['#1B0000', '#3D0000', '#8B0000', '#D4A373', '#6B705C', '#A5A58D'],
-        mood: 'intense, dramatic, earthen fire',
+        mood: 'intenso, dramatico, fuego terrestre',
       },
       {
-        name: 'Steel Garden',
-        description: 'Industrial metallics softened by botanical greens',
+        name: 'Jardin de Acero',
+        description: 'Metalicos industriales suavizados por verdes botanicos',
         colors: ['#424242', '#757575', '#9E9E9E', '#2E7D32', '#4CAF50', '#C8E6C9'],
-        mood: 'urban nature, contrast, resilience',
+        mood: 'naturaleza urbana, contraste, resiliencia',
       },
       {
-        name: 'Ivory Tower',
-        description: 'Monochromatic cream-to-bone palette with texture variety',
+        name: 'Torre de Marfil',
+        description: 'Paleta monocromatica de crema a hueso con variedad de texturas',
         colors: ['#FFFDF7', '#FFF8E1', '#F5F0E8', '#E8DCC8', '#D4C5AA', '#B8A88A'],
-        mood: 'pure, architectural, textural',
+        mood: 'puro, arquitectonico, textural',
       },
     ],
     fabricTrends: [
       {
-        name: 'Heavy Luxe',
-        description: 'Substantial, weighty fabrics that drape with gravity',
-        fabrics: ['double-face wool', 'cashmere blend', 'heavy crepe', 'felted wool'],
-        finish: 'substantial, weighty, luxurious hand',
+        name: 'Lujo Pesado',
+        description: 'Telas sustanciales y con peso que caen con gravedad',
+        fabrics: ['lana doble faz', 'mezcla de cashmere', 'crepe pesado', 'lana fieltrada'],
+        finish: 'sustancial, con peso, mano lujosa',
       },
       {
-        name: 'Crushed & Lived-in',
-        description: 'Deliberately distressed and crinkled textures',
-        fabrics: ['crushed velvet', 'wrinkled taffeta', 'crinkle silk', 'washed leather'],
-        finish: 'lived-in, textured, romantic decay',
+        name: 'Arrugado y Vivido',
+        description: 'Texturas deliberadamente envejecidas y arrugadas',
+        fabrics: ['terciopelo aplastado', 'taffeta arrugado', 'seda crinkle', 'cuero lavado'],
+        finish: 'vivido, texturado, decadencia romantica',
       },
       {
-        name: 'Quilted Dimension',
-        description: 'Quilted and padded surfaces adding depth and warmth',
-        fabrics: ['quilted silk', 'padded jersey', 'channel-stitched leather'],
-        finish: 'dimensional, warm, tactile',
+        name: 'Dimension Acolchada',
+        description: 'Superficies acolchadas y rellenas que agregan profundidad y calidez',
+        fabrics: ['seda acolchada', 'jersey acolchado', 'cuero con costuras canal'],
+        finish: 'dimensional, calido, tactil',
       },
     ],
     details: [
       {
-        name: 'Chain & Link',
-        description: 'Metal chain details as both functional and decorative elements',
-        elements: ['chain straps', 'chain belts', 'chain fringe', 'link closures'],
-        placement: ['straps', 'waist', 'hem', 'neckline'],
+        name: 'Cadena y Eslabon',
+        description: 'Detalles de cadena metalica como elementos funcionales y decorativos',
+        elements: ['tirantes de cadena', 'cinturones de cadena', 'flecos de cadena', 'cierres de eslabon'],
+        placement: ['tirantes', 'cintura', 'dobladillo', 'escote'],
       },
       {
-        name: 'Dramatic Collar',
-        description: 'Statement collars and neckline treatments',
-        elements: ['oversized collar', 'turtleneck', 'detachable collar', 'funnel neck'],
-        placement: ['neckline'],
+        name: 'Cuello Dramatico',
+        description: 'Cuellos statement y tratamientos de escote impactantes',
+        elements: ['cuello oversize', 'cuello alto', 'cuello desmontable', 'cuello embudo'],
+        placement: ['escote'],
       },
       {
-        name: 'Tonal Embroidery',
-        description: 'Same-color embroidery creating subtle texture patterns',
-        elements: ['tonal beading', 'self-color embroidery', 'tone-on-tone quilting'],
-        placement: ['bodice', 'sleeves', 'yoke', 'hem'],
+        name: 'Bordado Tonal',
+        description: 'Bordado del mismo color creando patrones de textura sutil',
+        elements: ['pedreria tonal', 'bordado monocolor', 'acolchado tono sobre tono'],
+        placement: ['corpino', 'mangas', 'canesú', 'dobladillo'],
       },
     ],
-    moodKeywords: ['dark academia', 'power dressing', 'nocturnal glamour', 'intellectual beauty', 'urban fortress', 'layered stories'],
+    moodKeywords: ['academia oscura', 'power dressing', 'glamour nocturno', 'belleza intelectual', 'fortaleza urbana', 'historias en capas'],
   },
   resort: {
-    season: 'Resort',
+    season: 'Resort/Crucero',
     year: 2026,
     silhouettes: [
       {
-        name: 'Resort Ease',
-        description: 'Relaxed, effortless shapes. Kaftans, wide pants, flowing maxi.',
+        name: 'Soltura Resort',
+        description: 'Formas relajadas y sin esfuerzo. Kaftanes, pantalones amplios, maxis fluidos.',
         garmentTypes: ['dress', 'pants', 'blouse'],
-        keywords: ['relaxed', 'kaftan', 'flowing', 'easy', 'maxi'],
+        keywords: ['relajado', 'kaftan', 'fluido', 'facil', 'maxi'],
       },
       {
-        name: 'Architectural Vacation',
-        description: 'Structured resort wear with geometric precision.',
+        name: 'Vacacion Arquitectonica',
+        description: 'Resort wear estructurado con precision geometrica.',
         garmentTypes: ['jacket', 'top', 'skirt'],
-        keywords: ['geometric', 'structured', 'crisp', 'resort-formal'],
+        keywords: ['geometrico', 'estructurado', 'nitido', 'resort-formal'],
       },
     ],
     colorStories: [
       {
-        name: 'Mediterranean Blue',
-        description: 'Azure seas, white architecture, terracotta accents',
+        name: 'Azul Mediterraneo',
+        description: 'Mares azur, arquitectura blanca, acentos terracota',
         colors: ['#0277BD', '#03A9F4', '#FFFFFF', '#D4A373', '#E76F51', '#F4ECD8'],
-        mood: 'coastal, luminous, carefree',
+        mood: 'costero, luminoso, despreocupado',
       },
       {
-        name: 'Tropical Night',
-        description: 'Deep jungle greens with exotic floral pops',
+        name: 'Noche Tropical',
+        description: 'Verdes jungla profundos con toques florales exoticos',
         colors: ['#1B5E20', '#2E7D32', '#004D40', '#FF6F00', '#FF8F00', '#FFF8E1'],
-        mood: 'lush, exotic, nocturnal paradise',
+        mood: 'exuberante, exotico, paraiso nocturno',
       },
     ],
     fabricTrends: [
       {
-        name: 'Island Textures',
-        description: 'Natural fibers with resort-ready ease',
-        fabrics: ['linen', 'cotton gauze', 'raffia weave', 'hemp blend'],
-        finish: 'natural, breathable, relaxed',
+        name: 'Texturas de Isla',
+        description: 'Fibras naturales con facilidad lista para resort',
+        fabrics: ['lino', 'gasa de algodon', 'tejido de rafia', 'mezcla de canamo'],
+        finish: 'natural, respirable, relajado',
       },
     ],
     details: [
       {
-        name: 'Resort Craft',
-        description: 'Artisanal details inspired by destination craftsmanship',
-        elements: ['macramé', 'crochet inserts', 'shell buttons', 'fringe'],
-        placement: ['hem', 'neckline', 'sleeves', 'waist'],
+        name: 'Artesania Resort',
+        description: 'Detalles artesanales inspirados en la artesania del destino',
+        elements: ['macrame', 'inserciones de crochet', 'botones de concha', 'flecos'],
+        placement: ['dobladillo', 'escote', 'mangas', 'cintura'],
       },
     ],
-    moodKeywords: ['jet-set ease', 'coastal living', 'golden hour', 'barefoot luxury', 'destination dressing'],
+    moodKeywords: ['soltura jet-set', 'vida costera', 'hora dorada', 'lujo descalzo', 'vestir de destino'],
+  },
+  capsule: {
+    season: 'Capsula',
+    year: 2026,
+    silhouettes: [
+      {
+        name: 'Esencial Elevado',
+        description: 'Piezas basicas reimaginadas con detalles de lujo. Versatilidad y elegancia atemporal.',
+        garmentTypes: ['dress', 'blouse', 'pants', 'jacket', 'top', 'skirt'],
+        keywords: ['esencial', 'versatil', 'atemporal', 'elegante', 'refinado'],
+      },
+    ],
+    colorStories: [
+      {
+        name: 'Paleta Esencial',
+        description: 'Neutros refinados con un toque de color signature',
+        colors: ['#1A1A1A', '#4A4A4A', '#8B8B8B', '#F5F0E8', '#B8943A', '#FFFFFF'],
+        mood: 'refinado, versatil, atemporal',
+      },
+    ],
+    fabricTrends: [
+      {
+        name: 'Materiales Nobles',
+        description: 'Telas de calidad superior que envejecen con gracia',
+        fabrics: ['cashmere', 'seda cruda', 'lino italiano', 'lana merino'],
+        finish: 'premium, duradero, mejora con el tiempo',
+      },
+    ],
+    details: [
+      {
+        name: 'Detalle Invisible',
+        description: 'Construccion impecable donde la calidad habla por si sola',
+        elements: ['costuras francesas', 'forros de seda', 'botones de nacar', 'acabados a mano'],
+        placement: ['interior', 'cierres', 'costuras', 'dobladillo'],
+      },
+    ],
+    moodKeywords: ['menos es mas', 'lujo silencioso', 'elegancia esencial', 'inversion inteligente', 'guardarropa consciente'],
+  },
+  bridal: {
+    season: 'Nupcial',
+    year: 2026,
+    silhouettes: [
+      {
+        name: 'Novia Moderna',
+        description: 'Siluetas nupciales que rompen con lo tradicional. Trajes, monos, vestidos minimalistas.',
+        garmentTypes: ['dress', 'suit', 'jumpsuit'],
+        keywords: ['moderno', 'minimalista', 'no convencional', 'elegante', 'limpio'],
+      },
+      {
+        name: 'Romance Eterno',
+        description: 'Siluetas clasicas reinterpretadas con sensibilidad contemporanea. Colas dramaticas, velos esculturales.',
+        garmentTypes: ['dress', 'gown'],
+        keywords: ['romantico', 'clasico', 'dramatico', 'cola', 'velo'],
+      },
+    ],
+    colorStories: [
+      {
+        name: 'Blanco Infinito',
+        description: 'Variaciones de blanco desde nieve hasta marfil calido',
+        colors: ['#FFFFFF', '#FFFEF7', '#FFF8F0', '#F5EEE6', '#EBE3D5', '#E0D5C1'],
+        mood: 'puro, soñador, luminoso',
+      },
+    ],
+    fabricTrends: [
+      {
+        name: 'Telas de Ensueno',
+        description: 'Materiales que crean magia y movimiento nupcial',
+        fabrics: ['mikado', 'organza de seda', 'encaje Chantilly', 'crepe de seda', 'tul bordado'],
+        finish: 'lujoso, romantico, fotografico',
+      },
+    ],
+    details: [
+      {
+        name: 'Detalles Nupciales',
+        description: 'Ornamentacion que transforma tela en sueno',
+        elements: ['bordado de perlas', 'apliques de encaje', 'cristales Swarovski', 'lazos de satin'],
+        placement: ['corpino', 'espalda', 'cola', 'velo'],
+      },
+    ],
+    moodKeywords: ['romance eterno', 'elegancia nupcial', 'sueno hecho realidad', 'amor moderno', 'ceremonia de luz'],
   },
 };
 
-// ─── Default/Capsule Trends ──────────────────────────────────
+// ─── Tendencias por Defecto ─────────────────────────────────
 
 const DEFAULT_TREND: TrendData = TRENDS_2026.spring_summer;
 
-// ─── Public API ──────────────────────────────────────────────
+// ─── API Publica ────────────────────────────────────────────
 
 export function getTrendData(season?: string, year?: number): TrendData {
   if (season && TRENDS_2026[season]) {
@@ -328,21 +408,18 @@ export function getTrendSuggestions(
 } {
   const trends = getTrendData(season);
 
-  // Find matching silhouette for garment type
   const silhouette = trends.silhouettes.find(s =>
     s.garmentTypes.includes(template)
   ) || trends.silhouettes[0];
 
-  // Find matching fabric trend
   const fabricTrend = trends.fabricTrends.find(f =>
     f.fabrics.some(fb => fb.toLowerCase().includes(fabric.toLowerCase()))
   ) || trends.fabricTrends[0];
 
-  // Get relevant details for this garment type
   const details = trends.details.filter(d =>
     d.placement.some(p => {
-      if (['dress', 'blouse', 'top'].includes(template)) return ['shoulders', 'neckline', 'bodice', 'sleeves', 'cuffs'].includes(p);
-      if (['skirt', 'pants'].includes(template)) return ['waist', 'hem', 'sides'].includes(p);
+      if (['dress', 'blouse', 'top'].includes(template)) return ['hombros', 'escote', 'corpino', 'mangas', 'punos', 'shoulders', 'neckline', 'bodice', 'sleeves', 'cuffs'].includes(p);
+      if (['skirt', 'pants'].includes(template)) return ['cintura', 'dobladillo', 'costados', 'waist', 'hem', 'sides'].includes(p);
       return true;
     })
   );
@@ -370,22 +447,22 @@ export function buildDesignPrompt(
     dress: 'vestido',
     blouse: 'blusa',
     skirt: 'falda',
-    pants: 'pantalón',
+    pants: 'pantalon',
     jacket: 'chaqueta',
     top: 'top',
   };
 
   const parts: string[] = [
-    `Diseña un ${garmentNames[template] || template} de alta costura`,
+    `Disena un ${garmentNames[template] || template} de alta costura`,
     fabric ? `en ${fabric}` : '',
     colors.length > 0 ? `con paleta de colores: ${colors.join(', ')}` : '',
     `\n\nTendencias ${trends.season} ${trends.year}:`,
-    suggestions.silhouette ? `- Silueta: ${suggestions.silhouette.name} — ${suggestions.silhouette.description}` : '',
-    suggestions.fabricTrend ? `- Tela en tendencia: ${suggestions.fabricTrend.name} — ${suggestions.fabricTrend.description}` : '',
+    suggestions.silhouette ? `- Silueta: ${suggestions.silhouette.name} - ${suggestions.silhouette.description}` : '',
+    suggestions.fabricTrend ? `- Tela en tendencia: ${suggestions.fabricTrend.name} - ${suggestions.fabricTrend.description}` : '',
     suggestions.details.length > 0 ? `- Detalles: ${suggestions.details.map(d => `${d.name} (${d.elements.join(', ')})`).join('; ')}` : '',
     `- Mood: ${trends.moodKeywords.join(', ')}`,
-    collectionName ? `\n\nColección: "${collectionName}"` : '',
-    `\n\nEstilo de ilustración: Boceto de moda a lápiz sobre papel blanco, proporciones de 9 cabezas, líneas de construcción visibles, detalles de costura, anotaciones técnicas.`,
+    collectionName ? `\n\nColeccion: "${collectionName}"` : '',
+    `\n\nEstilo de ilustracion: Boceto de moda a lapiz sobre papel blanco, proporciones de 9 cabezas, lineas de construccion visibles, detalles de costura, anotaciones tecnicas.`,
   ];
 
   return parts.filter(Boolean).join(' ');
