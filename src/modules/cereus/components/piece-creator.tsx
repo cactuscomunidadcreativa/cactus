@@ -17,6 +17,17 @@ import {
 } from 'lucide-react';
 import { sanitizeSVG } from '../lib/svg-utils';
 
+// ─── Category Mapping ───────────────────────────────────────
+// Maps template IDs to valid cereus_garment_category enum values
+const CATEGORY_MAP: Record<string, string> = {
+  dress: 'dress',
+  blouse: 'blouse',
+  skirt: 'skirt',
+  pants: 'pants',
+  jacket: 'blazer',  // DB enum has 'blazer' not 'jacket'
+  top: 'shirt',      // DB enum has 'shirt' not 'top'
+};
+
 // ─── Types ──────────────────────────────────────────────────
 
 interface PieceCreatorProps {
@@ -230,7 +241,7 @@ export default function PieceCreator({
         body: JSON.stringify({
           maisonId,
           name: pieceName.trim(),
-          category: tmpl.id,
+          category: CATEGORY_MAP[tmpl.id] || tmpl.id,
           collection_id: collectionId,
           description,
           body_zone: tmpl.bodyZone,
