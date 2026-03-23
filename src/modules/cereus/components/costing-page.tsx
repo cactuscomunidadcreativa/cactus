@@ -134,6 +134,8 @@ export function CereusCostingPage() {
   const [materialFilter, setMaterialFilter] = useState('');
   const [materialCurrency, setMaterialCurrency] = useState('USD');
   const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
+  const [editingMat, setEditingMat] = useState<Record<string, string>>({});
+  const [savingMat, setSavingMat] = useState(false);
 
   // Prendas tab state
   const [selectedGarment, setSelectedGarment] = useState<string | null>(null);
@@ -995,23 +997,100 @@ export function CereusCostingPage() {
                       <p className="text-[10px] text-muted-foreground mt-1.5">{m.composition}</p>
                     )}
 
-                    {/* Expanded detail: garments using this material */}
-                    {isSelected && usedBy.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-border">
-                        <p className="text-xs font-medium mb-1.5 flex items-center gap-1">
-                          <Scissors className="w-3 h-3" /> Usado en {usedBy.length} prenda{usedBy.length !== 1 ? 's' : ''}:
-                        </p>
-                        <div className="space-y-1">
-                          {usedBy.map(gar => (
-                            <div key={gar.id} className="text-xs flex items-center justify-between">
-                              <span className="truncate">{gar.name}</span>
-                              <span className="text-muted-foreground ml-2">{gar.collection?.name || ''}</span>
-                            </div>
-                          ))}
+                    {/* Expanded: inline edit + garments */}
+                    {isSelected && (
+                      <div className="mt-3 pt-3 border-t border-border space-y-3" onClick={e => e.stopPropagation()}>
+                        {/* Inline edit form */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-muted-foreground">Costo por unidad</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              defaultValue={m.unit_cost}
+                              onChange={e => setEditingMat(prev => ({ ...prev, [`${m.id}_unit_cost`]: e.target.value }))}
+                              className="w-full mt-0.5 px-2 py-1.5 border rounded-lg text-sm font-mono focus:outline-none focus:ring-1 focus:ring-cereus-gold/50"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground">Proveedor</label>
+                            <input
+                              type="text"
+                              defaultValue={m.supplier || ''}
+                              onChange={e => setEditingMat(prev => ({ ...prev, [`${m.id}_supplier`]: e.target.value }))}
+                              placeholder="Nombre del proveedor"
+                              className="w-full mt-0.5 px-2 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-cereus-gold/50"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground">Stock actual</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              defaultValue={m.current_stock || 0}
+                              onChange={e => setEditingMat(prev => ({ ...prev, [`${m.id}_current_stock`]: e.target.value }))}
+                              className="w-full mt-0.5 px-2 py-1.5 border rounded-lg text-sm font-mono focus:outline-none focus:ring-1 focus:ring-cereus-gold/50"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground">Composicion</label>
+                            <input
+                              type="text"
+                              defaultValue={m.composition || ''}
+                              onChange={e => setEditingMat(prev => ({ ...prev, [`${m.id}_composition`]: e.target.value }))}
+                              placeholder="100% Seda"
+                              className="w-full mt-0.5 px-2 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-cereus-gold/50"
+                            />
+                          </div>
                         </div>
+                        <button
+                          disabled={savingMat}
+                          onClick={async () => {
+                            setSavingMat(true);
+                            const updates: Record<string, unknown> = { id: m.id };
+                            if (editingMat[`${m.id}_unit_cost`] !== undefined) updates.unit_cost = Number(editingMat[`${m.id}_unit_cost`]);
+                            if (editingMat[`${m.id}_supplier`] !== undefined) updates.supplier = editingMat[`${m.id}_supplier`];
+                            if (editingMat[`${m.id}_current_stock`] !== undefined) updates.current_stock = Number(editingMat[`${m.id}_current_stock`]);
+                            if (editingMat[`${m.id}_composition`] !== undefined) updates.composition = editingMat[`${m.id}_composition`];
+                            try {
+                              await fetch('/api/cereus/materials', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(updates),
+                              });
+                              // Refresh materials
+                              if (maisonId) {
+                                const res = await fetch(`/api/cereus/materials?maisonId=${maisonId}`);
+                                const data = await res.json();
+                                setMaterials(data.materials || []);
+                              }
+                            } catch { /* silent */ }
+                            setSavingMat(false);
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-cereus-gold text-white rounded-lg text-xs font-medium hover:bg-cereus-gold/90 disabled:opacity-50"
+                        >
+                          <Save className="w-3 h-3" /> {savingMat ? 'Guardando...' : 'Guardar Cambios'}
+                        </button>
+
+                        {/* Garments using this material */}
+                        {usedBy.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium mb-1 flex items-center gap-1">
+                              <Scissors className="w-3 h-3" /> Usado en {usedBy.length} prenda{usedBy.length !== 1 ? 's' : ''}:
+                            </p>
+                            <div className="space-y-1">
+                              {usedBy.map(gar => (
+                                <div key={gar.id} className="text-xs flex items-center justify-between">
+                                  <span className="truncate">{gar.name}</span>
+                                  <span className="text-muted-foreground ml-2">{gar.collection?.name || ''}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
-                    {isSelected && usedBy.length === 0 && (
+                    {false && isSelected && usedBy.length === 0 && (
                       <div className="mt-3 pt-3 border-t border-border">
                         <p className="text-xs text-muted-foreground">No se usa en ninguna prenda actualmente.</p>
                       </div>
