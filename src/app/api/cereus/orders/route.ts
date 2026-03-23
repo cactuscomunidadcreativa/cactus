@@ -72,6 +72,10 @@ export async function POST(request: NextRequest) {
       internal_notes: data.internal_notes || null,
       priority: data.priority || 'normal',
       status: 'pending',
+      current_stage: 'pattern',
+      stage_started_at: new Date().toISOString(),
+      assigned_artisan: data.assigned_artisan || null,
+      production_notes: data.production_notes || null,
     })
     .select('*, client:cereus_clients(id, full_name), variant:cereus_variants(id, variant_name, garment:cereus_garments(id, name, code))')
     .single();
@@ -93,6 +97,30 @@ export async function PUT(request: NextRequest) {
   const body = await request.json();
   const { id, ...updates } = body;
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+  // If changing stage, update stage_started_at and log it
+  if (updates.current_stage) {
+    updates.stage_started_at = new Date().toISOString();
+
+    // Get current order to know maison_id for the log
+    const { data: currentOrder } = await db
+      .from('cereus_orders')
+      .select('maison_id, current_stage')
+      .eq('id', id)
+      .single();
+
+    if (currentOrder) {
+      // Log the stage change
+      await db.from('cereus_production_logs').insert({
+        order_id: id,
+        maison_id: currentOrder.maison_id,
+        stage: updates.current_stage,
+        log_type: 'stage_start',
+        title: `Movido a ${updates.current_stage}`,
+        content: `Etapa anterior: ${currentOrder.current_stage || 'ninguna'}`,
+      });
+    }
+  }
 
   const { data: order, error } = await db
     .from('cereus_orders')
