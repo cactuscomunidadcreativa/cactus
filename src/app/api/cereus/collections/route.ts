@@ -57,6 +57,11 @@ export async function POST(request: NextRequest) {
       target_pieces: data.target_pieces || null,
       target_revenue: data.target_revenue || null,
       avg_price_point: data.avg_price_point || null,
+      trend_context: data.trend_context || null,
+      color_story: data.color_story || null,
+      suggested_garment_types: data.suggested_garment_types || null,
+      mood_board_urls: data.mood_board_urls || null,
+      inspiration_notes: data.inspiration_notes || null,
     })
     .select()
     .single();
@@ -65,7 +70,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ collection, success: true });
 }
 
-// PUT /api/cereus/collections — Update collection
+// PUT /api/cereus/collections
 export async function PUT(request: NextRequest) {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
@@ -79,7 +84,6 @@ export async function PUT(request: NextRequest) {
   const { id, ...updates } = body;
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-  // Valid status transitions
   const STATUS_FLOW: Record<string, string[]> = {
     concept: ['design', 'archived'],
     design: ['concept', 'production', 'archived'],
@@ -88,7 +92,6 @@ export async function PUT(request: NextRequest) {
     archived: ['concept'],
   };
 
-  // If status change, validate transition
   if (updates.status) {
     const { data: current } = await db
       .from('cereus_collections')
@@ -102,7 +105,6 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // When launching, generate a unique lookbook code
     if (updates.status === 'launched' && current?.status !== 'launched') {
       const { data: collection } = await db
         .from('cereus_collections')
@@ -122,12 +124,12 @@ export async function PUT(request: NextRequest) {
     }
   }
 
-  // Build update object with only allowed fields
   const allowedFields: Record<string, unknown> = {};
   const UPDATABLE = [
     'name', 'code', 'description', 'status', 'season', 'year',
     'cover_image_url', 'mood_board_urls', 'inspiration_notes',
     'target_pieces', 'target_revenue', 'avg_price_point', 'lookbook_code',
+    'trend_context', 'color_story', 'suggested_garment_types',
   ];
 
   for (const key of UPDATABLE) {
@@ -147,4 +149,28 @@ export async function PUT(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ collection, success: true });
+}
+
+// DELETE /api/cereus/collections?id=xxx
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient();
+  if (!supabase) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const db = createServiceClient();
+  if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+  // Delete garments linked to this collection first
+  await db.from('cereus_garments').delete().eq('collection_id', id);
+
+  // Delete the collection
+  const { error } = await db.from('cereus_collections').delete().eq('id', id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ success: true });
 }

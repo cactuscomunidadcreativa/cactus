@@ -1260,6 +1260,18 @@ function CollectionsTab({
                   <p className="text-xs text-foreground/60 mt-1 truncate">{c.description}</p>
                 )}
               </div>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (!confirm(`¿Eliminar colección "${c.name}" y todas sus prendas? Esta acción no se puede deshacer.`)) return;
+                  await fetch(`/api/cereus/collections?id=${c.id}`, { method: 'DELETE' });
+                  onRefresh();
+                }}
+                className="p-2 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                title="Eliminar colección"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
           ))}
