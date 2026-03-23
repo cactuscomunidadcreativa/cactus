@@ -51,11 +51,15 @@ export interface PinnedTrends {
   moodKeywords: string[];
 }
 
-export interface MarketContext {
+export interface MarketCity {
   city: string;
   country: string;
   avgTemp: number;
   humidity: string;
+}
+
+export interface MarketContext {
+  cities: MarketCity[];
   targetArchetypes: string[];
   budgetMin: number;
   budgetMax: number;
@@ -176,11 +180,8 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
   const [phase, setPhase] = useState<'input' | 'results'>('input');
   const [generating, setGenerating] = useState(false);
 
-  // Market context form
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [avgTemp, setAvgTemp] = useState(25);
-  const [humidity, setHumidity] = useState('templado');
+  // Market context form — multiple cities
+  const [cities, setCities] = useState<MarketCity[]>([{ city: '', country: '', avgTemp: 25, humidity: 'templado' }]);
   const [season, setSeason] = useState('spring_summer');
   const [year, setYear] = useState(2026);
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
@@ -218,24 +219,13 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
 
   // ─── Generate trends ─────────────────────────────────────
 
-  const canGenerate = city.trim().length > 0 && selectedArchetypes.length > 0;
+  const canGenerate = cities.some(c => c.city.trim().length > 0) && selectedArchetypes.length > 0;
 
   const generateTrends = useCallback(async () => {
     if (!canGenerate) return;
     setGenerating(true);
 
-    const marketContext: MarketContext = {
-      city,
-      country,
-      avgTemp,
-      humidity,
-      targetArchetypes: selectedArchetypes,
-      budgetMin,
-      budgetMax,
-      targetPieces,
-      referenceImageUrls: referenceUrls,
-      notes,
-    };
+    const validCities = cities.filter(c => c.city.trim().length > 0);
 
     try {
       const res = await fetch('/api/cereus/ai/generate-trends', {
@@ -243,9 +233,14 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           maisonId,
+          market: validCities.length === 1 ? validCities[0] : validCities,
           season,
           year,
-          marketContext,
+          targetArchetypes: selectedArchetypes,
+          budgetRange: { min: budgetMin, max: budgetMax },
+          targetPieces,
+          referenceImageUrls: referenceUrls,
+          notes,
         }),
       });
 
@@ -261,7 +256,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
         silhouettes: [
           {
             name: 'Silueta Fluida',
-            description: `Formas drapeadas adaptadas al clima de ${city}. Frescura y movimiento.`,
+            description: `Formas drapeadas adaptadas al clima. Frescura y movimiento.`,
             garmentTypes: ['dress', 'blouse', 'skirt'],
             keywords: ['fluido', 'drapeado', 'fresco'],
           },
@@ -328,29 +323,14 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
           'movimiento',
           'textura',
         ],
-        climateNotes: `Para ${city} con temperatura promedio de ${avgTemp} grados C y humedad ${humidity}, se recomiendan telas transpirables y construcciones que permitan circulacion de aire. Priorizar fibras naturales y acabados frescos.`,
+        climateNotes: `Para ${cities[0]?.city || 'tu mercado'} con temperatura promedio de ${cities[0]?.avgTemp || 25} grados C, se recomiendan telas transpirables y construcciones que permitan circulacion de aire.`,
         archetypeNotes: `Perfil de cliente: ${selectedArchetypes.map((a) => ARCHETYPES.find((ar) => ar.id === a)?.name).join(', ')}. Se combinan elementos de cada arquetipo para crear una propuesta coherente y diferenciada.`,
       });
       setPhase('results');
     } finally {
       setGenerating(false);
     }
-  }, [
-    canGenerate,
-    city,
-    country,
-    avgTemp,
-    humidity,
-    selectedArchetypes,
-    budgetMin,
-    budgetMax,
-    targetPieces,
-    referenceUrls,
-    notes,
-    maisonId,
-    season,
-    year,
-  ]);
+  }, [canGenerate, cities, selectedArchetypes, budgetMin, budgetMax, targetPieces, referenceUrls, notes, maisonId, season, year]);
 
   // ─── Edit helpers ─────────────────────────────────────────
 
@@ -442,10 +422,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
     };
 
     const marketContext: MarketContext = {
-      city,
-      country,
-      avgTemp,
-      humidity,
+      cities: cities.filter(c => c.city.trim().length > 0),
       targetArchetypes: selectedArchetypes,
       budgetMin,
       budgetMax,
@@ -457,10 +434,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
     onComplete(pinnedTrends, season, year, marketContext);
   }, [
     trends,
-    city,
-    country,
-    avgTemp,
-    humidity,
+    cities,
     selectedArchetypes,
     budgetMin,
     budgetMax,
@@ -504,64 +478,86 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">Ciudad</label>
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Lima"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">Pais</label>
-                <input
-                  type="text"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  placeholder="Peru"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">
-                  <Thermometer className="inline h-3 w-3 mr-1" />
-                  Temperatura promedio
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={avgTemp}
-                    onChange={(e) => setAvgTemp(Number(e.target.value))}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-10 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-white/30">
-                    grados C
-                  </span>
+            <div className="space-y-3">
+              {cities.map((mc, idx) => (
+                <div key={idx} className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
+                  <div>
+                    <label className="block text-xs font-medium text-white/50 mb-1.5">Ciudad</label>
+                    <input
+                      type="text"
+                      value={mc.city}
+                      onChange={(e) => {
+                        const updated = [...cities];
+                        updated[idx] = { ...updated[idx], city: e.target.value };
+                        setCities(updated);
+                      }}
+                      placeholder="Lima"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-white/50 mb-1.5">Pais</label>
+                    <input
+                      type="text"
+                      value={mc.country}
+                      onChange={(e) => {
+                        const updated = [...cities];
+                        updated[idx] = { ...updated[idx], country: e.target.value };
+                        setCities(updated);
+                      }}
+                      placeholder="Peru"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-white/50 mb-1.5">Temp °C</label>
+                    <input
+                      type="number"
+                      value={mc.avgTemp}
+                      onChange={(e) => {
+                        const updated = [...cities];
+                        updated[idx] = { ...updated[idx], avgTemp: Number(e.target.value) };
+                        setCities(updated);
+                      }}
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-white/50 mb-1.5">Clima</label>
+                      <select
+                        value={mc.humidity}
+                        onChange={(e) => {
+                          const updated = [...cities];
+                          updated[idx] = { ...updated[idx], humidity: e.target.value };
+                          setCities(updated);
+                        }}
+                        className="w-full appearance-none rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50"
+                      >
+                        {HUMIDITY_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value} className="bg-neutral-900 text-white">
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {cities.length > 1 && (
+                      <button
+                        onClick={() => setCities(cities.filter((_, i) => i !== idx))}
+                        className="mt-5 p-2 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">
-                  <Droplets className="inline h-3 w-3 mr-1" />
-                  Humedad
-                </label>
-                <div className="relative">
-                  <select
-                    value={humidity}
-                    onChange={(e) => setHumidity(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-9 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
-                  >
-                    {HUMIDITY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value} className="bg-neutral-900 text-white">
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
-                </div>
-              </div>
+              ))}
+              <button
+                onClick={() => setCities([...cities, { city: '', country: '', avgTemp: 25, humidity: 'templado' }])}
+                className="flex items-center gap-2 text-xs text-cereus-gold hover:text-cereus-gold/80 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" /> Agregar otro mercado
+              </button>
             </div>
           </section>
 
@@ -828,7 +824,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 </h1>
               </div>
               <p className="mt-1 text-xs text-white/35">
-                {city}, {country} — {SEASONS.find((s) => s.value === season)?.label} {year}
+                {cities.filter(c => c.city).map(c => `${c.city}, ${c.country}`).join(' · ')} — {SEASONS.find((s) => s.value === season)?.label} {year}
               </p>
             </div>
             <button

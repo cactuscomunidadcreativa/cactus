@@ -27,10 +27,7 @@ import { CereusCostingPage } from './costing-page';
 // ============================================================
 
 export interface MarketContext {
-  city: string;
-  country: string;
-  avgTemp: number;
-  humidity: string;
+  cities: { city: string; country: string; avgTemp: number; humidity: string }[];
   targetArchetypes: string[];
   budgetMin: number;
   budgetMax: number;
@@ -122,7 +119,7 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
   }, []);
 
   const handleTrendComplete = useCallback(
-    (pinned: PinnedTrends, season: string, year: number, market?: MarketContext) => {
+    (pinned: PinnedTrends, season: string, year: number, market: MarketContext) => {
       setWorkflow((prev) => ({
         ...prev,
         selectedSeason: season,
