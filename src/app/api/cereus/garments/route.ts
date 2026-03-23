@@ -49,6 +49,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'maisonId, name, and category required' }, { status: 400 });
   }
 
+  // Pack extra data (design_brief, pattern_data) into description as JSON
+  // since those columns may not exist in DB yet
+  let descriptionText = data.description || '';
+  const extraMeta: Record<string, unknown> = {};
+  if (data.design_brief) extraMeta.design_brief = data.design_brief;
+  if (data.brief_approved) extraMeta.brief_approved = data.brief_approved;
+  if (data.sketch_source) extraMeta.sketch_source = data.sketch_source;
+  if (data.pattern_data) extraMeta.pattern_data = data.pattern_data;
+
+  if (Object.keys(extraMeta).length > 0) {
+    descriptionText = descriptionText + '\n---META---\n' + JSON.stringify(extraMeta);
+  }
+
   const { data: garment, error } = await db
     .from('cereus_garments')
     .insert({
@@ -57,7 +70,7 @@ export async function POST(request: NextRequest) {
       designer_id: user.id,
       name: data.name,
       code: data.code || null,
-      description: data.description || null,
+      description: descriptionText || null,
       category: data.category,
       body_zone: data.body_zone || 'full',
       base_labor_hours: data.base_labor_hours || 0,
@@ -69,11 +82,7 @@ export async function POST(request: NextRequest) {
       tags: data.tags || [],
       season: data.season || null,
       year: data.year || null,
-      design_brief: data.design_brief || null,
-      brief_approved: data.brief_approved || false,
-      sketch_source: data.sketch_source || null,
       images: data.images || [],
-      pattern_data: data.pattern_data || null,
     })
     .select()
     .single();
@@ -93,12 +102,21 @@ export async function PUT(request: NextRequest) {
   if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
 
   const body = await request.json();
-  const { id, ...updates } = body;
+  const { id, design_brief, brief_approved, sketch_source, pattern_data, ...updates } = body;
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+  // Filter to only known columns to avoid errors with missing columns
+  const safeUpdates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const SAFE_COLS = ['name', 'code', 'description', 'category', 'body_zone', 'base_labor_hours',
+    'base_labor_cost', 'complexity_level', 'base_price', 'margin_target', 'status', 'tags',
+    'season', 'year', 'images', 'collection_id', 'tech_sheet_url', 'pattern_url', 'base_cost'];
+  for (const key of SAFE_COLS) {
+    if (key in updates) safeUpdates[key] = updates[key];
+  }
 
   const { data: garment, error } = await db
     .from('cereus_garments')
-    .update({ ...updates, updated_at: new Date().toISOString() })
+    .update(safeUpdates)
     .eq('id', id)
     .select()
     .single();

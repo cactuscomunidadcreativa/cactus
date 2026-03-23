@@ -637,9 +637,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                       'group relative flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all duration-300',
                       selected
                         ? 'border-cereus-gold/60 bg-cereus-gold/10 shadow-lg shadow-cereus-gold/10'
-                        : disabled
-                          ? 'border-white/5 bg-white/[0.01] opacity-40 cursor-not-allowed'
-                          : 'border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04] cursor-pointer',
+                        : 'border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04] cursor-pointer',
                     )}
                   >
                     <div
