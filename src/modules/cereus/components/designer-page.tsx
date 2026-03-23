@@ -52,6 +52,9 @@ interface Garment {
   collection_id: string | null;
   tech_sheet_url: string | null;
   pattern_url: string | null;
+  design_brief: Record<string, unknown> | null;
+  sketch_source: string | null;
+  pattern_data: Record<string, unknown> | null;
   created_at: string;
   collection?: { id: string; name: string; code: string | null } | null;
 }
@@ -1282,6 +1285,241 @@ function CollectionsTab({
 }
 
 // ============================================================
+// Garment Detail — Editable
+// ============================================================
+
+function GarmentDetailEditable({
+  garment, collections, onBack, onRefresh, onUpdateImages,
+}: {
+  garment: Garment;
+  collections: Collection[];
+  onBack: () => void;
+  onRefresh: () => void;
+  onUpdateImages: (g: Garment, imgs: { url: string; type: string }[]) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [name, setName] = useState(garment.name);
+  const [code, setCode] = useState(garment.code || '');
+  const [description, setDescription] = useState(garment.description || '');
+  const [category, setCategory] = useState(garment.category);
+  const [collectionId, setCollectionId] = useState(garment.collection_id || '');
+  const [complexity, setComplexity] = useState(garment.complexity_level);
+  const [laborHours, setLaborHours] = useState(garment.base_labor_hours);
+  const [laborCost, setLaborCost] = useState(garment.base_labor_cost);
+  const [basePrice, setBasePrice] = useState(garment.base_price || 0);
+  const [marginTarget, setMarginTarget] = useState(garment.margin_target);
+  const [status, setStatus] = useState(garment.status);
+
+  const brief = garment.design_brief as { concept?: string; silhouetteNotes?: string; fabricNotes?: string; constructionDetails?: string[]; designerTips?: string } | null;
+  const collection = collections.find(c => c.id === garment.collection_id);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await fetch('/api/cereus/garments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: garment.id,
+          name, code: code || null, description: description || null,
+          category, collection_id: collectionId || null,
+          complexity_level: complexity,
+          base_labor_hours: laborHours,
+          base_labor_cost: laborCost,
+          base_price: basePrice || null,
+          margin_target: marginTarget,
+          status,
+        }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      onRefresh();
+    } catch { /* */ }
+    setSaving(false);
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" /> Volver
+        </button>
+        <div className="flex items-center gap-2">
+          {saved && <span className="text-xs text-green-600">✓ Guardado</span>}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-1.5 px-4 py-2 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 disabled:opacity-50"
+          >
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
+          </button>
+        </div>
+      </div>
+
+      {/* Main info */}
+      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs text-muted-foreground">Nombre *</label>
+            <input value={name} onChange={e => setName(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Código</label>
+            <input value={code} onChange={e => setCode(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Categoría</label>
+            <select value={category} onChange={e => setCategory(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50">
+              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.es}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Colección</label>
+            <select value={collectionId} onChange={e => setCollectionId(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50">
+              <option value="">Sin colección</option>
+              {collections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Estado</label>
+            <select value={status} onChange={e => setStatus(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50">
+              <option value="draft">Borrador</option>
+              <option value="approved">Aprobado</option>
+              <option value="in_production">En Producción</option>
+              <option value="completed">Completado</option>
+              <option value="archived">Archivado</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground">Descripción</label>
+          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
+            className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-cereus-gold/50" />
+        </div>
+      </div>
+
+      {/* Design Brief (read-only, from AI) */}
+      {brief?.concept && (
+        <div className="bg-cereus-gold/5 border border-cereus-gold/20 rounded-xl p-5 space-y-3">
+          <h3 className="text-xs font-medium text-cereus-gold uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" /> Brief de Diseño
+          </h3>
+          {brief.concept && <p className="text-sm font-medium">{brief.concept}</p>}
+          {brief.silhouetteNotes && <p className="text-xs text-muted-foreground"><strong>Silueta:</strong> {brief.silhouetteNotes}</p>}
+          {brief.fabricNotes && <p className="text-xs text-muted-foreground"><strong>Tela:</strong> {brief.fabricNotes}</p>}
+          {brief.constructionDetails && brief.constructionDetails.length > 0 && (
+            <div>
+              <p className="text-xs font-medium mb-1">Detalles de construcción:</p>
+              {brief.constructionDetails.map((d, i) => (
+                <p key={i} className="text-xs text-muted-foreground">• {d}</p>
+              ))}
+            </div>
+          )}
+          {brief.designerTips && <p className="text-xs italic text-cereus-gold/80">Tip: {brief.designerTips}</p>}
+        </div>
+      )}
+
+      {/* Costeo + Precios */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <h3 className="text-sm font-medium mb-4">Costeo y Precios</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="text-xs text-muted-foreground">Complejidad (1-5)</label>
+            <input type="number" min={1} max={5} value={complexity} onChange={e => setComplexity(Number(e.target.value))}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cereus-gold/50" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Horas de Mano de Obra</label>
+            <input type="number" step="0.5" value={laborHours} onChange={e => setLaborHours(Number(e.target.value))}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cereus-gold/50" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Costo Mano de Obra ($)</label>
+            <input type="number" step="0.01" value={laborCost} onChange={e => setLaborCost(Number(e.target.value))}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cereus-gold/50" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Precio Base ($)</label>
+            <input type="number" step="0.01" value={basePrice} onChange={e => setBasePrice(Number(e.target.value))}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cereus-gold/50" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Margen Objetivo (%)</label>
+            <input type="number" step="0.01" min={0} max={1} value={marginTarget} onChange={e => setMarginTarget(Number(e.target.value))}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-input bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cereus-gold/50" />
+          </div>
+          {basePrice > 0 && laborCost > 0 && (
+            <div className="flex items-end">
+              <div>
+                <p className="text-xs text-muted-foreground">Margen Actual</p>
+                <p className={`text-lg font-mono font-bold ${((basePrice - laborCost) / basePrice) >= marginTarget ? 'text-green-600' : 'text-red-500'}`}>
+                  {(((basePrice - laborCost) / basePrice) * 100).toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Image Gallery */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <h3 className="text-sm font-medium mb-3">Galería</h3>
+        {garment.images?.length > 0 ? (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-4">
+            {garment.images.map((img, i) => (
+              <div key={i} className="relative aspect-[3/4] group">
+                <img src={img.url} alt={img.alt || ''} className="w-full h-full rounded-lg object-cover border border-border" />
+                <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] bg-black/60 text-white rounded">{img.type}</span>
+                <button
+                  onClick={() => {
+                    const newImages = garment.images.filter((_, j) => j !== i);
+                    onUpdateImages(garment, newImages);
+                  }}
+                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground mb-3">Sin imágenes</p>
+        )}
+        <ImageUploader
+          bucket="cereus-garment-images"
+          folder={`garments/${garment.id}`}
+          onUpload={(url) => {
+            const newImages = [...(garment.images || []), { url, type: 'sketch' }];
+            onUpdateImages(garment, newImages);
+          }}
+          multiple compact
+          label="Agregar Imagen"
+          labelEs="Agregar Imagen"
+        />
+      </div>
+
+      {/* Collection context */}
+      {collection && (
+        <div className="bg-muted/30 border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground">
+            Colección: <span className="font-medium text-foreground">{collection.name}</span> — {SEASONS.find(s => s.value === collection.season)?.es || collection.season} {collection.year}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
 // Garments Tab
 // ============================================================
 
@@ -1399,97 +1637,16 @@ function GarmentsTab({
     ? collections.find(c => c.id === collectionFilter)
     : null;
 
-  // Detail view
+  // Detail view — EDITABLE
   if (selectedGarment) {
     return (
-      <div className="space-y-6">
-        <button
-          onClick={() => onSelectGarment(null)}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back / Volver
-        </button>
-
-        <div className="bg-card border border-border rounded-xl p-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-display font-bold">{selectedGarment.name}</h2>
-                <StatusBadge status={selectedGarment.status} />
-              </div>
-              {selectedGarment.code && (
-                <p className="text-sm text-muted-foreground mt-1">{selectedGarment.code}</p>
-              )}
-              <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-                <span>{CATEGORIES.find(c => c.value === selectedGarment.category)?.es || selectedGarment.category}</span>
-                <span>Complexity / Complejidad: {selectedGarment.complexity_level}/5</span>
-                {selectedGarment.base_price && (
-                  <span className="text-cereus-gold font-medium">{formatPrice(selectedGarment.base_price)}</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {selectedGarment.description && (
-            <p className="text-sm text-foreground/80 mt-4">{selectedGarment.description}</p>
-          )}
-        </div>
-
-        {/* Image Gallery */}
-        <div className="bg-card border border-border rounded-xl p-4">
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">Gallery / Galería</h3>
-          {selectedGarment.images?.length > 0 ? (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-4">
-              {selectedGarment.images.map((img, i) => (
-                <div key={i} className="relative aspect-[3/4]">
-                  <img src={img.url} alt={img.alt || ''} className="w-full h-full rounded-lg object-cover border border-border" />
-                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] bg-black/60 text-white rounded">
-                    {img.type}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground mb-3">No images yet / Sin imágenes</p>
-          )}
-          <ImageUploader
-            bucket="cereus-garment-images"
-            folder={`garments/${selectedGarment.id}`}
-            onUpload={(url) => {
-              const newImages = [...(selectedGarment.images || []), { url, type: 'front' }];
-              handleUpdateImages(selectedGarment, newImages);
-            }}
-            multiple
-            compact
-            label="Add Image"
-            labelEs="Agregar Imagen"
-          />
-        </div>
-
-        {/* Costing Summary */}
-        <div className="bg-card border border-border rounded-xl p-4">
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">Costing / Costeo</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-xs text-muted-foreground">Labor Hours / Horas</p>
-              <p className="font-medium">{selectedGarment.base_labor_hours}h</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Labor Cost / Costo Mano de Obra</p>
-              <p className="font-medium">{formatPrice(selectedGarment.base_labor_cost)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Complexity / Complejidad</p>
-              <p className="font-medium">{selectedGarment.complexity_level}/5</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Margin Target / Margen</p>
-              <p className="font-medium">{(selectedGarment.margin_target * 100).toFixed(0)}%</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <GarmentDetailEditable
+        garment={selectedGarment}
+        collections={collections}
+        onBack={() => onSelectGarment(null)}
+        onRefresh={onRefresh}
+        onUpdateImages={handleUpdateImages}
+      />
     );
   }
 
