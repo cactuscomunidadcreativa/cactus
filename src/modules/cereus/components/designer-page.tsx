@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ImageUploader } from './image-uploader';
 import { DesignStudio } from './design-studio';
+import PieceCreator from './piece-creator';
 import { DesignerWorkflow } from './designer-workflow';
 
 // ============================================================
@@ -1653,16 +1654,15 @@ function GarmentsTab({
     );
   }
 
-  // Form — uses Design Studio with AI
+  // Form — uses PieceCreator with full AI flow
   if (showForm) {
-    const targetCollection = formCollectionId
-      ? collections.find(c => c.id === formCollectionId)
-      : collectionFilter
-      ? collections.find(c => c.id === collectionFilter)
+    const targetCollectionId = formCollectionId || collectionFilter || null;
+    const targetCollection = targetCollectionId
+      ? collections.find(c => c.id === targetCollectionId)
       : null;
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => { onShowForm(false); resetForm(); }}
@@ -1677,43 +1677,20 @@ function GarmentsTab({
           )}
         </div>
 
-        <h2 className="text-xl font-display font-bold flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-cereus-gold" />
-          Nueva Prenda con IA
-        </h2>
-
-        <DesignStudio
+        <PieceCreator
           maisonId={maisonId}
-          onSaveDesign={async (data) => {
-            const category = data.template === 'dress' ? 'dress'
-              : data.template === 'blouse' ? 'blouse'
-              : data.template === 'skirt' ? 'skirt'
-              : data.template === 'pants' ? 'pants'
-              : data.template === 'jacket' ? 'blazer'
-              : data.template === 'top' ? 'shirt'
-              : 'other';
-
-            await fetch('/api/cereus/garments', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                maisonId,
-                name: data.name,
-                category,
-                collection_id: targetCollection?.id || collectionFilter || null,
-                description: `Tela: ${data.fabric || 'N/A'}. Colores: ${data.colors.join(', ')}`,
-                body_zone: ['skirt', 'pants'].includes(data.template) ? 'lower'
-                  : ['blouse', 'top'].includes(data.template) ? 'upper' : 'full',
-                complexity_level: 1,
-                base_labor_hours: 0,
-                base_labor_cost: 0,
-                images: data.canvasData ? [{ url: data.canvasData, type: 'sketch' }] : [],
-              }),
-            });
-
+          collectionId={targetCollectionId || ''}
+          collectionName={targetCollection?.name || 'Sin coleccion'}
+          season={targetCollection?.season || 'spring_summer'}
+          selectedMaterialIds={[]}
+          onComplete={() => {
             onShowForm(false);
             resetForm();
             onRefresh();
+          }}
+          onBack={() => {
+            onShowForm(false);
+            resetForm();
           }}
         />
       </div>
