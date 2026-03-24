@@ -76,23 +76,23 @@ CLIENTA IDEAL:
 ${notes ? `VISION DEL DISENADOR:\n${notes}\n` : ''}
 ${referenceImageUrls && referenceImageUrls.length > 0 ? `REFERENCIAS VISUALES: ${referenceImageUrls.length} imagen(es) subidas. Considera el mood y la paleta de estas referencias.\n` : ''}
 
-CONTEXTO FISICO DEL MERCADO — ESTO ES CRITICO:
-- Tono de piel predominante en ${allCities}: Considera los tonos reales de piel del mercado (subtono calido, piel trigueña, morena, mestiza si es Latinoamerica; piel clara si es Europa del norte, etc.)
-- Los colores que sugieras DEBEN favorecer estos tonos de piel. NO sugieras paletas que solo quedan bien en piel muy clara.
-- Contextura corporal real: En Latinoamerica la mujer promedio es de estatura media (1.55-1.65m), con curvas. Las siluetas deben FAVORECER estos cuerpos reales, no cuerpos de modelo de pasarela.
-- Piensa en como caen las telas en cuerpos con caderas y busto, no en perchas.
+LA PERSONA QUE VISTE ESTA ROPA — ESTO ES LO MAS IMPORTANTE:
+- Estas disenando para personas REALES que viven en ${allCities}. No para un "mercado", sino para mujeres de carne y hueso.
+- Tono de piel: Piensa en los tonos de piel reales de las personas en ${allCities}. Si es Lima, piensa en piel trigueña, morena, mestiza con subtonos calidos. Si es Madrid, tonos mediterraneos. Los colores que sugieras DEBEN hacer que esa piel brille.
+- Cuerpo real: Estatura media, con curvas, caderas, busto. Las siluetas deben abrazar y favorecer estos cuerpos, no esconderlos ni forzarlos. Piensa en como cae la tela en un cuerpo con volumen, no en una percha.
+- Vida real: Estas personas trabajan, salen, caminan, se mueven. La ropa tiene que vivir con ellas, no solo verse bien en fotos.
 
 IMPORTANTE — REGLAS CREATIVAS:
-1. NUNCA sugieras cadenas, eslabones, herrajes metalicos industriales, estetica dominatrix, ni nada que suene a "poder agresivo". Eso es un cliche que se repite siempre.
-2. NO uses frases como "fusion de", "donde X se encuentra con Y", "la fuerza de X con la suavidad de Y". Eso es cliche.
-3. NO nombres las siluetas como si fueran titulos de pelicula. Usa nombres descriptivos y tecnicos.
+1. NUNCA sugieras cadenas, eslabones, herrajes metalicos industriales, estetica dominatrix, ni nada que suene a "poder agresivo". Eso es un cliche que se repite siempre. PROHIBIDO.
+2. NO uses frases como "fusion de", "donde X se encuentra con Y", "la fuerza de X con la suavidad de Y". Cliche.
+3. NO nombres las siluetas como si fueran titulos de pelicula. Nombres descriptivos y tecnicos.
 4. Se ESPECIFICO: en vez de "telas fluidas", di exactamente cual tela, que gramaje, que caida.
-5. Las paletas de color deben tener NOMBRES CONCRETOS inspirados en cosas reales de ${allCities} — un mercado, una fruta, un paisaje, una hora del dia en ese lugar especifico.
-6. Piensa en ${allCities} REALMENTE — como viste la gente ahi, que clima hace, que cultura visual tienen, que colores les quedan bien por su tono de piel.
+5. Los colores deben tener NOMBRES CONCRETOS de cosas que la clienta conoce — la chicha morada, el atardecer en Barranco, la tierra de Cusco, el mar de Asia, no abstracciones.
+6. Piensa en ${allCities} desde DENTRO — como viven, que comen, a donde van, que les gusta, como es su dia, que musica escuchan.
 7. Cada sugerencia debe poder fabricarse con el presupuesto dado.
 8. Los detalles constructivos deben ser REALIZABLES en taller, no decorativos.
-9. Dame recomendaciones que yo no esperaria — sorprendeme con combinaciones no obvias.
-10. VARIA tus sugerencias cada vez — si ya me diste algo de "poder ejecutivo", esta vez dame algo completamente diferente. Piensa en poesia, naturaleza, artesania local, textiles ancestrales, gastronomia, paisajes.
+9. Sorprendeme — dame combinaciones que no esperaria. Piensa en poesia, naturaleza, artesania, textiles ancestrales, gastronomia, arquitectura local.
+10. VARIA cada vez — nunca repitas la misma formula. Si antes sugeriste algo estructurado, ahora sugiere algo completamente diferente.
 
 Responde en JSON con esta estructura exacta:
 {
