@@ -1041,12 +1041,16 @@ function CollectionsTab({
                   className="bg-card border border-border rounded-xl overflow-hidden group hover:border-cereus-gold/30 transition-all cursor-pointer"
                 >
                   {g.images?.[0]?.url ? (
-                    <img src={g.images[0].url} alt={g.name} className="w-full aspect-[3/4] object-cover" />
-                  ) : (
-                    <div className="w-full aspect-[3/4] bg-muted flex items-center justify-center">
-                      <Shirt className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                  )}
+                    <img
+                      src={g.images[0].url}
+                      alt={g.name}
+                      className="w-full aspect-[3/4] object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.querySelector('.fallback')?.classList.remove('hidden'); }}
+                    />
+                  ) : null}
+                  <div className={`w-full aspect-[3/4] bg-muted flex items-center justify-center ${g.images?.[0]?.url ? 'hidden fallback' : ''}`}>
+                    <Shirt className="w-8 h-8 text-muted-foreground" />
+                  </div>
                   <div className="p-3">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium truncate group-hover:text-cereus-gold transition-colors">{g.name}</p>
@@ -1784,7 +1788,12 @@ function GarmentsTab({
               className="bg-card border border-border rounded-xl overflow-hidden hover:border-cereus-gold/30 transition-all text-left group"
             >
               {g.images?.[0]?.url ? (
-                <img src={g.images[0].url} alt={g.name} className="w-full aspect-[3/4] object-cover" />
+                <img
+                  src={g.images[0].url}
+                  alt={g.name}
+                  className="w-full aspect-[3/4] object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
               ) : (
                 <div className="w-full aspect-[3/4] bg-muted flex items-center justify-center">
                   <Shirt className="w-8 h-8 text-muted-foreground" />
