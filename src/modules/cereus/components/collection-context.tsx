@@ -165,11 +165,11 @@ function cn(...classes: (string | false | undefined | null)[]): string {
 
 function totalItems(t: GeneratedTrends): number {
   return (
-    t.silhouettes.length +
-    t.colorStories.length +
-    t.fabricTrends.length +
-    t.details.length +
-    t.moodKeywords.length
+    (t.silhouettes?.length || 0) +
+    (t.colorStories?.length || 0) +
+    (t.fabricTrends?.length || 0) +
+    (t.details?.length || 0) +
+    (t.moodKeywords?.length || 0)
   );
 }
 
@@ -247,7 +247,18 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
       if (!res.ok) throw new Error('Error generando tendencias');
 
       const data = await res.json();
-      setTrends(data);
+      // API returns { trends: {...}, source, provider } — extract the trends object
+      const trendData = data.trends || data;
+      // Ensure all arrays exist
+      setTrends({
+        silhouettes: trendData.silhouettes || [],
+        colorStories: trendData.colorStories || [],
+        fabricTrends: trendData.fabricTrends || [],
+        details: trendData.details || [],
+        moodKeywords: trendData.moodKeywords || [],
+        climateNotes: trendData.climateNotes || '',
+        archetypeNotes: trendData.archetypeNotes || '',
+      });
       setPhase('results');
     } catch (err) {
       console.error('Error generating trends:', err);
