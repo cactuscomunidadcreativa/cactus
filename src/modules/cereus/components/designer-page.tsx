@@ -951,7 +951,7 @@ function CollectionsTab({
         )}
 
         {/* Design Studio — opens inline when creating a new piece */}
-        {showDesignStudio && isDesign && (
+        {showDesignStudio && (
           <div className="bg-card border border-cereus-gold/20 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-bold text-lg flex items-center gap-2">
@@ -1009,15 +1009,13 @@ function CollectionsTab({
             <h3 className="text-sm font-medium text-muted-foreground">
               Garments / Prendas ({collectionGarments.length}{targetPieces ? ` / ${targetPieces}` : ''})
             </h3>
-            {isDesign && (
-              <button
-                onClick={() => setShowDesignStudio(true)}
-                className="flex items-center gap-1.5 text-xs text-cereus-gold hover:text-cereus-gold/80 transition-colors"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                Crear Pieza / New Piece
-              </button>
-            )}
+            <button
+              onClick={() => setShowDesignStudio(true)}
+              className="flex items-center gap-1.5 text-xs text-cereus-gold hover:text-cereus-gold/80 transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              + Nueva Pieza con IA
+            </button>
           </div>
           {collectionGarments.length === 0 ? (
             <div className="text-center py-8 bg-muted/30 border border-dashed border-border rounded-xl">
@@ -1025,20 +1023,22 @@ function CollectionsTab({
               <p className="text-sm text-muted-foreground mb-1">
                 No garments in this collection yet. / No hay prendas en esta colección aún.
               </p>
-              {isDesign && (
-                <button
-                  onClick={() => setShowDesignStudio(true)}
-                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 transition-colors"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  Crear Primera Pieza / Create First Piece
-                </button>
-              )}
+              <button
+                onClick={() => setShowDesignStudio(true)}
+                className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+                Crear Primera Pieza con IA
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {collectionGarments.map(g => (
-                <div key={g.id} className="bg-card border border-border rounded-xl overflow-hidden group hover:border-cereus-gold/30 transition-all">
+                <div
+                  key={g.id}
+                  onClick={() => onNavigateToGarments(selectedCollection.id)}
+                  className="bg-card border border-border rounded-xl overflow-hidden group hover:border-cereus-gold/30 transition-all cursor-pointer"
+                >
                   {g.images?.[0]?.url ? (
                     <img src={g.images[0].url} alt={g.name} className="w-full aspect-[3/4] object-cover" />
                   ) : (
@@ -1057,6 +1057,9 @@ function CollectionsTab({
                     {g.base_price && (
                       <p className="text-xs font-medium text-cereus-gold mt-1">{formatPrice(g.base_price)}</p>
                     )}
+                    <p className="text-[10px] text-cereus-gold mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      Click para editar →
+                    </p>
                   </div>
                 </div>
               ))}
