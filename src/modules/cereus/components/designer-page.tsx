@@ -1314,6 +1314,7 @@ function GarmentDetailEditable({
   const [basePrice, setBasePrice] = useState(garment.base_price || 0);
   const [marginTarget, setMarginTarget] = useState(garment.margin_target);
   const [status, setStatus] = useState(garment.status);
+  const [previewImg, setPreviewImg] = useState<string | null>(null);
 
   const brief = garment.design_brief as { concept?: string; silhouetteNotes?: string; fabricNotes?: string; constructionDetails?: string[]; designerTips?: string } | null;
   const collection = collections.find(c => c.id === garment.collection_id);
@@ -1478,13 +1479,18 @@ function GarmentDetailEditable({
       <div className="bg-card border border-border rounded-xl p-5">
         <h3 className="text-sm font-medium mb-3">Galería</h3>
         {garment.images?.length > 0 ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
             {garment.images.map((img, i) => (
-              <div key={i} className="relative aspect-[3/4] group">
-                <img src={img.url} alt={img.alt || ''} className="w-full h-full rounded-lg object-cover border border-border" />
+              <div key={i} className="relative aspect-[3/4] group cursor-pointer rounded-xl overflow-hidden border border-border hover:border-cereus-gold/50 transition-all"
+                onClick={() => setPreviewImg(img.url)}>
+                <img src={img.url} alt={img.alt || ''} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Eye className="w-6 h-6 text-white" />
+                </div>
                 <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] bg-black/60 text-white rounded">{img.type}</span>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     const newImages = garment.images.filter((_, j) => j !== i);
                     onUpdateImages(garment, newImages);
                   }}
@@ -1517,6 +1523,25 @@ function GarmentDetailEditable({
           <p className="text-xs text-muted-foreground">
             Colección: <span className="font-medium text-foreground">{collection.name}</span> — {SEASONS.find(s => s.value === collection.season)?.es || collection.season} {collection.year}
           </p>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {previewImg && (
+        <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4" onClick={() => setPreviewImg(null)}>
+          <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setPreviewImg(null)}
+              className="absolute -top-3 -right-3 w-10 h-10 bg-white text-gray-800 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 z-10">
+              <X className="w-5 h-5" />
+            </button>
+            <img src={previewImg} alt="Preview" className="w-full h-full object-contain rounded-xl" style={{ maxHeight: '85vh' }} />
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+              <a href={previewImg} target="_blank" rel="noopener noreferrer"
+                className="px-4 py-2 bg-white text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-100">
+                Abrir original
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </div>

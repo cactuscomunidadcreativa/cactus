@@ -159,10 +159,10 @@ const TRENDS_2026: Record<string, TrendData> = {
     year: 2026,
     silhouettes: [
       {
-        name: 'Capullo de Poder',
-        description: 'Formas envolventes tipo capullo. Abrigos oversize, siluetas cruzadas, volumenes generosos.',
+        name: 'Silueta Envolvente',
+        description: 'Formas que abrazan y protegen. Abrigos amplios, siluetas cruzadas, volumenes generosos que invitan a moverse.',
         garmentTypes: ['jacket', 'dress', 'coat'],
-        keywords: ['capullo', 'oversize', 'cruzado', 'envolvente', 'volumen'],
+        keywords: ['envolvente', 'oversize', 'cruzado', 'abrazo', 'volumen'],
       },
       {
         name: 'Filo Cortante',
@@ -249,7 +249,7 @@ const TRENDS_2026: Record<string, TrendData> = {
         placement: ['corpino', 'mangas', 'canesú', 'dobladillo'],
       },
     ],
-    moodKeywords: ['academia oscura', 'power dressing', 'glamour nocturno', 'belleza intelectual', 'fortaleza urbana', 'historias en capas'],
+    moodKeywords: ['elegancia nocturna', 'sastreria con alma', 'glamour intimo', 'belleza intelectual', 'refugio urbano', 'historias en capas'],
   },
   resort: {
     season: 'Resort/Crucero',

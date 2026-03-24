@@ -65,11 +65,31 @@ export async function POST(request: NextRequest) {
 
       const data = await res.json();
       if (data.data?.[0]?.url) {
-        // Also generate SVG as fallback (DALL-E URLs expire after ~1 hour)
+        const dalleUrl = data.data[0].url;
+        let permanentUrl = dalleUrl;
+
+        // Download DALL-E image and upload to Supabase for permanent URL
+        try {
+          const { createServiceClient: createSvc } = await import('@/lib/supabase/service');
+          const db = createSvc();
+          if (db) {
+            const imgRes = await fetch(dalleUrl);
+            const imgBuffer = await imgRes.arrayBuffer();
+            const fileName = `sketches/${Date.now()}_${template}.png`;
+            const { error: upErr } = await db.storage
+              .from('cereus-garment-images')
+              .upload(fileName, imgBuffer, { contentType: 'image/png', upsert: false });
+            if (!upErr) {
+              const { data: urlData } = db.storage.from('cereus-garment-images').getPublicUrl(fileName);
+              permanentUrl = urlData.publicUrl;
+            }
+          }
+        } catch { /* Use original DALL-E URL as fallback */ }
+
         const svgFallback = generateTrendSVG(template, colorList, fabricName, suggestions, designBrief)
           .replace(/<!--[\s\S]*?-->/g, '');
         return NextResponse.json({
-          imageUrl: data.data[0].url,
+          imageUrl: permanentUrl,
           svgData: svgFallback,
           source: 'dall-e',
           designBrief,
