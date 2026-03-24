@@ -461,17 +461,17 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
 
   if (phase === 'input') {
     return (
-      <div className="relative min-h-screen bg-cereus-noir pb-28">
+      <div className="relative min-h-screen bg-background pb-28">
         {/* Header */}
-        <div className="sticky top-0 z-30 border-b border-white/5 bg-cereus-noir/95 backdrop-blur-xl">
+        <div className="sticky top-0 z-30 border-b border-border bg-background/98 backdrop-blur-xl">
           <div className="mx-auto max-w-4xl px-6 py-5">
             <div className="flex items-center gap-2.5">
               <Sparkles className="h-5 w-5 text-cereus-gold" />
-              <h1 className="text-lg font-semibold tracking-tight text-white/90 font-display">
+              <h1 className="text-lg font-semibold tracking-tight text-foreground font-display">
                 Contexto del Mercado
               </h1>
             </div>
-            <p className="mt-1 text-xs text-white/35">
+            <p className="mt-1 text-xs text-muted-foreground/60">
               Define el contexto de tu coleccion. La IA generara tendencias personalizadas.
             </p>
           </div>
@@ -484,7 +484,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cereus-gold/10">
                 <MapPin className="h-4 w-4 text-cereus-gold" />
               </div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                 Mercado Destino
               </h2>
             </div>
@@ -493,7 +493,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               {cities.map((mc, idx) => (
                 <div key={idx} className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
                   <div>
-                    <label className="block text-xs font-medium text-white/50 mb-1.5">Ciudad</label>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">Ciudad</label>
                     <input
                       type="text"
                       value={mc.city}
@@ -503,11 +503,11 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                         setCities(updated);
                       }}
                       placeholder="Lima"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                      className="w-full rounded-xl border border-border bg-muted/50 px-4 py-2.5 text-sm text-foreground placeholder:text-foreground/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-white/50 mb-1.5">Pais</label>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">Pais</label>
                     <input
                       type="text"
                       value={mc.country}
@@ -517,11 +517,11 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                         setCities(updated);
                       }}
                       placeholder="Peru"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                      className="w-full rounded-xl border border-border bg-muted/50 px-4 py-2.5 text-sm text-foreground placeholder:text-foreground/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-white/50 mb-1.5">Temp °C</label>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">Temp °C</label>
                     <input
                       type="number"
                       value={mc.avgTemp}
@@ -530,12 +530,12 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                         updated[idx] = { ...updated[idx], avgTemp: Number(e.target.value) };
                         setCities(updated);
                       }}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                      className="w-full rounded-xl border border-border bg-muted/50 px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
                     />
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1">
-                      <label className="block text-xs font-medium text-white/50 mb-1.5">Clima</label>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5">Clima</label>
                       <select
                         value={mc.humidity}
                         onChange={(e) => {
@@ -543,10 +543,10 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           updated[idx] = { ...updated[idx], humidity: e.target.value };
                           setCities(updated);
                         }}
-                        className="w-full appearance-none rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50"
+                        className="w-full appearance-none rounded-xl border border-border bg-muted/50 px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-cereus-gold/50"
                       >
                         {HUMIDITY_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value} className="bg-neutral-900 text-white">
+                          <option key={opt.value} value={opt.value} className="bg-neutral-900 text-foreground">
                             {opt.label}
                           </option>
                         ))}
@@ -555,7 +555,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                     {cities.length > 1 && (
                       <button
                         onClick={() => setCities(cities.filter((_, i) => i !== idx))}
-                        className="mt-5 p-2 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="mt-5 p-2 rounded-lg text-muted-foreground/50 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -578,38 +578,38 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cereus-gold/10">
                 <Calendar className="h-4 w-4 text-cereus-gold" />
               </div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                 Temporada
               </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">Temporada</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Temporada</label>
                 <div className="relative">
                   <select
                     value={season}
                     onChange={(e) => setSeason(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-9 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                    className="w-full appearance-none rounded-xl border border-border bg-muted/50 px-4 py-3 pr-9 text-sm text-foreground outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
                   >
                     {SEASONS.map((s) => (
-                      <option key={s.value} value={s.value} className="bg-neutral-900 text-white">
+                      <option key={s.value} value={s.value} className="bg-neutral-900 text-foreground">
                         {s.label}
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/50" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">Ano</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Ano</label>
                 <input
                   type="number"
                   value={year}
                   onChange={(e) => setYear(Number(e.target.value))}
                   min={2024}
                   max={2030}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                  className="w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
                 />
               </div>
             </div>
@@ -622,10 +622,10 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 <Users className="h-4 w-4 text-cereus-gold" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                   Arquetipos de Cliente
                 </h2>
-                <p className="text-[11px] text-white/35 mt-0.5">
+                <p className="text-[11px] text-muted-foreground/60 mt-0.5">
                   Selecciona los arquetipos de tu cliente ideal
                 </p>
               </div>
@@ -652,7 +652,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                         'flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
                         selected
                           ? 'bg-cereus-gold/20 text-cereus-gold'
-                          : 'bg-white/5 text-white/40 group-hover:text-white/60',
+                          : 'bg-muted/50 text-foreground/40 group-hover:text-muted-foreground',
                       )}
                     >
                       <Icon className="h-5 w-5" />
@@ -661,12 +661,12 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                       <p
                         className={cn(
                           'text-xs font-semibold transition-colors',
-                          selected ? 'text-cereus-gold' : 'text-white/70',
+                          selected ? 'text-cereus-gold' : 'text-foreground/70',
                         )}
                       >
                         {arch.name}
                       </p>
-                      <p className="text-[10px] text-white/35 mt-0.5 line-clamp-2">
+                      <p className="text-[10px] text-muted-foreground/60 mt-0.5 line-clamp-2">
                         {arch.description}
                       </p>
                     </div>
@@ -687,14 +687,14 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cereus-gold/10">
                 <DollarSign className="h-4 w-4 text-cereus-gold" />
               </div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                 Presupuesto y Cantidad
               </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
                   Precio minimo por pieza (USD)
                 </label>
                 <input
@@ -702,11 +702,11 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                   value={budgetMin}
                   onChange={(e) => setBudgetMin(Number(e.target.value))}
                   min={0}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                  className="w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
                   Precio maximo por pieza (USD)
                 </label>
                 <input
@@ -714,11 +714,11 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                   value={budgetMax}
                   onChange={(e) => setBudgetMax(Number(e.target.value))}
                   min={0}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                  className="w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5">
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
                   Cantidad de piezas objetivo
                 </label>
                 <input
@@ -726,7 +726,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                   value={targetPieces}
                   onChange={(e) => setTargetPieces(Number(e.target.value))}
                   min={1}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
+                  className="w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20"
                 />
               </div>
             </div>
@@ -738,7 +738,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cereus-gold/10">
                 <ImageIcon className="h-4 w-4 text-cereus-gold" />
               </div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                 Referencias de Inspiracion
               </h2>
             </div>
@@ -761,7 +761,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cereus-gold/10">
                 <StickyNote className="h-4 w-4 text-cereus-gold" />
               </div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                 Notas del Disenador
               </h2>
             </div>
@@ -771,13 +771,13 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Describe tu vision, inspiracion, restricciones..."
               rows={4}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20 resize-none"
+              className="w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-foreground placeholder:text-foreground/25 outline-none transition-colors focus:border-cereus-gold/50 focus:ring-1 focus:ring-cereus-gold/20 resize-none"
             />
           </section>
         </div>
 
         {/* ── Generate Button (sticky bottom) ──────────────── */}
-        <div className="fixed bottom-0 inset-x-0 z-40 border-t border-white/8 bg-cereus-noir/95 backdrop-blur-xl">
+        <div className="fixed bottom-0 inset-x-0 z-40 border-t border-white/8 bg-background/98 backdrop-blur-xl">
           <div className="mx-auto max-w-4xl px-6 py-4">
             <button
               type="button"
@@ -787,7 +787,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 'w-full group inline-flex items-center justify-center gap-3 rounded-xl px-6 py-4 text-sm font-semibold transition-all duration-300',
                 canGenerate && !generating
                   ? 'bg-cereus-gold text-cereus-noir shadow-lg shadow-cereus-gold/20 hover:shadow-cereus-gold/30 hover:brightness-110 active:scale-[0.98]'
-                  : 'bg-white/5 text-white/25 cursor-not-allowed',
+                  : 'bg-muted/50 text-foreground/25 cursor-not-allowed',
               )}
             >
               {generating ? (
@@ -805,7 +805,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               )}
             </button>
             {!canGenerate && !generating && (
-              <p className="text-center text-[11px] text-white/30 mt-2">
+              <p className="text-center text-[11px] text-muted-foreground/50 mt-2">
                 Completa al menos la ciudad y selecciona 1 arquetipo para continuar
               </p>
             )}
@@ -822,26 +822,26 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
   const itemCount = totalItems(trends);
 
   return (
-    <div className="relative min-h-screen bg-cereus-noir pb-28">
+    <div className="relative min-h-screen bg-background pb-28">
       {/* Header */}
-      <div className="sticky top-0 z-30 border-b border-white/5 bg-cereus-noir/95 backdrop-blur-xl">
+      <div className="sticky top-0 z-30 border-b border-border bg-background/98 backdrop-blur-xl">
         <div className="mx-auto max-w-5xl px-6 py-5">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2.5">
                 <Sparkles className="h-5 w-5 text-cereus-gold" />
-                <h1 className="text-lg font-semibold tracking-tight text-white/90 font-display">
+                <h1 className="text-lg font-semibold tracking-tight text-foreground font-display">
                   Tendencias Generadas
                 </h1>
               </div>
-              <p className="mt-1 text-xs text-white/35">
+              <p className="mt-1 text-xs text-muted-foreground/60">
                 {cities.filter(c => c.city).map(c => `${c.city}, ${c.country}`).join(' · ')} — {SEASONS.find((s) => s.value === season)?.label} {year}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setPhase('input')}
-              className="text-xs text-white/40 hover:text-white/70 transition-colors flex items-center gap-1"
+              className="text-xs text-foreground/40 hover:text-foreground/70 transition-colors flex items-center gap-1"
             >
               <Pencil className="h-3 w-3" />
               Editar Contexto
@@ -859,16 +859,16 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 <Scissors className="h-4 w-4 text-cereus-gold" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                   Siluetas Sugeridas
                 </h2>
-                <p className="text-[11px] text-white/35">{trends.silhouettes.length} siluetas</p>
+                <p className="text-[11px] text-muted-foreground/60">{trends.silhouettes.length} siluetas</p>
               </div>
             </div>
             <button
               type="button"
               onClick={addSilhouette}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 hover:text-white/80 hover:border-white/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground/80 hover:border-white/20 transition-colors"
             >
               <Plus className="h-3 w-3" />
               Agregar Silueta
@@ -890,14 +890,14 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                       onClick={() =>
                         setEditingIndex(isEditing ? null : { section: 'silhouettes', index: i })
                       }
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60 transition-colors"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 hover:bg-white/10 hover:text-muted-foreground transition-colors"
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
                     <button
                       type="button"
                       onClick={() => removeSilhouette(i)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 hover:bg-red-500/20 hover:text-red-400 transition-colors"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -913,7 +913,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           updated[i] = { ...updated[i], name: e.target.value };
                           setTrends({ ...trends, silhouettes: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus:border-cereus-gold/50"
                         placeholder="Nombre"
                       />
                       <textarea
@@ -924,7 +924,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           setTrends({ ...trends, silhouettes: updated });
                         }}
                         rows={2}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50 resize-none"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50 resize-none"
                         placeholder="Descripcion"
                       />
                       <input
@@ -938,7 +938,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           };
                           setTrends({ ...trends, silhouettes: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                         placeholder="Tipos de prenda (separados por coma)"
                       />
                       <input
@@ -952,23 +952,23 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           };
                           setTrends({ ...trends, silhouettes: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                         placeholder="Keywords (separadas por coma)"
                       />
                     </div>
                   ) : (
                     <>
-                      <h4 className="text-base font-medium text-white/90 pr-16 font-display">
+                      <h4 className="text-base font-medium text-foreground pr-16 font-display">
                         {item.name}
                       </h4>
-                      <p className="mt-2 text-xs leading-relaxed text-white/45 line-clamp-3">
+                      <p className="mt-2 text-xs leading-relaxed text-foreground/45 line-clamp-3">
                         {item.description}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {item.garmentTypes.map((g) => (
                           <span
                             key={g}
-                            className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] text-white/60"
+                            className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-[11px] text-muted-foreground"
                           >
                             {g}
                           </span>
@@ -994,7 +994,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
           </div>
         </section>
 
-        <div className="border-t border-white/5" />
+        <div className="border-t border-border" />
 
         {/* ── Paletas de Color ─────────────────────────────── */}
         <section className="space-y-4">
@@ -1004,16 +1004,16 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 <Palette className="h-4 w-4 text-cereus-gold" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                   Paletas de Color
                 </h2>
-                <p className="text-[11px] text-white/35">{trends.colorStories.length} paletas</p>
+                <p className="text-[11px] text-muted-foreground/60">{trends.colorStories.length} paletas</p>
               </div>
             </div>
             <button
               type="button"
               onClick={addColorStory}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 hover:text-white/80 hover:border-white/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground/80 hover:border-white/20 transition-colors"
             >
               <Plus className="h-3 w-3" />
               Agregar Paleta
@@ -1022,7 +1022,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
 
           {/* Paletas predefinidas para agregar */}
           <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Agregar paleta predefinida</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mb-2">Agregar paleta predefinida</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
                 { name: 'Tierra Peruana', colors: ['#8B4513', '#D2691E', '#DEB887', '#F5DEB3', '#CD853F', '#A0522D'], mood: 'calido, ancestral, raices', description: 'Tonos de la tierra andina que abrazan piel morena' },
@@ -1052,10 +1052,10 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 >
                   <div className="flex gap-0.5">
                     {palette.colors.slice(0, 6).map((c, ci) => (
-                      <div key={ci} className="h-4 w-4 rounded-full border border-white/10" style={{ backgroundColor: c }} />
+                      <div key={ci} className="h-4 w-4 rounded-full border border-border" style={{ backgroundColor: c }} />
                     ))}
                   </div>
-                  <p className="text-[11px] font-medium text-white/70 group-hover:text-white/90">{palette.name}</p>
+                  <p className="text-[11px] font-medium text-foreground/70 group-hover:text-foreground">{palette.name}</p>
                 </button>
               ))}
             </div>
@@ -1075,14 +1075,14 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                       onClick={() =>
                         setEditingIndex(isEditing ? null : { section: 'colorStories', index: i })
                       }
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60 transition-colors"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 hover:bg-white/10 hover:text-muted-foreground transition-colors"
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
                     <button
                       type="button"
                       onClick={() => removeColorStory(i)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 hover:bg-red-500/20 hover:text-red-400 transition-colors"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -1098,7 +1098,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           updated[i] = { ...updated[i], name: e.target.value };
                           setTrends({ ...trends, colorStories: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus:border-cereus-gold/50"
                         placeholder="Nombre de la paleta"
                       />
                       <textarea
@@ -1109,7 +1109,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           setTrends({ ...trends, colorStories: updated });
                         }}
                         rows={2}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50 resize-none"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50 resize-none"
                         placeholder="Descripcion"
                       />
                       <input
@@ -1123,7 +1123,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           };
                           setTrends({ ...trends, colorStories: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                         placeholder="Colores hex (separados por coma)"
                       />
                       <input
@@ -1134,26 +1134,26 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           updated[i] = { ...updated[i], mood: e.target.value };
                           setTrends({ ...trends, colorStories: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                         placeholder="Mood"
                       />
                     </div>
                   ) : (
                     <>
-                      <h4 className="text-base font-medium text-white/90 pr-16 font-display">
+                      <h4 className="text-base font-medium text-foreground pr-16 font-display">
                         {item.name}
                       </h4>
                       <div className="mt-3 flex items-center gap-1.5">
                         {item.colors.map((color, ci) => (
                           <div
                             key={ci}
-                            className="h-7 w-7 rounded-full border border-white/10 shadow-inner"
+                            className="h-7 w-7 rounded-full border border-border shadow-inner"
                             style={{ backgroundColor: color }}
                             title={color}
                           />
                         ))}
                       </div>
-                      <p className="mt-3 text-xs leading-relaxed text-white/45 line-clamp-2">
+                      <p className="mt-3 text-xs leading-relaxed text-foreground/45 line-clamp-2">
                         {item.description}
                       </p>
                       <p className="mt-2 text-[11px] italic text-cereus-gold/60">{item.mood}</p>
@@ -1165,7 +1165,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
           </div>
         </section>
 
-        <div className="border-t border-white/5" />
+        <div className="border-t border-border" />
 
         {/* ── Telas Sugeridas ──────────────────────────────── */}
         <section className="space-y-4">
@@ -1175,16 +1175,16 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 <Layers className="h-4 w-4 text-cereus-gold" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                   Telas Sugeridas
                 </h2>
-                <p className="text-[11px] text-white/35">{trends.fabricTrends.length} telas</p>
+                <p className="text-[11px] text-muted-foreground/60">{trends.fabricTrends.length} telas</p>
               </div>
             </div>
             <button
               type="button"
               onClick={addFabric}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 hover:text-white/80 hover:border-white/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground/80 hover:border-white/20 transition-colors"
             >
               <Plus className="h-3 w-3" />
               Agregar Tela
@@ -1205,14 +1205,14 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                       onClick={() =>
                         setEditingIndex(isEditing ? null : { section: 'fabricTrends', index: i })
                       }
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60 transition-colors"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 hover:bg-white/10 hover:text-muted-foreground transition-colors"
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
                     <button
                       type="button"
                       onClick={() => removeFabric(i)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 hover:bg-red-500/20 hover:text-red-400 transition-colors"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -1228,7 +1228,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           updated[i] = { ...updated[i], name: e.target.value };
                           setTrends({ ...trends, fabricTrends: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus:border-cereus-gold/50"
                         placeholder="Nombre"
                       />
                       <textarea
@@ -1239,7 +1239,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           setTrends({ ...trends, fabricTrends: updated });
                         }}
                         rows={2}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50 resize-none"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50 resize-none"
                         placeholder="Descripcion"
                       />
                       <input
@@ -1253,7 +1253,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           };
                           setTrends({ ...trends, fabricTrends: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                         placeholder="Telas (separadas por coma)"
                       />
                       <div className="grid grid-cols-2 gap-3">
@@ -1265,7 +1265,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                             updated[i] = { ...updated[i], finish: e.target.value };
                             setTrends({ ...trends, fabricTrends: updated });
                           }}
-                          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                          className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                           placeholder="Acabado"
                         />
                         <input
@@ -1276,7 +1276,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                             updated[i] = { ...updated[i], weight: Number(e.target.value) };
                             setTrends({ ...trends, fabricTrends: updated });
                           }}
-                          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                          className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                           placeholder="Gramaje (g/m2)"
                         />
                       </div>
@@ -1288,40 +1288,40 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           updated[i] = { ...updated[i], composition: e.target.value };
                           setTrends({ ...trends, fabricTrends: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                         placeholder="Composicion (ej: 100% Algodon)"
                       />
                     </div>
                   ) : (
                     <>
-                      <h4 className="text-base font-medium text-white/90 pr-16 font-display">
+                      <h4 className="text-base font-medium text-foreground pr-16 font-display">
                         {item.name}
                       </h4>
-                      <p className="mt-2 text-xs leading-relaxed text-white/45 line-clamp-2">
+                      <p className="mt-2 text-xs leading-relaxed text-foreground/45 line-clamp-2">
                         {item.description}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {item.fabrics.map((f) => (
                           <span
                             key={f}
-                            className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] text-white/60"
+                            className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-[11px] text-muted-foreground"
                           >
                             {f}
                           </span>
                         ))}
                       </div>
-                      <div className="mt-2.5 flex flex-wrap gap-3 text-[11px] text-white/30">
+                      <div className="mt-2.5 flex flex-wrap gap-3 text-[11px] text-muted-foreground/50">
                         <span>
-                          <span className="text-white/50">Acabado:</span> {item.finish}
+                          <span className="text-muted-foreground">Acabado:</span> {item.finish}
                         </span>
                         {item.weight && (
                           <span>
-                            <span className="text-white/50">Gramaje:</span> {item.weight} g/m2
+                            <span className="text-muted-foreground">Gramaje:</span> {item.weight} g/m2
                           </span>
                         )}
                         {item.composition && (
                           <span>
-                            <span className="text-white/50">Composicion:</span> {item.composition}
+                            <span className="text-muted-foreground">Composicion:</span> {item.composition}
                           </span>
                         )}
                       </div>
@@ -1333,7 +1333,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
           </div>
         </section>
 
-        <div className="border-t border-white/5" />
+        <div className="border-t border-border" />
 
         {/* ── Detalles de Construccion ──────────────────────── */}
         <section className="space-y-4">
@@ -1343,16 +1343,16 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 <Sparkles className="h-4 w-4 text-cereus-gold" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                   Detalles de Construccion
                 </h2>
-                <p className="text-[11px] text-white/35">{trends.details.length} detalles</p>
+                <p className="text-[11px] text-muted-foreground/60">{trends.details.length} detalles</p>
               </div>
             </div>
             <button
               type="button"
               onClick={addDetail}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 hover:text-white/80 hover:border-white/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground/80 hover:border-white/20 transition-colors"
             >
               <Plus className="h-3 w-3" />
               Agregar Detalle
@@ -1373,14 +1373,14 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                       onClick={() =>
                         setEditingIndex(isEditing ? null : { section: 'details', index: i })
                       }
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60 transition-colors"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 hover:bg-white/10 hover:text-muted-foreground transition-colors"
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
                     <button
                       type="button"
                       onClick={() => removeDetail(i)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/30 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/50 hover:bg-red-500/20 hover:text-red-400 transition-colors"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -1396,7 +1396,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           updated[i] = { ...updated[i], name: e.target.value };
                           setTrends({ ...trends, details: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground outline-none focus:border-cereus-gold/50"
                         placeholder="Nombre"
                       />
                       <textarea
@@ -1407,7 +1407,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           setTrends({ ...trends, details: updated });
                         }}
                         rows={2}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50 resize-none"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50 resize-none"
                         placeholder="Descripcion"
                       />
                       <input
@@ -1421,7 +1421,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           };
                           setTrends({ ...trends, details: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                         placeholder="Elementos (separados por coma)"
                       />
                       <input
@@ -1435,23 +1435,23 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                           };
                           setTrends({ ...trends, details: updated });
                         }}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 outline-none focus:border-cereus-gold/50"
+                        className="w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/80 outline-none focus:border-cereus-gold/50"
                         placeholder="Ubicaciones (separadas por coma)"
                       />
                     </div>
                   ) : (
                     <>
-                      <h4 className="text-base font-medium text-white/90 pr-16 font-display">
+                      <h4 className="text-base font-medium text-foreground pr-16 font-display">
                         {item.name}
                       </h4>
-                      <p className="mt-2 text-xs leading-relaxed text-white/45 line-clamp-2">
+                      <p className="mt-2 text-xs leading-relaxed text-foreground/45 line-clamp-2">
                         {item.description}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {item.elements.map((el) => (
                           <span
                             key={el}
-                            className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] text-white/60"
+                            className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-[11px] text-muted-foreground"
                           >
                             {el}
                           </span>
@@ -1461,7 +1461,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                         {item.placement.map((p) => (
                           <span
                             key={p}
-                            className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-white/60"
+                            className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] text-muted-foreground"
                           >
                             {p}
                           </span>
@@ -1475,7 +1475,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
           </div>
         </section>
 
-        <div className="border-t border-white/5" />
+        <div className="border-t border-border" />
 
         {/* ── Mood Keywords ─────────────────────────────────── */}
         <section className="space-y-4">
@@ -1484,10 +1484,10 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <Hash className="h-4 w-4 text-cereus-gold" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                 Mood Keywords
               </h2>
-              <p className="text-[11px] text-white/35">{trends.moodKeywords.length} keywords</p>
+              <p className="text-[11px] text-muted-foreground/60">{trends.moodKeywords.length} keywords</p>
             </div>
           </div>
 
@@ -1505,14 +1505,14 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
             ))}
 
             {/* Add keyword input */}
-            <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+            <div className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 px-3 py-1">
               <input
                 type="text"
                 value={newKeyword}
                 onChange={(e) => setNewKeyword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addMoodKeyword()}
                 placeholder="Agregar keyword..."
-                className="bg-transparent text-sm text-white/70 placeholder:text-white/25 outline-none w-28"
+                className="bg-transparent text-sm text-foreground/70 placeholder:text-foreground/25 outline-none w-28"
               />
               <button
                 type="button"
@@ -1526,7 +1526,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
           </div>
         </section>
 
-        <div className="border-t border-white/5" />
+        <div className="border-t border-border" />
 
         {/* ── Notas del Clima (read-only) ──────────────────── */}
         {trends.climateNotes && (
@@ -1535,7 +1535,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
                 <CloudSun className="h-4 w-4 text-blue-400" />
               </div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                 Notas del Clima
               </h2>
             </div>
@@ -1552,7 +1552,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
                 <Users className="h-4 w-4 text-purple-400" />
               </div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-foreground/80">
                 Notas de Arquetipos
               </h2>
             </div>
@@ -1564,7 +1564,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
       </div>
 
       {/* ── Sticky Bottom Bar ──────────────────────────────── */}
-      <div className="fixed bottom-0 inset-x-0 z-40 border-t border-white/8 bg-cereus-noir/95 backdrop-blur-xl">
+      <div className="fixed bottom-0 inset-x-0 z-40 border-t border-white/8 bg-background/98 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
             <button
@@ -1573,7 +1573,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
                 setGenerating(false);
                 generateTrends();
               }}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/60 hover:text-white/80 hover:border-white/20 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground/80 hover:border-white/20 transition-colors"
             >
               <RotateCcw className="h-4 w-4" />
               Regenerar Todo
@@ -1583,7 +1583,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cereus-gold/15 text-sm font-bold tabular-nums text-cereus-gold">
                 {itemCount}
               </div>
-              <span className="text-xs text-white/50">
+              <span className="text-xs text-muted-foreground">
                 {itemCount === 1 ? '1 elemento' : `${itemCount} elementos`} aprobados
               </span>
             </div>
@@ -1597,7 +1597,7 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
               'group inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300',
               itemCount > 0
                 ? 'bg-cereus-gold text-cereus-noir shadow-lg shadow-cereus-gold/20 hover:shadow-cereus-gold/30 hover:brightness-110 active:scale-[0.98]'
-                : 'bg-white/5 text-white/25 cursor-not-allowed',
+                : 'bg-muted/50 text-foreground/25 cursor-not-allowed',
             )}
           >
             Aprobar y Continuar
