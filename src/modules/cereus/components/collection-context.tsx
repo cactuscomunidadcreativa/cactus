@@ -1020,6 +1020,47 @@ export default function CollectionContext({ maisonId, onComplete }: CollectionCo
             </button>
           </div>
 
+          {/* Paletas predefinidas para agregar */}
+          <div className="mb-4">
+            <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Agregar paleta predefinida</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { name: 'Tierra Peruana', colors: ['#8B4513', '#D2691E', '#DEB887', '#F5DEB3', '#CD853F', '#A0522D'], mood: 'calido, ancestral, raices', description: 'Tonos de la tierra andina que abrazan piel morena' },
+                { name: 'Chicha Morada', colors: ['#4A0E4E', '#7B2D8E', '#9B59B6', '#D4A5D4', '#F0C9F0', '#2C0735'], mood: 'vibrante, festivo, orgullo', description: 'Morados vividos del maiz morado, celebran la piel trigueña' },
+                { name: 'Atardecer Barranco', colors: ['#FF6B35', '#FF8C42', '#FFD166', '#EF476F', '#118AB2', '#073B4C'], mood: 'bohemio, artistico, calido', description: 'Los colores del cielo sobre el malecon al caer la tarde' },
+                { name: 'Selva Esmeralda', colors: ['#006D32', '#2E8B57', '#3CB371', '#90EE90', '#F0FFF0', '#004B23'], mood: 'tropical, exuberante, vida', description: 'Verdes vivos de la amazonia peruana' },
+                { name: 'Fucsia Vivo', colors: ['#FF1493', '#FF69B4', '#FFB6C1', '#C71585', '#DB7093', '#FFF0F5'], mood: 'audaz, femenino, energia', description: 'Rosas intensos que iluminan cualquier tono de piel' },
+                { name: 'Oceano Pacifico', colors: ['#0077B6', '#00B4D8', '#90E0EF', '#CAF0F8', '#023E8A', '#03045E'], mood: 'fresco, profundo, sereno', description: 'Azules del mar peruano desde la espuma hasta la profundidad' },
+                { name: 'Sol de Oro', colors: ['#FFD700', '#FFA500', '#FF8C00', '#DAA520', '#B8860B', '#FFFACD'], mood: 'luminoso, calido, opulento', description: 'Dorados y ambar que hacen brillar la piel calida' },
+                { name: 'Terracota Viva', colors: ['#E07A5F', '#F2CC8F', '#81B29A', '#3D405B', '#F4F1DE', '#D4956A'], mood: 'mediterraneo, equilibrado, natural', description: 'Terracota con toques verdes, sofisticacion calida' },
+                { name: 'Rojo Pasion', colors: ['#DC143C', '#B22222', '#FF4500', '#FF6347', '#FFA07A', '#8B0000'], mood: 'intenso, poderoso, sensual', description: 'Rojos vibrantes que son universalmente favorecedores' },
+                { name: 'Coral y Arena', colors: ['#FF7F50', '#F08080', '#FFDAB9', '#FFE4C4', '#FFF5EE', '#E9967A'], mood: 'suave, playero, luminoso', description: 'Corales y durazno que iluminan tonos calidos de piel' },
+                { name: 'Noche Limena', colors: ['#1A1A2E', '#16213E', '#533A71', '#E94560', '#0F3460', '#F1DCA7'], mood: 'nocturno, misterioso, elegante', description: 'La noche de Lima con destellos de neon y ambar' },
+                { name: 'Jardin Vivido', colors: ['#7B2FF7', '#F107A3', '#2DD4BF', '#FBBF24', '#FB923C', '#22D3EE'], mood: 'energia pura, alegre, moderno', description: 'Explosion de color para personalidades audaces' },
+              ].map((palette) => (
+                <button
+                  key={palette.name}
+                  type="button"
+                  onClick={() => {
+                    if (!trends) return;
+                    setTrends({
+                      ...trends,
+                      colorStories: [...trends.colorStories, palette],
+                    });
+                  }}
+                  className="group flex flex-col gap-1.5 rounded-xl border border-white/8 bg-white/[0.02] p-3 text-left transition-all hover:border-cereus-gold/30 hover:bg-white/[0.04]"
+                >
+                  <div className="flex gap-0.5">
+                    {palette.colors.slice(0, 6).map((c, ci) => (
+                      <div key={ci} className="h-4 w-4 rounded-full border border-white/10" style={{ backgroundColor: c }} />
+                    ))}
+                  </div>
+                  <p className="text-[11px] font-medium text-white/70 group-hover:text-white/90">{palette.name}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             {trends.colorStories.map((item, i) => {
               const isEditing = editingIndex?.section === 'colorStories' && editingIndex.index === i;
