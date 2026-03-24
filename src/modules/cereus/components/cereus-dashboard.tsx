@@ -7,7 +7,7 @@ import {
   Users, Ruler, DollarSign, Factory, Shirt, Brain,
   Plus, Search, Sparkles, ChevronRight, Loader2,
   Layers, Eye, ShoppingBag, MessageCircle, Globe, Settings,
-  Key, Check, ExternalLink, Save,
+  Key, Check, ExternalLink, Save, BarChart3,
 } from 'lucide-react';
 
 interface Maison {
@@ -117,6 +117,7 @@ export function CereusDashboard() {
     { icon: Shirt, label: 'Closet', count: '-', href: '/apps/cereus/closet', color: 'text-purple-500', bg: 'bg-purple-500/10' },
     { icon: Brain, label: 'Advisor', count: '-', href: '/apps/cereus/advisor', color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
     { icon: Eye, label: 'Catalogo', count: '-', href: '/apps/cereus/catalog', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+    { icon: BarChart3, label: 'Analytics', count: '-', href: '/apps/cereus/analytics', color: 'text-rose-500', bg: 'bg-rose-500/10' },
   ];
 
   async function saveApiKey() {
