@@ -285,9 +285,17 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
           <FabricStudio
             maisonId={maisonId}
             collectionConcept={workflow.collectionBrief?.description || ''}
-            colorStory={workflow.pinnedTrends?.colorStories?.flatMap(cs =>
-              cs.colors.map((hex, i) => ({ hex, name: `${cs.name} ${i + 1}` }))
-            ) || []}
+            colorStory={
+              // Pass palette primary colors with names
+              workflow.pinnedTrends?.colorStories?.flatMap(cs => [
+                { hex: cs.colors[0] || '#888888', name: cs.name, role: 'principal' },
+                ...(cs.colors.slice(1, 3).map((hex, i) => ({
+                  hex,
+                  name: `${cs.name} - acento ${i + 1}`,
+                  role: 'acento',
+                }))),
+              ]) || []
+            }
             season={workflow.selectedSeason || 'spring_summer'}
             onComplete={handleFabricsComplete}
             onBack={goBack}

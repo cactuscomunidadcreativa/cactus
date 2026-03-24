@@ -208,22 +208,24 @@ Target pieces: ${context.target_pieces}
 Client archetype distribution:
 ${context.archetype_distribution.map(a => `- ${a.archetype}: ${a.count} clients`).join('\n') || '- No client data yet'}
 
-${context.trend_context ? `Trend context: ${context.trend_context}` : ''}
+${context.trend_context ? `Contexto de tendencias elegido por la disenadora: ${context.trend_context}
 
-Available materials:
-${context.available_materials.slice(0, 15).map(m => `- ${m.name} (${m.type}${m.composition ? `, ${m.composition}` : ''})`).join('\n') || '- No materials registered yet'}
+IMPORTANTE SOBRE COLORES: La disenadora YA ELIGIO paletas de color en el paso anterior. Tu color_story DEBE basarse en esas paletas elegidas, usando los mismos colores hex. NO inventes paletas nuevas. Toma los colores que la disenadora ya aprobo y asignales roles (primary, accent, neutral, statement) y nombres descriptivos cortos.` : ''}
 
-Previous collections (avoid repetition):
-${context.existing_collections.map(c => `- ${c.name} (${c.season} ${c.year})`).join('\n') || '- First collection'}
+Materiales disponibles:
+${context.available_materials.slice(0, 15).map(m => `- ${m.name} (${m.type}${m.composition ? `, ${m.composition}` : ''})`).join('\n') || '- Sin materiales registrados aun'}
 
-Return as JSON:
+Colecciones anteriores (NO repetir conceptos):
+${context.existing_collections.map(c => `- ${c.name} (${c.season} ${c.year})`).join('\n') || '- Primera coleccion'}
+
+Devuelve como JSON:
 {
-  "name_suggestions": ["name1", "name2", "name3"],
+  "name_suggestions": ["nombre1", "nombre2", "nombre3"],
   "code_suggestion": "XX00",
-  "description": "collection concept description (2-3 sentences)",
-  "mood": "mood/feeling description",
+  "description": "descripcion del concepto (2-3 frases CONCRETAS, sin metaforas rebuscadas)",
+  "mood": "descripcion del mood en pocas palabras",
   "color_story": [
-    {"hex": "#HEXCODE", "name": "Color Name", "role": "primary|accent|neutral|statement"}
+    {"hex": "#HEXCODE", "name": "Nombre Corto", "role": "primary|accent|neutral|statement"}
   ],
   "garment_types": [
     {"category": "dress|gown|suit|blazer|coat|skirt|pants|blouse|jumpsuit|cape|corset", "count": 0, "notes": "design direction"}
