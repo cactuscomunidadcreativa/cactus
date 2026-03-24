@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   TrendingUp,
   Lightbulb,
@@ -99,18 +99,79 @@ interface DesignerWorkflowProps {
   maisonId: string;
 }
 
+const STORAGE_KEY = 'cereus-workflow-state';
+
+function loadSavedState(maisonId: string): WorkflowState | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(`${STORAGE_KEY}-${maisonId}`);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as WorkflowState & { _savedAt?: number };
+    // Expire after 7 days
+    if (saved._savedAt && Date.now() - saved._savedAt > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(`${STORAGE_KEY}-${maisonId}`);
+      return null;
+    }
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+function saveState(maisonId: string, state: WorkflowState) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(`${STORAGE_KEY}-${maisonId}`, JSON.stringify({ ...state, _savedAt: Date.now() }));
+  } catch { /* storage full or unavailable */ }
+}
+
 export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
-  const [workflow, setWorkflow] = useState<WorkflowState>({
-    step: 1,
-    selectedSeason: null,
-    selectedYear: null,
-    pinnedTrends: null,
-    marketContext: null,
-    collectionId: null,
-    collectionBrief: null,
-    selectedFabrics: [],
-    pieces: [],
+  const [workflow, setWorkflow] = useState<WorkflowState>(() => {
+    const saved = loadSavedState(maisonId);
+    if (saved) return saved;
+    return {
+      step: 1,
+      selectedSeason: null,
+      selectedYear: null,
+      pinnedTrends: null,
+      marketContext: null,
+      collectionId: null,
+      collectionBrief: null,
+      selectedFabrics: [],
+      pieces: [],
+    };
   });
+
+  const [resumed, setResumed] = useState(false);
+
+  // Save state on every change
+  useEffect(() => {
+    saveState(maisonId, workflow);
+  }, [maisonId, workflow]);
+
+  // Show resume banner if we loaded saved state
+  useEffect(() => {
+    const saved = loadSavedState(maisonId);
+    if (saved && saved.step > 1) {
+      setResumed(true);
+    }
+  }, [maisonId]);
+
+  const resetWorkflow = useCallback(() => {
+    localStorage.removeItem(`${STORAGE_KEY}-${maisonId}`);
+    setWorkflow({
+      step: 1,
+      selectedSeason: null,
+      selectedYear: null,
+      pinnedTrends: null,
+      marketContext: null,
+      collectionId: null,
+      collectionBrief: null,
+      selectedFabrics: [],
+      pieces: [],
+    });
+    setResumed(false);
+  }, [maisonId]);
 
   const goToStep = useCallback((target: number) => {
     if (target < 1 || target > 7) return;
@@ -384,6 +445,27 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      {/* Resume banner */}
+      {resumed && workflow.step > 1 && (
+        <div className="mb-4 p-3 bg-cereus-gold/10 border border-cereus-gold/20 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-cereus-gold" />
+            <p className="text-sm">
+              <span className="font-medium">Proceso guardado</span>
+              <span className="text-muted-foreground ml-1">
+                — {workflow.collectionBrief?.name ? `"${workflow.collectionBrief.name}"` : 'Coleccion en progreso'}, paso {workflow.step} de 7
+              </span>
+            </p>
+          </div>
+          <button
+            onClick={resetWorkflow}
+            className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-muted transition-colors"
+          >
+            Empezar de nuevo
+          </button>
+        </div>
+      )}
+
       {/* Step indicator */}
       {renderStepIndicator()}
 
