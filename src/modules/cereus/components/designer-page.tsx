@@ -1319,6 +1319,61 @@ function GarmentDetailEditable({
   const [marginTarget, setMarginTarget] = useState(garment.margin_target);
   const [status, setStatus] = useState(garment.status);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const [editingImage, setEditingImage] = useState(false);
+  const [editPrompt, setEditPrompt] = useState('');
+  const [aiImageMsg, setAiImageMsg] = useState<string | null>(null);
+
+  const hasExpiredImages = garment.images?.some(img =>
+    img.url.includes('oaidalleapiprodscus') || img.url.includes('blob.core.windows')
+  );
+
+  async function handleRegenerateImage() {
+    setRegenerating(true);
+    setAiImageMsg(null);
+    try {
+      const res = await fetch('/api/cereus/ai/regenerate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ garmentId: garment.id, action: 'regenerate' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAiImageMsg('Imagen regenerada exitosamente');
+        onRefresh();
+      } else {
+        setAiImageMsg(`Error: ${data.error}`);
+      }
+    } catch {
+      setAiImageMsg('Error al regenerar');
+    }
+    setRegenerating(false);
+  }
+
+  async function handleEditImage() {
+    if (!editPrompt.trim()) return;
+    setRegenerating(true);
+    setAiImageMsg(null);
+    try {
+      const res = await fetch('/api/cereus/ai/regenerate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ garmentId: garment.id, action: 'edit', editPrompt }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAiImageMsg('Correccion aplicada exitosamente');
+        setEditingImage(false);
+        setEditPrompt('');
+        onRefresh();
+      } else {
+        setAiImageMsg(`Error: ${data.error}`);
+      }
+    } catch {
+      setAiImageMsg('Error al corregir');
+    }
+    setRegenerating(false);
+  }
 
   const brief = garment.design_brief as { concept?: string; silhouetteNotes?: string; fabricNotes?: string; constructionDetails?: string[]; designerTips?: string } | null;
   const collection = collections.find(c => c.id === garment.collection_id);
@@ -1508,17 +1563,85 @@ function GarmentDetailEditable({
         ) : (
           <p className="text-sm text-muted-foreground mb-3">Sin imágenes</p>
         )}
-        <ImageUploader
-          bucket="cereus-garment-images"
-          folder={`garments/${garment.id}`}
-          onUpload={(url) => {
-            const newImages = [...(garment.images || []), { url, type: 'sketch' }];
-            onUpdateImages(garment, newImages);
-          }}
-          multiple compact
-          label="Agregar Imagen"
-          labelEs="Agregar Imagen"
-        />
+        <div className="flex flex-wrap gap-2 mb-3">
+          <ImageUploader
+            bucket="cereus-garment-images"
+            folder={`garments/${garment.id}`}
+            onUpload={(url) => {
+              const newImages = [...(garment.images || []), { url, type: 'sketch' }];
+              onUpdateImages(garment, newImages);
+            }}
+            multiple compact
+            label="Agregar Imagen"
+            labelEs="Agregar Imagen"
+          />
+        </div>
+
+        {/* AI Image Actions */}
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-border">
+          {hasExpiredImages && (
+            <button
+              onClick={handleRegenerateImage}
+              disabled={regenerating}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-cereus-gold text-white rounded-lg text-xs font-medium hover:bg-cereus-gold/90 disabled:opacity-50"
+            >
+              {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              Regenerar Imagen Rota
+            </button>
+          )}
+          {!hasExpiredImages && (
+            <button
+              onClick={handleRegenerateImage}
+              disabled={regenerating}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-input rounded-lg text-xs font-medium hover:bg-muted disabled:opacity-50"
+            >
+              {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              Regenerar con IA
+            </button>
+          )}
+          <button
+            onClick={() => setEditingImage(!editingImage)}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-input rounded-lg text-xs font-medium hover:bg-muted"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            Corregir con IA
+          </button>
+          {aiImageMsg && (
+            <span className={`text-xs ${aiImageMsg.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>
+              {aiImageMsg}
+            </span>
+          )}
+        </div>
+
+        {/* AI Edit prompt */}
+        {editingImage && (
+          <div className="mt-3 p-3 bg-cereus-gold/5 border border-cereus-gold/20 rounded-xl space-y-2">
+            <p className="text-xs font-medium text-cereus-gold">Describe la correccion que quieres:</p>
+            <textarea
+              value={editPrompt}
+              onChange={e => setEditPrompt(e.target.value)}
+              placeholder="Ej: Hazla mas larga, agrega mangas abullonadas, cambia el cuello a V, agrega bordado en el dobladillo..."
+              rows={2}
+              className="w-full px-3 py-2 border border-input rounded-lg text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleEditImage}
+                disabled={regenerating || !editPrompt.trim()}
+                className="flex items-center gap-1.5 px-4 py-2 bg-cereus-gold text-white rounded-lg text-xs font-medium hover:bg-cereus-gold/90 disabled:opacity-50"
+              >
+                {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                Aplicar Correccion
+              </button>
+              <button
+                onClick={() => { setEditingImage(false); setEditPrompt(''); }}
+                className="px-3 py-2 border border-input rounded-lg text-xs hover:bg-muted"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Collection context */}
