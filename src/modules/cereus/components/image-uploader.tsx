@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Upload, X, Loader2, ImageIcon, Check } from 'lucide-react';
+import { Upload, X, Loader2, ImageIcon, Check, ZoomIn } from 'lucide-react';
 
 interface UploadedImage {
   url: string;
@@ -42,6 +42,7 @@ export function ImageUploader({
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recentUploads, setRecentUploads] = useState<UploadedImage[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = useCallback(async (file: File): Promise<UploadedImage | null> => {
@@ -146,16 +147,16 @@ export function ImageUploader({
         {allImages.length > 0 && (
           <div className="flex gap-2 flex-wrap">
             {allImages.map((url, i) => (
-              <div key={i} className="relative group">
+              <div key={i} className="relative group cursor-pointer" onClick={() => setPreviewUrl(url)}>
                 <img
                   src={url}
                   alt=""
-                  className="w-12 h-12 rounded-lg object-cover border border-border"
+                  className="w-12 h-12 rounded-lg object-cover border border-border hover:ring-2 hover:ring-cereus-gold/50 transition-all"
                 />
                 {onRemove && (
                   <button
                     type="button"
-                    onClick={() => onRemove(url)}
+                    onClick={(e) => { e.stopPropagation(); onRemove(url); }}
                     className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="w-2.5 h-2.5" />
@@ -163,6 +164,19 @@ export function ImageUploader({
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Preview Modal (compact) */}
+        {previewUrl && (
+          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPreviewUrl(null)}>
+            <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+              <button type="button" onClick={() => setPreviewUrl(null)}
+                className="absolute -top-3 -right-3 w-10 h-10 bg-white text-gray-800 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 z-10">
+                <X className="w-5 h-5" />
+              </button>
+              <img src={previewUrl} alt="Preview" className="w-full h-full object-contain rounded-xl" style={{ maxHeight: '85vh' }} />
+            </div>
           </div>
         )}
       </div>
@@ -224,20 +238,24 @@ export function ImageUploader({
       {allImages.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {allImages.map((url, i) => (
-            <div key={i} className="relative group aspect-square">
+            <div key={i} className="relative group aspect-square cursor-pointer" onClick={() => setPreviewUrl(url)}>
               <img
                 src={url}
                 alt=""
                 className="w-full h-full rounded-lg object-cover border border-border"
               />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setPreviewUrl(url); }}
+                  className="w-8 h-8 bg-white/90 text-gray-800 rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
                 {onRemove && (
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemove(url);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); onRemove(url); }}
                     className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
                     <X className="w-4 h-4" />
@@ -251,6 +269,49 @@ export function ImageUploader({
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setPreviewUrl(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setPreviewUrl(null)}
+              className="absolute -top-3 -right-3 w-10 h-10 bg-white text-gray-800 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="w-full h-full object-contain rounded-xl"
+              style={{ maxHeight: '85vh' }}
+            />
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {onRemove && (
+                <button
+                  type="button"
+                  onClick={() => { onRemove(previewUrl); setPreviewUrl(null); }}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors"
+                >
+                  Eliminar
+                </button>
+              )}
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-white text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+              >
+                Abrir original
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </div>
