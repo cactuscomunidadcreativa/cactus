@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getAPIKey } from '@/lib/ai/config';
+import { getTrainingContext } from '@/modules/cereus/lib/ai-training-context';
 
 // ─── TYPES ──────────────────────────────────────────────────
 
@@ -200,12 +201,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const prompt = buildDallePrompt(body);
+  let prompt = buildDallePrompt(body);
 
-  // 3. Check for OpenAI key
+  // 3. Load AI training context for brand-aware generation
+  const trainingContext = await getTrainingContext(maisonId);
+  if (trainingContext) {
+    // Append key brand preferences to the DALL-E prompt (condensed for image generation)
+    prompt += ` Brand design context: ${trainingContext.substring(0, 500)}`;
+  }
+
+  // 4. Check for OpenAI key
   const openaiKey = await getAPIKey('openai');
 
-  // 4. Fallback: generate SVG pattern when no API key available
+  // 5. Fallback: generate SVG pattern when no API key available
   if (!openaiKey) {
     const svgData = generateFallbackSVG(style, colors, scale);
     return NextResponse.json({
@@ -215,7 +223,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // 5. Generate via DALL-E 3
+  // 6. Generate via DALL-E 3
   try {
     const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -245,7 +253,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No image returned from DALL-E' }, { status: 502 });
     }
 
-    // 6. Download the temporary DALL-E URL and upload to Supabase Storage
+    // 7. Download the temporary DALL-E URL and upload to Supabase Storage
     const db = createServiceClient();
     if (!db) {
       return NextResponse.json({

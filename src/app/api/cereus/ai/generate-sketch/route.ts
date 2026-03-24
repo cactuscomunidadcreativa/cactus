@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAPIKey } from '@/lib/ai/config';
 import { getTrendSuggestions, getTrendData, buildDesignPrompt } from '@/modules/cereus/lib/trend-engine';
+import { getTrainingContext } from '@/modules/cereus/lib/ai-training-context';
 
 /**
  * Generate a fashion sketch with trend intelligence.
@@ -9,7 +10,7 @@ import { getTrendSuggestions, getTrendData, buildDesignPrompt } from '@/modules/
  */
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { template, fabric, fabrics, colors, collectionName, season, lang } = body;
+  const { template, fabric, fabrics, colors, collectionName, season, lang, maisonId } = body;
 
   if (!template) {
     return NextResponse.json({ error: 'template required' }, { status: 400 });
@@ -21,6 +22,9 @@ export async function POST(request: NextRequest) {
   const colorList = colors || ['#0A0A0A', '#B8943A'];
   const language = lang || 'es'; // Default to Spanish
 
+  // Load AI training context
+  const trainingContext = maisonId ? await getTrainingContext(maisonId) : '';
+
   // Get trend data
   const trends = getTrendData(season);
   const suggestions = getTrendSuggestions(template, fabricName, season);
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
   try {
     const anthropicKey = await getAPIKey('claude');
     if (anthropicKey) {
-      designBrief = await generateDesignBrief(anthropicKey, template, fabricName, colorList, season, collectionName, language);
+      designBrief = await generateDesignBrief(anthropicKey, template, fabricName, colorList, season, collectionName, language, trainingContext);
     }
   } catch {
     // Continue without Claude brief
@@ -150,6 +154,7 @@ async function generateDesignBrief(
   season?: string,
   collectionName?: string,
   language: string = 'es',
+  trainingContext: string = '',
 ): Promise<DesignBrief> {
   const trends = getTrendData(season);
   const suggestions = getTrendSuggestions(template, fabric, season);
@@ -224,7 +229,7 @@ Respond with this JSON structure:
       max_tokens: 1024,
       temperature: 0.8,
       system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      messages: [{ role: 'user', content: trainingContext ? `${trainingContext}\n\n${userPrompt}` : userPrompt }],
     }),
   });
 

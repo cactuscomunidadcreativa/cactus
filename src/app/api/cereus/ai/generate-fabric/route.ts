@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getAPIKey } from '@/lib/ai/config';
+import { getTrainingContext } from '@/modules/cereus/lib/ai-training-context';
 
 interface ColorEntry {
   hex: string;
@@ -92,10 +93,13 @@ export async function POST(request: NextRequest) {
   const suggestedName = suggestNameFromKeywords(fabricKeywords, season);
   const suggestedComposition = suggestComposition(fabricKeywords);
 
-  // 3. Check for OpenAI key
+  // 3. Load AI training context for brand-aware generation
+  const trainingContext = await getTrainingContext(maisonId);
+
+  // 4. Check for OpenAI key
   const openaiKey = await getAPIKey('openai');
 
-  // 4. Fallback: return an SVG color swatch when no API key is available
+  // 5. Fallback: return an SVG color swatch when no API key is available
   if (!openaiKey) {
     const primaryColor = colorStory[0]?.hex || '#888888';
     const svg = buildFallbackSVG(primaryColor, colorStory[0]?.name || 'Swatch');
@@ -109,9 +113,13 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // 5. Generate via DALL-E 3
+  // 6. Generate via DALL-E 3
   try {
-    const prompt = buildDallePrompt(collectionConcept, colorStory, fabricKeywords, season);
+    let prompt = buildDallePrompt(collectionConcept, colorStory, fabricKeywords, season);
+    if (trainingContext) {
+      // Append key brand preferences to the DALL-E prompt (condensed for image generation)
+      prompt += ` Brand design context: ${trainingContext.substring(0, 500)}`;
+    }
 
     const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -141,7 +149,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No image returned from DALL-E' }, { status: 502 });
     }
 
-    // 6. Download the temporary DALL-E URL and upload to Supabase Storage
+    // 7. Download the temporary DALL-E URL and upload to Supabase Storage
     const db = createServiceClient();
     if (!db) {
       // If service client isn't configured, return the temporary DALL-E URL directly

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { generateContent, generateImages } from '@/lib/ai';
 import { COLLECTION_BRIEF_SYSTEM, COLLECTION_BRIEF_USER, buildMoodBoardPrompts } from '@/modules/cereus/lib/ai-prompts';
+import { getTrainingContext } from '@/modules/cereus/lib/ai-training-context';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Download a temporary DALL-E URL and upload to Supabase Storage, return public URL
@@ -108,8 +109,14 @@ export async function POST(request: NextRequest) {
       language: language || 'es',
     };
 
+    const trainingContext = await getTrainingContext(maisonId);
+    const userPrompt = COLLECTION_BRIEF_USER(context);
+    const finalUserPrompt = trainingContext
+      ? `${trainingContext}\n\n${userPrompt}`
+      : userPrompt;
+
     const result = await generateContent({
-      prompt: COLLECTION_BRIEF_USER(context),
+      prompt: finalUserPrompt,
       systemPrompt: COLLECTION_BRIEF_SYSTEM,
       maxTokens: 2000,
       temperature: 0.8,

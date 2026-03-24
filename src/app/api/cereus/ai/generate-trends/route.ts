@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getAPIKey } from '@/lib/ai/config';
 import { getTrendData } from '@/modules/cereus/lib/trend-engine';
+import { getTrainingContext } from '@/modules/cereus/lib/ai-training-context';
 
 // ─── Request body type ─────────────────────────────────────
 interface MarketCity {
@@ -178,7 +179,11 @@ export async function POST(request: NextRequest) {
 
   // Call Claude
   try {
+    const trainingContext = await getTrainingContext(maisonId);
     const userPrompt = buildUserPrompt(body);
+    const finalUserPrompt = trainingContext
+      ? `${trainingContext}\n\n${userPrompt}`
+      : userPrompt;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -192,7 +197,7 @@ export async function POST(request: NextRequest) {
         max_tokens: 3000,
         temperature: 0.9, // Higher for more creativity
         system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userPrompt }],
+        messages: [{ role: 'user', content: finalUserPrompt }],
       }),
     });
 
