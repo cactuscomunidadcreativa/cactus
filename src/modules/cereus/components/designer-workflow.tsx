@@ -113,7 +113,7 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
   });
 
   const goToStep = useCallback((target: number) => {
-    if (target < 1 || target > 5) return;
+    if (target < 1 || target > 7) return;
     setWorkflow((prev) => ({ ...prev, step: target }));
   }, []);
 
