@@ -134,9 +134,9 @@ const TRENDS_2026: Record<string, TrendData> = {
         placement: ['hombros', 'punos', 'dobladillo', 'cuello'],
       },
       {
-        name: 'Herraje Funcional',
-        description: 'Cierres visibles y herrajes como elementos de diseno',
-        elements: ['cierres oversize', 'tiradores de anilla', 'ojales metalicos', 'broches expuestos'],
+        name: 'Costuras Visibles',
+        description: 'La construccion como parte del diseno, costuras decorativas que revelan el oficio',
+        elements: ['costuras contrastantes', 'pespuntes decorativos', 'vivos de color', 'ribetes hechos a mano'],
         placement: ['cierre frontal', 'mangas', 'bolsillos', 'cintura'],
       },
       {
@@ -197,10 +197,10 @@ const TRENDS_2026: Record<string, TrendData> = {
         mood: 'intenso, dramatico, fuego terrestre',
       },
       {
-        name: 'Jardin de Acero',
-        description: 'Metalicos industriales suavizados por verdes botanicos',
-        colors: ['#424242', '#757575', '#9E9E9E', '#2E7D32', '#4CAF50', '#C8E6C9'],
-        mood: 'naturaleza urbana, contraste, resiliencia',
+        name: 'Bosque Nocturno',
+        description: 'Verdes profundos del bosque con acentos de tierra humeda',
+        colors: ['#1B3A2D', '#2D5A3D', '#4A7A5C', '#8B6914', '#D4A373', '#E8DCC8'],
+        mood: 'naturaleza profunda, raices, tierra viva',
       },
       {
         name: 'Torre de Marfil',
@@ -231,10 +231,10 @@ const TRENDS_2026: Record<string, TrendData> = {
     ],
     details: [
       {
-        name: 'Cadena y Eslabon',
-        description: 'Detalles de cadena metalica como elementos funcionales y decorativos',
-        elements: ['tirantes de cadena', 'cinturones de cadena', 'flecos de cadena', 'cierres de eslabon'],
-        placement: ['tirantes', 'cintura', 'dobladillo', 'escote'],
+        name: 'Texturas Artesanales',
+        description: 'Acabados hechos a mano que revelan la dedicacion del artesano',
+        elements: ['bordado a mano', 'tejido crochet', 'apliques de tela', 'patchwork artesanal'],
+        placement: ['hombros', 'cintura', 'dobladillo', 'escote'],
       },
       {
         name: 'Cuello Dramatico',
