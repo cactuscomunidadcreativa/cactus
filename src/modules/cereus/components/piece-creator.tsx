@@ -676,18 +676,21 @@ export default function PieceCreator({
               {/* Visual preview */}
               <div className="flex justify-center mb-6">
                 <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm max-w-md w-full">
-                  {sketchResponse?.imageUrl ? (
-                    <img
-                      src={sketchResponse.imageUrl}
-                      alt="Boceto generado"
-                      className="w-full rounded-lg"
-                    />
-                  ) : sketchResponse?.svgData ? (
+                  {sketchResponse?.svgData ? (
                     <div
                       className="w-full rounded-lg bg-white overflow-hidden"
                       style={{ maxHeight: '500px' }}
                       dangerouslySetInnerHTML={{
                         __html: sanitizeSVG(sketchResponse.svgData),
+                      }}
+                    />
+                  ) : sketchResponse?.imageUrl ? (
+                    <img
+                      src={sketchResponse.imageUrl}
+                      alt="Boceto generado"
+                      className="w-full rounded-lg"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
                       }}
                     />
                   ) : (

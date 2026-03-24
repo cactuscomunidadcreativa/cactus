@@ -65,8 +65,12 @@ export async function POST(request: NextRequest) {
 
       const data = await res.json();
       if (data.data?.[0]?.url) {
+        // Also generate SVG as fallback (DALL-E URLs expire after ~1 hour)
+        const svgFallback = generateTrendSVG(template, colorList, fabricName, suggestions, designBrief)
+          .replace(/<!--[\s\S]*?-->/g, '');
         return NextResponse.json({
           imageUrl: data.data[0].url,
+          svgData: svgFallback,
           source: 'dall-e',
           designBrief,
           trends: {
