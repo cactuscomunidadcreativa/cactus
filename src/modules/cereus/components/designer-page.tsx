@@ -1653,156 +1653,69 @@ function GarmentsTab({
     );
   }
 
-  // Form
+  // Form — uses Design Studio with AI
   if (showForm) {
+    const targetCollection = formCollectionId
+      ? collections.find(c => c.id === formCollectionId)
+      : collectionFilter
+      ? collections.find(c => c.id === collectionFilter)
+      : null;
+
     return (
       <div className="space-y-6">
-        <button
-          onClick={() => { onShowForm(false); resetForm(); }}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Cancel / Cancelar
-        </button>
-
-        <h2 className="text-xl font-display font-bold">New Garment / Nueva Prenda</h2>
-
-        <div className="grid gap-4 max-w-2xl">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-muted-foreground">Name / Nombre *</label>
-              <input
-                value={formName}
-                onChange={e => setFormName(e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-                placeholder="Evening Gown Silhouette A"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Code / Código</label>
-              <input
-                value={formCode}
-                onChange={e => setFormCode(e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-                placeholder="EG-001"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="text-xs text-muted-foreground">Category / Categoría *</label>
-              <select
-                value={formCategory}
-                onChange={e => setFormCategory(e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-              >
-                {CATEGORIES.map(c => (
-                  <option key={c.value} value={c.value}>{c.es} — {c.en}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Body Zone / Zona</label>
-              <select
-                value={formBodyZone}
-                onChange={e => setFormBodyZone(e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-              >
-                <option value="upper">Upper / Superior</option>
-                <option value="lower">Lower / Inferior</option>
-                <option value="full">Full / Completo</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Collection / Colección</label>
-              <select
-                value={formCollectionId}
-                onChange={e => setFormCollectionId(e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-              >
-                <option value="">— None / Ninguna —</option>
-                {collections.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs text-muted-foreground">Description / Descripción</label>
-            <textarea
-              value={formDescription}
-              onChange={e => setFormDescription(e.target.value)}
-              rows={2}
-              className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <label className="text-xs text-muted-foreground">Complexity / Complejidad</label>
-              <select
-                value={formComplexity}
-                onChange={e => setFormComplexity(parseInt(e.target.value))}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-              >
-                <option value={1}>1 — Simple</option>
-                <option value={2}>2 — Moderate / Moderado</option>
-                <option value={3}>3 — Complex / Complejo</option>
-                <option value={4}>4 — Very Complex / Muy Complejo</option>
-                <option value={5}>5 — Extreme / Extremo</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Labor Hours / Horas</label>
-              <input
-                type="number"
-                step="0.5"
-                value={formLaborHours}
-                onChange={e => setFormLaborHours(parseFloat(e.target.value))}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Labor Cost / Costo MO</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formLaborCost}
-                onChange={e => setFormLaborCost(parseFloat(e.target.value))}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Base Price / Precio Base</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formBasePrice}
-                onChange={e => setFormBasePrice(parseFloat(e.target.value))}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cereus-gold/50"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={handleSave}
-              disabled={saving || !formName || !formCategory}
-              className="flex items-center gap-2 px-6 py-2.5 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 disabled:opacity-40 transition-colors"
-            >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-              Create / Crear
-            </button>
-            <button
-              onClick={() => { onShowForm(false); resetForm(); }}
-              className="px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Cancel / Cancelar
-            </button>
-          </div>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => { onShowForm(false); resetForm(); }}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" /> Volver
+          </button>
+          {targetCollection && (
+            <span className="text-xs text-muted-foreground">
+              Coleccion: <span className="text-cereus-gold font-medium">{targetCollection.name}</span>
+            </span>
+          )}
         </div>
+
+        <h2 className="text-xl font-display font-bold flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-cereus-gold" />
+          Nueva Prenda con IA
+        </h2>
+
+        <DesignStudio
+          maisonId={maisonId}
+          onSaveDesign={async (data) => {
+            const category = data.template === 'dress' ? 'dress'
+              : data.template === 'blouse' ? 'blouse'
+              : data.template === 'skirt' ? 'skirt'
+              : data.template === 'pants' ? 'pants'
+              : data.template === 'jacket' ? 'blazer'
+              : data.template === 'top' ? 'shirt'
+              : 'other';
+
+            await fetch('/api/cereus/garments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                maisonId,
+                name: data.name,
+                category,
+                collection_id: targetCollection?.id || collectionFilter || null,
+                description: `Tela: ${data.fabric || 'N/A'}. Colores: ${data.colors.join(', ')}`,
+                body_zone: ['skirt', 'pants'].includes(data.template) ? 'lower'
+                  : ['blouse', 'top'].includes(data.template) ? 'upper' : 'full',
+                complexity_level: 1,
+                base_labor_hours: 0,
+                base_labor_cost: 0,
+                images: data.canvasData ? [{ url: data.canvasData, type: 'sketch' }] : [],
+              }),
+            });
+
+            onShowForm(false);
+            resetForm();
+            onRefresh();
+          }}
+        />
       </div>
     );
   }
@@ -1828,8 +1741,8 @@ function GarmentsTab({
           }}
           className="flex items-center gap-2 px-4 py-2 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 transition-colors"
         >
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">New Garment / Nueva</span>
+          <Sparkles className="w-4 h-4" />
+          <span className="hidden sm:inline">Nueva Prenda con IA</span>
         </button>
       </div>
 
