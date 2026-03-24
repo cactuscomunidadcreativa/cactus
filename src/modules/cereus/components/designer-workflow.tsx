@@ -7,6 +7,8 @@ import {
   Layers,
   Shirt,
   DollarSign,
+  Scissors,
+  Factory,
   ChevronLeft,
   Check,
 } from 'lucide-react';
@@ -21,6 +23,8 @@ import CollectionBriefEditor from './collection-brief-editor';
 import FabricStudio from './fabric-studio';
 import PieceCreator from './piece-creator';
 import { CereusCostingPage } from './costing-page';
+import PatternStep from './pattern-step';
+import WorkshopStep from './workshop-step';
 
 // ============================================================
 // Types
@@ -83,6 +87,8 @@ const STEPS = [
   { number: 3, label: 'Telas', icon: Layers },
   { number: 4, label: 'Piezas', icon: Shirt },
   { number: 5, label: 'Costeo', icon: DollarSign },
+  { number: 6, label: 'Patrones', icon: Scissors },
+  { number: 7, label: 'Taller', icon: Factory },
 ] as const;
 
 // ============================================================
@@ -159,6 +165,19 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
     setWorkflow((prev) => ({ ...prev, step: 5 }));
   }, []);
 
+  const handleCostingComplete = useCallback(() => {
+    setWorkflow((prev) => ({ ...prev, step: 6 }));
+  }, []);
+
+  const handlePatternsComplete = useCallback(() => {
+    setWorkflow((prev) => ({ ...prev, step: 7 }));
+  }, []);
+
+  const handleWorkshopComplete = useCallback(() => {
+    // Full cycle complete — redirect to production pipeline
+    window.location.href = '/apps/cereus/production';
+  }, []);
+
   // Determine which steps are completed
   const isStepCompleted = (stepNumber: number): boolean => {
     switch (stepNumber) {
@@ -171,7 +190,11 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
       case 4:
         return workflow.pieces.length > 0;
       case 5:
-        return false; // Final step, never auto-completed
+        return workflow.step > 5;
+      case 6:
+        return workflow.step > 6;
+      case 7:
+        return false; // Final step
       default:
         return false;
     }
@@ -316,7 +339,41 @@ export function DesignerWorkflow({ maisonId }: DesignerWorkflowProps) {
         ) : null;
 
       case 5:
-        return <CereusCostingPage />;
+        return (
+          <div className="space-y-6">
+            <CereusCostingPage />
+            <div className="flex justify-between items-center pt-4 border-t">
+              <button onClick={goBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                <ChevronLeft className="w-4 h-4" /> Volver a Piezas
+              </button>
+              <button onClick={handleCostingComplete}
+                className="flex items-center gap-2 px-6 py-2.5 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90">
+                Continuar a Patrones <Scissors className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        );
+
+      case 6:
+        return workflow.collectionId ? (
+          <PatternStep
+            maisonId={maisonId}
+            collectionId={workflow.collectionId}
+            onComplete={handlePatternsComplete}
+            onBack={goBack}
+          />
+        ) : null;
+
+      case 7:
+        return workflow.collectionId ? (
+          <WorkshopStep
+            maisonId={maisonId}
+            collectionId={workflow.collectionId}
+            collectionName={workflow.collectionBrief?.name || 'Coleccion'}
+            onComplete={handleWorkshopComplete}
+            onBack={goBack}
+          />
+        ) : null;
 
       default:
         return null;

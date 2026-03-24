@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { maisonId, ...data } = body;
 
-  if (!maisonId || !data.client_id || !data.variant_id || !data.total_price) {
-    return NextResponse.json({ error: 'maisonId, client_id, variant_id, and total_price required' }, { status: 400 });
+  if (!maisonId || !data.variant_id) {
+    return NextResponse.json({ error: 'maisonId and variant_id required' }, { status: 400 });
   }
 
   // Generate order number
