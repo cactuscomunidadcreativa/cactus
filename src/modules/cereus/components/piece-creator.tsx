@@ -676,28 +676,34 @@ export default function PieceCreator({
               {/* Visual preview */}
               <div className="flex justify-center mb-6">
                 <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm max-w-md w-full">
-                  {sketchResponse?.svgData ? (
-                    <div
-                      className="w-full rounded-lg bg-white overflow-hidden"
-                      style={{ maxHeight: '500px' }}
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeSVG(sketchResponse.svgData),
-                      }}
-                    />
-                  ) : sketchResponse?.imageUrl ? (
-                    <img
-                      src={sketchResponse.imageUrl}
-                      alt="Boceto generado"
-                      className="w-full rounded-lg"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-64 text-stone-400">
-                      <p className="text-sm">No se genero visual</p>
-                    </div>
-                  )}
+                  {(() => {
+                    const hasImg = sketchResponse?.imageUrl && !sketchResponse.imageUrl.includes('oaidalleapiprodscus');
+                    const hasSvg = sketchResponse?.svgData;
+                    if (hasImg) {
+                      return (
+                        <img
+                          src={sketchResponse!.imageUrl!}
+                          alt="Boceto generado con IA"
+                          className="w-full rounded-lg"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      );
+                    }
+                    if (hasSvg) {
+                      return (
+                        <div
+                          className="w-full rounded-lg bg-white overflow-hidden"
+                          style={{ maxHeight: '500px' }}
+                          dangerouslySetInnerHTML={{ __html: sanitizeSVG(sketchResponse!.svgData!) }}
+                        />
+                      );
+                    }
+                    return (
+                      <div className="flex items-center justify-center h-64 text-stone-400">
+                        <p className="text-sm">No se genero visual</p>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
