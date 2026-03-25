@@ -1778,6 +1778,24 @@ function GarmentsTab({
     onRefresh();
   }
 
+  async function quickUpdateStatus(garmentId: string, newStatus: string) {
+    await fetch('/api/cereus/garments', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: garmentId, status: newStatus }),
+    });
+    onRefresh();
+  }
+
+  async function handleDeleteGarment(garmentId: string) {
+    await fetch('/api/cereus/garments', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: garmentId, status: 'archived' }),
+    });
+    onRefresh();
+  }
+
   // Apply collection filter first, then search
   const collectionFiltered = collectionFilter
     ? garments.filter(g => g.collection_id === collectionFilter)
@@ -1904,26 +1922,30 @@ function GarmentsTab({
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {filtered.map(g => (
-            <button
+          {filtered.filter(g => g.status !== 'archived').map(g => (
+            <div
               key={g.id}
-              onClick={() => onSelectGarment(g)}
-              className="bg-card border border-border rounded-xl overflow-hidden hover:border-cereus-gold/30 transition-all text-left group"
+              className="bg-card border border-border rounded-xl overflow-hidden hover:border-cereus-gold/30 transition-all group relative"
             >
-              {g.images?.[0]?.url ? (
-                <img
-                  src={g.images[0].url}
-                  alt={g.name}
-                  className="w-full aspect-[3/4] object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-              ) : (
-                <div className="w-full aspect-[3/4] bg-muted flex items-center justify-center">
-                  <Shirt className="w-8 h-8 text-muted-foreground" />
-                </div>
-              )}
+              {/* Image — click to edit */}
+              <div className="cursor-pointer" onClick={() => onSelectGarment(g)}>
+                {g.images?.[0]?.url ? (
+                  <img
+                    src={g.images[0].url}
+                    alt={g.name}
+                    className="w-full aspect-[3/4] object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className="w-full aspect-[3/4] bg-muted flex items-center justify-center">
+                    <Shirt className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+
+              {/* Info */}
               <div className="p-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between cursor-pointer" onClick={() => onSelectGarment(g)}>
                   <p className="text-sm font-medium truncate group-hover:text-cereus-gold transition-colors">{g.name}</p>
                   <StatusBadge status={g.status} />
                 </div>
@@ -1934,8 +1956,45 @@ function GarmentsTab({
                 {g.base_price && (
                   <p className="text-xs font-medium text-cereus-gold mt-1">{formatPrice(g.base_price)}</p>
                 )}
+
+                {/* Quick actions */}
+                <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border">
+                  {g.status !== 'approved' && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); quickUpdateStatus(g.id, 'approved'); }}
+                      className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium bg-green-500/10 text-green-600 rounded-md hover:bg-green-500/20 transition-colors"
+                      title="Aprobar"
+                    >
+                      <Check className="w-3 h-3" /> Aprobar
+                    </button>
+                  )}
+                  {g.status === 'approved' && (
+                    <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-green-600">
+                      <CheckCircle2 className="w-3 h-3" /> Aprobado
+                    </span>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onSelectGarment(g); }}
+                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-muted-foreground rounded-md hover:bg-muted transition-colors"
+                    title="Editar"
+                  >
+                    <Edit3 className="w-3 h-3" /> Editar
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm('¿Archivar esta prenda? Puedes restaurarla despues.')) {
+                        handleDeleteGarment(g.id);
+                      }
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-red-500 rounded-md hover:bg-red-500/10 transition-colors ml-auto"
+                    title="Archivar"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}
