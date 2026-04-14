@@ -6,7 +6,9 @@ import {
   Plus, Trash2, Eye, EyeOff, Upload, Image as ImageIcon, Square,
   Circle, Minus, type LucideIcon, ZoomIn, ZoomOut, RotateCcw,
   Shirt, Scissors, ChevronRight, Sparkles, X, Check, Move,
+  PenLine, Send,
 } from 'lucide-react';
+import { CollapsibleSidebar } from './collapsible-sidebar'
 
 // ─── TYPES ──────────────────────────────────────────────────
 
@@ -74,11 +76,17 @@ const BRUSH_SIZES = [2, 4, 8, 12, 20, 32];
 
 function useCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const [isDrawing, setIsDrawing] = useState(false);
-  const [tool, setTool] = useState<'pencil' | 'eraser' | 'move'>('pencil');
+  const [tool, setTool] = useState<'pencil' | 'eraser' | 'move' | 'annotate'>('pencil');
   const [brushSize, setBrushSize] = useState(4);
   const [color, setColor] = useState('#0A0A0A');
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [correctionLayer, setCorrectionLayer] = useState<string | null>(null)
+  const [aiPhase, setAiPhase] = useState('')
+  const [zoom, setZoom] = useState(1)
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
+  const lastPinchDistRef = useRef<number | null>(null)
 
   const saveState = useCallback(() => {
     const canvas = canvasRef.current;
@@ -131,7 +139,17 @@ function useCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     saveState();
   }, [canvasRef, saveState]);
 
-  const startDrawing = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const startDrawing = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    // Pointer tracking for pinch zoom
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (pointersRef.current.size >= 2) {
+      const pts = Array.from(pointersRef.current.values())
+      lastPinchDistRef.current = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y)
+      return
+    }
+    // Palm rejection - ignore touch when drawing
+    if (e.pointerType === 'touch' && tool !== 'move') return
+
     const canvas = canvasRef.current;
     if (!canvas || tool === 'move') return;
     const ctx = canvas.getContext('2d');
@@ -143,11 +161,16 @@ function useCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.lineWidth = brushSize;
+    const pressure = e.pressure || 0.5
+    ctx.lineWidth = brushSize * (0.4 + pressure * 0.8);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    if (tool === 'eraser') {
+    if (tool === 'annotate') {
+      if (!correctionLayer) setCorrectionLayer(canvas.toDataURL('image/png'))
+      ctx.strokeStyle = '#FF6B35'
+      ctx.globalCompositeOperation = 'source-over'
+    } else if (tool === 'eraser') {
       ctx.globalCompositeOperation = 'destination-out';
     } else {
       ctx.globalCompositeOperation = 'source-over';
@@ -155,9 +178,22 @@ function useCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     }
 
     setIsDrawing(true);
-  }, [canvasRef, tool, brushSize, color]);
+  }, [canvasRef, tool, brushSize, color, correctionLayer]);
 
-  const draw = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    // Handle pinch zoom
+    if (pointersRef.current.size >= 2) {
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      const pts = Array.from(pointersRef.current.values())
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y)
+      if (lastPinchDistRef.current) {
+        const scale = dist / lastPinchDistRef.current
+        setZoom(prev => Math.min(Math.max(prev * scale, 0.5), 4))
+        lastPinchDistRef.current = dist
+      }
+      return
+    }
+
     if (!isDrawing) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -172,7 +208,9 @@ function useCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     ctx.stroke();
   }, [isDrawing, canvasRef]);
 
-  const stopDrawing = useCallback(() => {
+  const stopDrawing = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    pointersRef.current.delete(e.pointerId)
+    if (pointersRef.current.size < 2) lastPinchDistRef.current = null
     if (isDrawing) {
       setIsDrawing(false);
       saveState();
@@ -183,6 +221,8 @@ function useCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     tool, setTool, brushSize, setBrushSize, color, setColor,
     startDrawing, draw, stopDrawing, undo, redo, clearCanvas,
     canUndo: historyIndex > 0, canRedo: historyIndex < history.length - 1,
+    correctionLayer, setCorrectionLayer, aiPhase, setAiPhase,
+    zoom, setZoom, panOffset, setPanOffset,
   };
 }
 
@@ -201,6 +241,8 @@ export function DesignStudio({
     tool, setTool, brushSize, setBrushSize, color, setColor,
     startDrawing, draw, stopDrawing, undo, redo, clearCanvas,
     canUndo, canRedo,
+    correctionLayer, setCorrectionLayer, aiPhase, setAiPhase,
+    zoom, setZoom, panOffset, setPanOffset,
   } = useCanvas(canvasRef);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -307,6 +349,48 @@ export function DesignStudio({
     }
   }
 
+  const handleAICorrection = async () => {
+    if (!canvasRef.current) return
+    setGeneratingAI(true)
+    setAiPhase('Analizando correcciones...')
+    try {
+      const annotatedCanvas = canvasRef.current.toDataURL('image/png')
+      const res = await fetch('/api/cereus/ai/regenerate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'correct',
+          annotatedCanvasData: annotatedCanvas,
+          originalSketchUrl: correctionLayer,
+          correctionNotes: '',
+          maisonId,
+        }),
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      if (data.imageUrl) {
+        setAiPhase('Aplicando correcciones...')
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          const ctx = canvasRef.current?.getContext('2d')
+          if (ctx && canvasRef.current) {
+            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+            ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height)
+            setCorrectionLayer(null)
+          }
+          setGeneratingAI(false)
+          setAiPhase('')
+        }
+        img.src = data.imageUrl
+      }
+    } catch (err) {
+      setAiMessage('Error al procesar correcciones')
+      setGeneratingAI(false)
+      setAiPhase('')
+    }
+  }
+
   const steps = [
     { num: 1, label: 'Silueta', active: step >= 1 },
     { num: 2, label: 'Boceto', active: step >= 2 },
@@ -361,6 +445,13 @@ export function DesignStudio({
                 >
                   <Eraser className="w-4 h-4" />
                 </button>
+                <button
+                  onClick={() => setTool('annotate')}
+                  className={`p-2 rounded-lg transition-colors ${tool === 'annotate' ? 'bg-orange-100 text-orange-600 ring-2 ring-orange-300' : 'hover:bg-muted'}`}
+                  title="Corregir diseño"
+                >
+                  <PenLine className="w-4 h-4" />
+                </button>
               </div>
 
               {/* Brush sizes */}
@@ -411,11 +502,30 @@ export function DesignStudio({
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
+
+              {correctionLayer && (
+                <button
+                  onClick={handleAICorrection}
+                  disabled={generatingAI}
+                  className="flex items-center gap-2 px-3 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 disabled:opacity-50"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Enviar corrección a AI
+                </button>
+              )}
+
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <ZoomIn className="w-3 h-3" />
+                <span>{Math.round(zoom * 100)}%</span>
+                {zoom !== 1 && (
+                  <button onClick={() => setZoom(1)} className="ml-1 text-xs underline">Reset</button>
+                )}
+              </div>
             </div>
           )}
 
           {/* Canvas area */}
-          <div className="relative bg-white border rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+          <div className="relative bg-white border rounded-xl overflow-hidden" style={{ aspectRatio: '3/4', transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
             {step === 1 ? (
               /* Template Selection */
               <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
@@ -442,10 +552,10 @@ export function DesignStudio({
             ) : (
               <canvas
                 ref={canvasRef}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
+                onPointerDown={startDrawing}
+                onPointerMove={draw}
+                onPointerUp={stopDrawing}
+                onPointerLeave={stopDrawing}
                 className="w-full h-full cursor-crosshair"
                 style={{ touchAction: 'none' }}
               />
@@ -454,7 +564,7 @@ export function DesignStudio({
         </div>
 
         {/* ─── RIGHT: Panel ─────────────────────────── */}
-        <div className="w-72 flex-shrink-0 space-y-4">
+        <CollapsibleSidebar side="right" width="w-72" title="Herramientas">
           {/* Panel tabs */}
           <div className="flex gap-1 bg-muted rounded-lg p-1">
             {[
@@ -753,7 +863,7 @@ export function DesignStudio({
               className="w-full flex items-center justify-center gap-2 py-2 border rounded-lg text-sm hover:bg-muted transition-colors disabled:opacity-50"
             >
               {generatingAI ? (
-                <><div className="w-4 h-4 border-2 border-cereus-gold border-t-transparent rounded-full animate-spin" /> Generando...</>
+                <><div className="w-4 h-4 border-2 border-cereus-gold border-t-transparent rounded-full animate-spin" /> {aiPhase || 'Generando...'}</>
               ) : (
                 <><Sparkles className="w-4 h-4" /> Generar con IA</>
               )}
@@ -810,7 +920,7 @@ export function DesignStudio({
               </div>
             )}
           </div>
-        </div>
+        </CollapsibleSidebar>
       </div>
     </div>
   );

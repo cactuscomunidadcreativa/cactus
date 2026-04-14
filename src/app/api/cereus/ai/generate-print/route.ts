@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getAPIKey } from '@/lib/ai/config';
 import { getTrainingContext } from '@/modules/cereus/lib/ai-training-context';
+import { uploadImageToSupabase } from '@/modules/cereus/lib/image-upload';
 
 // ─── TYPES ──────────────────────────────────────────────────
 
@@ -207,7 +208,7 @@ export async function POST(request: NextRequest) {
   const trainingContext = await getTrainingContext(maisonId);
   if (trainingContext) {
     // Append key brand preferences to the DALL-E prompt (condensed for image generation)
-    prompt += ` Brand design context: ${trainingContext.substring(0, 500)}`;
+    prompt += ` Brand design context: ${trainingContext.substring(0, 1500)}`;
   }
 
   // 4. Check for OpenAI key
@@ -253,44 +254,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No image returned from DALL-E' }, { status: 502 });
     }
 
-    // 7. Download the temporary DALL-E URL and upload to Supabase Storage
+    // 7. Upload to Supabase with retry for permanent URL
     const db = createServiceClient();
-    if (!db) {
-      return NextResponse.json({
-        imageUrl: dalleUrl,
-        source: 'dall-e' as const,
-        prompt,
-      });
+    let finalUrl = dalleUrl;
+    let uploadWarning: string | null = null;
+    if (db) {
+      const result = await uploadImageToSupabase(db, dalleUrl, 'prints');
+      finalUrl = result.permanentUrl || dalleUrl;
+      uploadWarning = result.warning;
     }
-
-    const imageRes = await fetch(dalleUrl);
-    const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
-    const filePath = `prints/${Date.now()}-${Math.random().toString(36).slice(2)}.png`;
-
-    const { error: uploadError } = await db.storage
-      .from('cereus-garment-images')
-      .upload(filePath, imageBuffer, {
-        contentType: 'image/png',
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error('Storage upload error:', uploadError.message);
-      return NextResponse.json({
-        imageUrl: dalleUrl,
-        source: 'dall-e' as const,
-        prompt,
-      });
-    }
-
-    const { data: publicData } = db.storage
-      .from('cereus-garment-images')
-      .getPublicUrl(filePath);
 
     return NextResponse.json({
-      imageUrl: publicData.publicUrl,
+      imageUrl: finalUrl,
       source: 'dall-e' as const,
       prompt,
+      warning: uploadWarning,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Print generation failed';

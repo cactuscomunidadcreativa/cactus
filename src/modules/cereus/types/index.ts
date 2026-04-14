@@ -1177,3 +1177,34 @@ export interface CereusState {
   is_loading: boolean;
   last_sync: string | null;
 }
+
+// ─── 18. Design Feedback ────────────────────────────────
+
+export type DesignFeedbackType = 'comment' | 'approval' | 'revision_request' | 'revision_response';
+export type FeedbackAuthorRole = 'designer' | 'client' | 'advisor' | 'workshop';
+export type FeedbackEntityType = 'garment' | 'variant' | 'order';
+
+export interface DesignFeedback {
+  id: string;
+  maison_id: string;
+  entity_type: FeedbackEntityType;
+  entity_id: string;
+  parent_id?: string | null;
+  author_id: string;
+  author_name: string;
+  author_role: FeedbackAuthorRole;
+  content: string;
+  image_urls: string[];
+  feedback_type: DesignFeedbackType;
+  revision_round: number;
+  resolved: boolean;
+  resolved_at?: string | null;
+  resolved_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  replies?: DesignFeedback[];
+}
+
+// ─── 19. Design Studio Tools ────────────────────────────
+
+export type DesignStudioTool = 'pencil' | 'eraser' | 'move' | 'annotate';

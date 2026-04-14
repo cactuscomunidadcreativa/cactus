@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import { sanitizeSVG } from '../lib/svg-utils';
+import { CollapsibleSidebar } from './collapsible-sidebar';
 
 // ─── Category Mapping ───────────────────────────────────────
 // Maps template IDs to valid cereus_garment_category enum values
@@ -189,6 +190,9 @@ export default function PieceCreator({
   const [materials, setMaterials] = useState<MaterialInfo[]>([]);
   const [materialsLoaded, setMaterialsLoaded] = useState(false);
 
+  // ── AI phase ──
+  const [aiPhase, setAiPhase] = useState('');
+
   // ── Loading states ──
   const [generatingBrief, setGeneratingBrief] = useState(false);
   const [regeneratingVisual, setRegeneratingVisual] = useState(false);
@@ -220,8 +224,10 @@ export default function PieceCreator({
   const generateBrief = useCallback(
     async (template: TemplateId) => {
       setGeneratingBrief(true);
+      setAiPhase('Analizando silueta...');
       setError(null);
       try {
+        setAiPhase('Generando brief con IA...');
         const res = await fetch('/api/cereus/ai/generate-sketch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -234,6 +240,7 @@ export default function PieceCreator({
             lang: 'es',
           }),
         });
+        setAiPhase('Procesando respuesta...');
         const data: SketchResponse = await res.json();
         setSketchResponse(data);
 
@@ -261,6 +268,7 @@ export default function PieceCreator({
         setError('Error generando el brief. Intenta de nuevo.');
       } finally {
         setGeneratingBrief(false);
+        setAiPhase('');
       }
     },
     [collectionName, season],
@@ -474,7 +482,7 @@ export default function PieceCreator({
       {/* Main content: left list + right form */}
       <div className="flex-1 flex gap-6 min-h-0 overflow-hidden">
         {/* ── Left: Pieces list ── */}
-        <div className="w-64 shrink-0 flex flex-col border border-stone-200 rounded-xl bg-white overflow-hidden">
+        <CollapsibleSidebar side="left" width="w-64" title="Pasos">
           <div className="p-3 border-b border-stone-100 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-stone-700">Piezas creadas</h3>
             <button
@@ -517,7 +525,7 @@ export default function PieceCreator({
               );
             })}
           </div>
-        </div>
+        </CollapsibleSidebar>
 
         {/* ── Right: Form area ── */}
         <div className="flex-1 overflow-y-auto pr-1">
@@ -528,7 +536,7 @@ export default function PieceCreator({
               <p className="text-sm text-stone-500 mb-6">
                 Selecciona el tipo de prenda para esta pieza
               </p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {GARMENT_TEMPLATES.map((tmpl) => (
                   <button
                     key={tmpl.id}
@@ -555,7 +563,7 @@ export default function PieceCreator({
               {generatingBrief && (
                 <div className="flex items-center justify-center gap-3 mt-8 py-6">
                   <Loader2 className="w-5 h-5 animate-spin text-cereus-gold" />
-                  <span className="text-sm text-stone-500">Generando brief con IA...</span>
+                  <span className="text-sm text-stone-500">{aiPhase || 'Generando brief con IA...'}</span>
                 </div>
               )}
             </div>

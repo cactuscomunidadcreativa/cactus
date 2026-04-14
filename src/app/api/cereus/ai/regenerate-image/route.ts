@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getAPIKey } from '@/lib/ai/config';
+import { uploadImageToSupabase } from '@/modules/cereus/lib/image-upload';
 
 /**
  * POST /api/cereus/ai/regenerate-image
@@ -19,7 +20,86 @@ export async function POST(request: NextRequest) {
   if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
 
   const body = await request.json();
-  const { garmentId, action, editPrompt } = body;
+  const { garmentId, action, editPrompt, annotatedCanvasData, correctionNotes } = body;
+
+  // ─── AI Correction Mode (Apple Pencil annotations) ───
+  if (action === 'correct') {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'AI correction not configured' }, { status: 500 });
+    }
+
+    // Step 1: Claude Vision analyzes annotated sketch
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: 'image/png', data: annotatedCanvasData.replace('data:image/png;base64,', '') },
+            },
+            {
+              type: 'text',
+              text: `You are a fashion design AI assistant. Analyze this fashion sketch annotated by a designer with corrections in orange/red color.
+
+Identify:
+1. Parts crossed out or marked for removal
+2. New lines or shapes drawn (additions)
+3. Written notes or annotations
+4. Overall correction intent
+
+${correctionNotes ? `Designer notes: ${correctionNotes}` : ''}
+
+Generate a detailed DALL-E prompt (in English) for the corrected fashion sketch. Professional illustration on white background.
+
+Respond with ONLY the DALL-E prompt, nothing else.`,
+            },
+          ],
+        }],
+      }),
+    });
+
+    const claudeData = await anthropicRes.json();
+    const correctedPrompt = claudeData.content?.[0]?.text || '';
+    if (!correctedPrompt) {
+      return NextResponse.json({ error: 'Failed to analyze corrections' }, { status: 500 });
+    }
+
+    // Step 2: Generate corrected sketch with DALL-E
+    const corrOpenaiKey = await getAPIKey('openai');
+    if (!corrOpenaiKey) {
+      return NextResponse.json({ error: 'Image generation not configured' }, { status: 500 });
+    }
+
+    const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${corrOpenaiKey}` },
+      body: JSON.stringify({ model: 'dall-e-3', prompt: correctedPrompt.substring(0, 4000), n: 1, size: '1024x1024', quality: 'hd' }),
+    });
+
+    const dalleData = await dalleRes.json();
+    const corrDalleUrl = dalleData.data?.[0]?.url;
+    if (!corrDalleUrl) {
+      return NextResponse.json({ error: 'Failed to generate corrected image' }, { status: 502 });
+    }
+
+    // Step 3: Upload with retry
+    const { permanentUrl, warning: uploadWarning } = await uploadImageToSupabase(db, corrDalleUrl, 'sketches');
+    return NextResponse.json({
+      imageUrl: permanentUrl || corrDalleUrl,
+      correctedPrompt,
+      source: 'dall-e-corrected',
+      warning: uploadWarning,
+    });
+  }
 
   if (!garmentId) {
     return NextResponse.json({ error: 'garmentId required' }, { status: 400 });
@@ -103,21 +183,9 @@ editorial quality, runway-ready design.`;
       return NextResponse.json({ error: 'DALL-E generation failed', details: data }, { status: 500 });
     }
 
-    // Download and upload to Supabase for permanent URL
-    const imgRes = await fetch(dalleUrl);
-    const imgBuffer = await imgRes.arrayBuffer();
-    const fileName = `sketches/${Date.now()}_${garment.category}_${action}.png`;
-
-    const { error: upErr } = await db.storage
-      .from('cereus-garment-images')
-      .upload(fileName, imgBuffer, { contentType: 'image/png', upsert: false });
-
-    if (upErr) {
-      return NextResponse.json({ error: `Upload failed: ${upErr.message}` }, { status: 500 });
-    }
-
-    const { data: urlData } = db.storage.from('cereus-garment-images').getPublicUrl(fileName);
-    const permanentUrl = urlData.publicUrl;
+    // Upload to Supabase with retry for permanent URL
+    const { permanentUrl: uploadedUrl, warning: uploadWarning } = await uploadImageToSupabase(db, dalleUrl, 'sketches');
+    const permanentUrl = uploadedUrl || dalleUrl;
 
     // Update garment images — replace broken ones or add new
     const existingImages = (garment.images as { url: string; type: string }[]) || [];

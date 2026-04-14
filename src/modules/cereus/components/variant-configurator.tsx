@@ -272,7 +272,7 @@ export function VariantConfigurator({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-2xl border border-border shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col">
+      <div className="bg-background rounded-2xl border border-border shadow-2xl max-w-[95vw] lg:max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-5 border-b border-border flex items-center justify-between">
           <div>
@@ -289,7 +289,7 @@ export function VariantConfigurator({
         {/* Body: Left preview + Right tabs */}
         <div className="flex-1 overflow-hidden flex">
           {/* Left: Preview */}
-          <div className="w-64 border-r border-border p-5 flex flex-col items-center gap-4 bg-muted/30 shrink-0">
+          <div className="hidden lg:flex w-64 border-r border-border p-5 flex-col items-center gap-4 bg-muted/30 shrink-0">
             {/* Sketch image */}
             {(sketchImage || fallbackImage) ? (
               <img

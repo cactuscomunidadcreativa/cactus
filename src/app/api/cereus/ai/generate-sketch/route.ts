@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAPIKey } from '@/lib/ai/config';
 import { getTrendSuggestions, getTrendData, buildDesignPrompt } from '@/modules/cereus/lib/trend-engine';
 import { getTrainingContext } from '@/modules/cereus/lib/ai-training-context';
+import { uploadImageToSupabase } from '@/modules/cereus/lib/image-upload';
 
 /**
  * Generate a fashion sketch with trend intelligence.
@@ -70,30 +71,22 @@ export async function POST(request: NextRequest) {
       const data = await res.json();
       if (data.data?.[0]?.url) {
         const dalleUrl = data.data[0].url;
-        let permanentUrl = dalleUrl;
-
-        // Download DALL-E image and upload to Supabase for permanent URL
-        try {
-          const { createServiceClient: createSvc } = await import('@/lib/supabase/service');
-          const db = createSvc();
-          if (db) {
-            const imgRes = await fetch(dalleUrl);
-            const imgBuffer = await imgRes.arrayBuffer();
-            const fileName = `sketches/${Date.now()}_${template}.png`;
-            const { error: upErr } = await db.storage
-              .from('cereus-garment-images')
-              .upload(fileName, imgBuffer, { contentType: 'image/png', upsert: false });
-            if (!upErr) {
-              const { data: urlData } = db.storage.from('cereus-garment-images').getPublicUrl(fileName);
-              permanentUrl = urlData.publicUrl;
-            }
-          }
-        } catch { /* Use original DALL-E URL as fallback */ }
+        // Upload to Supabase with retry for permanent URL
+        const { createServiceClient: createSvc } = await import('@/lib/supabase/service');
+        const db = createSvc();
+        let finalImageUrl = dalleUrl;
+        let uploadWarning: string | null = null;
+        if (db) {
+          const result = await uploadImageToSupabase(db, dalleUrl, 'sketches');
+          finalImageUrl = result.permanentUrl || dalleUrl;
+          uploadWarning = result.warning;
+        }
 
         const svgFallback = generateTrendSVG(template, colorList, fabricName, suggestions, designBrief)
           .replace(/<!--[\s\S]*?-->/g, '');
         return NextResponse.json({
-          imageUrl: permanentUrl,
+          imageUrl: finalImageUrl,
+          warning: uploadWarning,
           svgData: svgFallback,
           source: 'dall-e',
           designBrief,

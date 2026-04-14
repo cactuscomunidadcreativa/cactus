@@ -5,6 +5,7 @@ import {
   Scissors, Ruler, Save, Plus, X, Check, ChevronLeft,
   Loader2, FileText,
 } from 'lucide-react';
+import { CollapsibleSidebar } from './collapsible-sidebar';
 
 // ============================================================
 // Types & Constants
@@ -392,7 +393,7 @@ export default function PatternStep({ maisonId, collectionId, onComplete, onBack
       {/* Main content: sidebar + editor */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar: piece list */}
-        <div className="w-72 border-r bg-muted/30 overflow-y-auto flex-shrink-0">
+        <CollapsibleSidebar side="left" width="w-72" title="Medidas">
           <div className="p-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
               Piezas de la Coleccion
@@ -427,7 +428,7 @@ export default function PatternStep({ maisonId, collectionId, onComplete, onBack
               })}
             </div>
           </div>
-        </div>
+        </CollapsibleSidebar>
 
         {/* Right: Pattern editor */}
         <div className="flex-1 overflow-y-auto">
@@ -548,7 +549,7 @@ export default function PatternStep({ maisonId, collectionId, onComplete, onBack
                       <span className="text-xs text-muted-foreground font-mono mt-2 w-5 text-right flex-shrink-0">
                         {idx + 1}
                       </span>
-                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         {/* Name */}
                         <div>
                           <label className="block text-xs text-muted-foreground mb-1">Nombre</label>

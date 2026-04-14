@@ -5,12 +5,13 @@ import {
   Layers, Shirt, Palette, Plus, ChevronRight, ChevronLeft, Loader2,
   Search, Sparkles, Edit3, Trash2, ExternalLink, Eye, Check, X,
   Upload, Image as ImageIcon, DollarSign, ArrowRight, Package,
-  Target, Link2, Lock, Rocket, Share2, Copy, CheckCircle2,
+  Target, Link2, Lock, Rocket, Share2, Copy, CheckCircle2, MessageSquare,
 } from 'lucide-react';
 import { ImageUploader } from './image-uploader';
 import { DesignStudio } from './design-studio';
 import PieceCreator from './piece-creator';
 import { DesignerWorkflow } from './designer-workflow';
+import DesignFeedbackThread from './design-feedback';
 
 // ============================================================
 // Types
@@ -819,7 +820,7 @@ function CollectionsTab({
             <div className="bg-card border border-border rounded-xl p-4">
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Mood Board</h3>
               {selectedCollection.mood_board_urls && selectedCollection.mood_board_urls.length > 0 ? (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-3">
+                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-3">
                   {selectedCollection.mood_board_urls.map((url, i) => (
                     <img key={i} src={url} alt="" className="aspect-square rounded-lg object-cover border border-border" />
                   ))}
@@ -874,7 +875,7 @@ function CollectionsTab({
             {selectedCollection.mood_board_urls && selectedCollection.mood_board_urls.length > 0 && (
               <div className="bg-card border border-border rounded-xl p-4">
                 <h3 className="text-sm font-medium text-muted-foreground mb-3">Mood Board</h3>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
                   {selectedCollection.mood_board_urls.map((url, i) => (
                     <img key={i} src={url} alt="" className="aspect-square rounded-lg object-cover border border-border" />
                   ))}
@@ -2021,6 +2022,7 @@ function VariantsTab({
   onShowForm: (b: boolean) => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
   // Form
   const [formGarmentId, setFormGarmentId] = useState(selectedGarment?.id || '');
@@ -2280,7 +2282,8 @@ function VariantsTab({
           {variants.map(v => (
             <div
               key={v.id}
-              className="bg-card border border-border rounded-xl overflow-hidden"
+              onClick={() => setSelectedVariantId(selectedVariantId === v.id ? null : v.id)}
+              className={`bg-card border rounded-xl overflow-hidden cursor-pointer transition-all ${selectedVariantId === v.id ? 'border-cereus-gold ring-2 ring-cereus-gold/30' : 'border-border hover:border-cereus-gold/50'}`}
             >
               {v.preview_image_url ? (
                 <img src={v.preview_image_url} alt="" className="w-full aspect-square object-cover" />
@@ -2329,6 +2332,25 @@ function VariantsTab({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Design Feedback Panel */}
+      {selectedVariantId && (
+        <div className="mt-6 border-t border-border pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-cereus-gold" />
+            Feedback del Diseño
+          </h3>
+          <DesignFeedbackThread
+            entityType="variant"
+            entityId={selectedVariantId}
+            maisonId={maisonId}
+            currentUserId=""
+            currentUserName="Diseñador"
+            currentUserRole="designer"
+            onStatusChange={() => onRefresh()}
+          />
         </div>
       )}
     </div>
