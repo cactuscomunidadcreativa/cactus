@@ -116,3 +116,26 @@ export async function PUT(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ garment, success: true });
 }
+
+// DELETE /api/cereus/garments?id=xxx — hard delete garment + related data
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient();
+  if (!supabase) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const db = createServiceClient();
+  if (!db) return NextResponse.json({ error: 'Service not configured' }, { status: 500 });
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+  // Delete related data first
+  await db.from('cereus_variants').delete().eq('garment_id', id);
+  await db.from('cereus_garment_materials').delete().eq('garment_id', id);
+  const { error } = await db.from('cereus_garments').delete().eq('id', id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}

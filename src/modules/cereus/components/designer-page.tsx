@@ -6,6 +6,7 @@ import {
   Search, Sparkles, Edit3, Trash2, ExternalLink, Eye, Check, X,
   Upload, Image as ImageIcon, DollarSign, ArrowRight, Package,
   Target, Link2, Lock, Rocket, Share2, Copy, CheckCircle2, MessageSquare,
+  FolderInput, CopyPlus, MoreVertical, Archive,
 } from 'lucide-react';
 import { ImageUploader } from './image-uploader';
 import { DesignStudio } from './design-studio';
@@ -593,6 +594,31 @@ function CollectionsTab({
     }
   }
 
+  async function handleDuplicateCollection(c: Collection) {
+    if (!confirm(`¿Duplicar colección "${c.name}"?`)) return;
+    setSaving(true);
+    try {
+      await fetch('/api/cereus/collections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          maisonId,
+          name: `${c.name} (copia)`,
+          code: c.code ? `${c.code}-copy` : '',
+          season: c.season,
+          year: c.year,
+          description: c.description,
+          target_pieces: c.target_pieces,
+          cover_image_url: c.cover_image_url,
+          mood_board_urls: c.mood_board_urls,
+          inspiration_notes: c.inspiration_notes,
+        }),
+      });
+      onRefresh();
+    } catch { /* silent */ }
+    setSaving(false);
+  }
+
   const filtered = collections.filter(c =>
     !search || c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.code?.toLowerCase().includes(search.toLowerCase())
@@ -690,20 +716,25 @@ function CollectionsTab({
                 )}
               </div>
               <div className="flex gap-2">
-                {!isLaunched && (
-                  <button
-                    onClick={() => {
-                      populateForm(selectedCollection);
-                      onEditCollection(selectedCollection);
-                      onShowForm(true);
-                      onSelectCollection(null);
-                    }}
-                    className="p-2 hover:bg-muted rounded-lg transition-colors"
-                    title="Edit Collection"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    populateForm(selectedCollection);
+                    onEditCollection(selectedCollection);
+                    onShowForm(true);
+                    onSelectCollection(null);
+                  }}
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
+                  title="Editar Colección"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDuplicateCollection(selectedCollection)}
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
+                  title="Duplicar Colección"
+                >
+                  <CopyPlus className="w-4 h-4" />
+                </button>
                 <button
                   onClick={() => handleGenerateBrief(selectedCollection)}
                   disabled={generatingBrief}
@@ -1272,18 +1303,39 @@ function CollectionsTab({
                   <p className="text-xs text-foreground/60 mt-1 truncate">{c.description}</p>
                 )}
               </div>
-              <button
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  if (!confirm(`¿Eliminar colección "${c.name}" y todas sus prendas? Esta acción no se puede deshacer.`)) return;
-                  await fetch(`/api/cereus/collections?id=${c.id}`, { method: 'DELETE' });
-                  onRefresh();
-                }}
-                className="p-2 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                title="Eliminar colección"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    populateForm(c);
+                    onEditCollection(c);
+                    onShowForm(true);
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  title="Editar"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDuplicateCollection(c); }}
+                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  title="Duplicar"
+                >
+                  <CopyPlus className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!confirm(`¿Eliminar colección "${c.name}" y todas sus prendas?`)) return;
+                    await fetch(`/api/cereus/collections?id=${c.id}`, { method: 'DELETE' });
+                    onRefresh();
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
+                  title="Eliminar"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
           ))}
@@ -1702,6 +1754,7 @@ function GarmentsTab({
   onClearOpenFormForCollection?: () => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -1892,6 +1945,14 @@ function GarmentsTab({
           <Sparkles className="w-4 h-4" />
           <span className="hidden sm:inline">Nueva Prenda con IA</span>
         </button>
+        <button
+          onClick={() => setShowArchived(!showArchived)}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${showArchived ? 'bg-orange-500/10 text-orange-600 border border-orange-200' : 'border border-border text-muted-foreground hover:bg-muted'}`}
+          title={showArchived ? 'Ocultar archivados' : 'Mostrar archivados'}
+        >
+          <Archive className="w-4 h-4" />
+          <span className="hidden sm:inline">{showArchived ? 'Archivados' : 'Ver archivados'}</span>
+        </button>
       </div>
 
       {/* Collection filter banner */}
@@ -1923,7 +1984,7 @@ function GarmentsTab({
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {filtered.filter(g => g.status !== 'archived').map(g => (
+          {filtered.filter(g => showArchived || g.status !== 'archived').map(g => (
             <div
               key={g.id}
               className="bg-card border border-border rounded-xl overflow-hidden hover:border-cereus-gold/30 transition-all group relative"
@@ -1982,14 +2043,66 @@ function GarmentsTab({
                     <Edit3 className="w-3 h-3" /> Editar
                   </button>
                   <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm(`¿Duplicar "${g.name}"?`)) return;
+                      await fetch('/api/cereus/garments', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          maisonId, name: `${g.name} (copia)`, code: g.code ? `${g.code}-copy` : '',
+                          category: g.category, description: g.description, collection_id: g.collection_id,
+                          complexity_level: g.complexity_level, base_labor_hours: g.base_labor_hours,
+                          base_labor_cost: g.base_labor_cost, base_price: g.base_price, margin_target: g.margin_target,
+                          images: g.images, tags: g.tags,
+                        }),
+                      });
+                      onRefresh();
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-muted-foreground rounded-md hover:bg-muted transition-colors"
+                    title="Duplicar"
+                  >
+                    <CopyPlus className="w-3 h-3" />
+                  </button>
+                  <select
+                    onClick={(e) => e.stopPropagation()}
+                    value={g.collection_id || ''}
+                    onChange={async (e) => {
+                      e.stopPropagation();
+                      await fetch('/api/cereus/garments', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: g.id, collection_id: e.target.value || null }),
+                      });
+                      onRefresh();
+                    }}
+                    className="px-1.5 py-1 text-[10px] rounded-md border border-border bg-background text-muted-foreground hover:border-cereus-gold/50 transition-colors cursor-pointer max-w-[80px]"
+                    title="Mover a colección"
+                  >
+                    <option value="">Sin colección</option>
+                    {collections.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm('¿Archivar esta prenda? Puedes restaurarla despues.')) {
-                        handleDeleteGarment(g.id);
-                      }
+                      if (confirm('¿Archivar esta prenda?')) handleDeleteGarment(g.id);
                     }}
-                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-red-500 rounded-md hover:bg-red-500/10 transition-colors ml-auto"
+                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-orange-500 rounded-md hover:bg-orange-500/10 transition-colors ml-auto"
                     title="Archivar"
+                  >
+                    <Archive className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm(`¿ELIMINAR "${g.name}" permanentemente? Esto NO se puede deshacer.`)) return;
+                      await fetch(`/api/cereus/garments?id=${g.id}`, { method: 'DELETE' });
+                      onRefresh();
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-red-500 rounded-md hover:bg-red-500/10 transition-colors"
+                    title="Eliminar permanentemente"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
