@@ -30,6 +30,8 @@ interface CereusClient {
 
 export function CereusDashboard() {
   const router = useRouter();
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const basePath = pathname.startsWith('/cereus') ? '/cereus' : '/apps/cereus';
   const [loading, setLoading] = useState(true);
   const [maison, setMaison] = useState<Maison | null>(null);
   const [hasAccess, setHasAccess] = useState(false);
@@ -59,7 +61,7 @@ export function CereusDashboard() {
       // 1. Get maison
       const maisonRes = await fetch('/api/cereus/maison');
       if (maisonRes.status === 401) {
-        router.push('/login?redirect=/apps/cereus');
+        router.push(`/login?redirect=${basePath}`);
         return;
       }
       const maisonData = await maisonRes.json();
@@ -109,15 +111,15 @@ export function CereusDashboard() {
   const maisonId = maison?.id || '';
 
   const modules = [
-    { icon: Users, label: 'Clients', count: totalClients, href: '/apps/cereus/clients', color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
-    { icon: Layers, label: 'Designer', count: '-', href: '/apps/cereus/designer', color: 'text-pink-500', bg: 'bg-pink-500/10' },
-    { icon: DollarSign, label: 'Costing', count: '-', href: '/apps/cereus/costing', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { icon: Factory, label: 'Produccion', count: '-', href: '/apps/cereus/production', color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { icon: Ruler, label: 'Moldes', count: '-', href: '/apps/cereus/patterns', color: 'text-orange-500', bg: 'bg-orange-500/10' },
-    { icon: Shirt, label: 'Closet', count: '-', href: '/apps/cereus/closet', color: 'text-purple-500', bg: 'bg-purple-500/10' },
-    { icon: Brain, label: 'Advisor', count: '-', href: '/apps/cereus/advisor', color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
-    { icon: Eye, label: 'Catalogo', count: '-', href: '/apps/cereus/catalog', color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-    { icon: BarChart3, label: 'Analytics', count: '-', href: '/apps/cereus/analytics', color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { icon: Users, label: 'Clients', count: totalClients, href: `${basePath}/clients`, color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
+    { icon: Layers, label: 'Designer', count: '-', href: `${basePath}/designer`, color: 'text-pink-500', bg: 'bg-pink-500/10' },
+    { icon: DollarSign, label: 'Costing', count: '-', href: `${basePath}/costing`, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { icon: Factory, label: 'Produccion', count: '-', href: `${basePath}/production`, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { icon: Ruler, label: 'Moldes', count: '-', href: `${basePath}/patterns`, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { icon: Shirt, label: 'Closet', count: '-', href: `${basePath}/closet`, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { icon: Brain, label: 'Advisor', count: '-', href: `${basePath}/advisor`, color: 'text-cereus-gold', bg: 'bg-cereus-gold/10' },
+    { icon: Eye, label: 'Catalogo', count: '-', href: `${basePath}/catalog`, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+    { icon: BarChart3, label: 'Analytics', count: '-', href: `${basePath}/analytics`, color: 'text-rose-500', bg: 'bg-rose-500/10' },
   ];
 
   async function saveApiKey() {
@@ -312,7 +314,7 @@ export function CereusDashboard() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Recent Clients</h2>
           <Link
-            href="/apps/cereus/clients"
+            href={`${basePath}/clients`}
             className="text-sm text-cereus-gold hover:underline flex items-center gap-1"
           >
             View all <ChevronRight className="w-4 h-4" />
@@ -327,7 +329,7 @@ export function CereusDashboard() {
               Create your first client to start building their profile.
             </p>
             <Link
-              href="/apps/cereus/clients?new=true"
+              href={`${basePath}/clients?new=true`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-cereus-gold text-white rounded-lg text-sm font-medium hover:bg-cereus-gold/90 transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -339,7 +341,7 @@ export function CereusDashboard() {
             {clients.map((client) => (
               <Link
                 key={client.id}
-                href={`/apps/cereus/clients?id=${client.id}`}
+                href={`${basePath}/clients?id=${client.id}`}
                 className="flex items-center justify-between p-4 bg-card border border-border rounded-xl hover:border-cereus-gold/30 transition-all group"
               >
                 <div className="flex items-center gap-3">

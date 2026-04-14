@@ -99,7 +99,7 @@ async function handleSupabaseAuth(
   const { data: { user } } = await supabase.auth.getUser();
 
   // Protected routes check
-  const protectedRoutes = ['/dashboard', '/marketplace', '/settings', '/apps'];
+  const protectedRoutes = ['/dashboard', '/marketplace', '/settings', '/apps', '/cereus'];
   const isMaisonRoute = pathname.startsWith('/maison/');
   const isMaisonAuth = isMaisonRoute && (pathname.includes('/login') || pathname.includes('/register'));
   const isMaisonLanding = isMaisonRoute && pathname.split('/').length <= 3; // /maison/[id]
