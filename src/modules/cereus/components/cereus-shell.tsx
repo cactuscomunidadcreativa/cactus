@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { CereusDataProvider } from '../context/cereus-data-provider'
 import {
   Layers, Users, DollarSign, Factory, Ruler, Shirt, Brain, Eye,
   BarChart3, Sparkles, PanelLeftClose, PanelLeftOpen, LogOut,
@@ -183,7 +184,9 @@ export function CereusShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-          {children}
+          <CereusDataProvider>
+            {children}
+          </CereusDataProvider>
         </div>
       </main>
     </div>
