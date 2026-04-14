@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation'
 import {
   Layers, Users, DollarSign, Factory, Ruler, Shirt, Brain, Eye,
   BarChart3, Sparkles, PanelLeftClose, PanelLeftOpen, LogOut,
-  Home, MessageSquare, Calendar, Presentation, TrendingUp,
-  ShoppingCart, FileSpreadsheet, Megaphone, ChevronDown, ChevronUp,
+  Home, MessageSquare, Calendar, Presentation,
+  ShoppingCart, FileSpreadsheet, ChevronDown, ChevronUp,
 } from 'lucide-react'
 
 const CEREUS_NAV = [
@@ -27,7 +27,6 @@ const OTHER_APPS = [
   { icon: MessageSquare, label: 'Ramona', description: 'Social Media AI', href: '/cereus/ramona', color: 'text-pink-400' },
   { icon: Presentation, label: 'PITA', description: 'Presentaciones', href: '/cereus/pita', color: 'text-violet-400' },
   { icon: Calendar, label: 'WeekFlow', description: 'Planificacion', href: '/cereus/weekflow', color: 'text-blue-400' },
-  { icon: TrendingUp, label: 'EQ Latam', description: 'Cotizaciones', href: '/cereus/eq-latam', color: 'text-emerald-400' },
   { icon: ShoppingCart, label: 'Agave', description: 'Pricing', href: '/cereus/agave', color: 'text-green-400' },
   { icon: FileSpreadsheet, label: 'Tuna', description: 'Campanas', href: '/cereus/tuna', color: 'text-cyan-400' },
 ]

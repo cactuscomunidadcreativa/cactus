@@ -5,6 +5,7 @@
       "name": "dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
+      "env": { "PATH": "/Users/eduardogonzalez/Desktop/cactus/node_modules/.bin:/usr/local/bin:/usr/bin:/bin" },
       "port": 3000
     }
   ]
