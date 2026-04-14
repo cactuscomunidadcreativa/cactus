@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
         prompt,
         n: 1,
         size: '1024x1024',
-        quality: 'standard',
+        quality: 'hd',
       }),
     });
 

@@ -171,7 +171,7 @@ editorial quality, runway-ready design.`;
         prompt: prompt.substring(0, 4000), // DALL-E has prompt length limits
         n: 1,
         size: '1024x1024',
-        quality: 'standard',
+        quality: 'hd',
         response_format: 'url',
       }),
     });

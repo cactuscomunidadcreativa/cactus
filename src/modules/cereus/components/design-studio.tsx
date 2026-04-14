@@ -273,12 +273,12 @@ export function DesignStudio({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    canvas.width = 600;
-    canvas.height = 800;
+    canvas.width = 1200;
+    canvas.height = 1600;
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, 600, 800);
+      ctx.fillRect(0, 0, 1200, 1600);
     }
   }, []);
 

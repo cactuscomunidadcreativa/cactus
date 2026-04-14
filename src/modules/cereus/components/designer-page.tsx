@@ -13,6 +13,7 @@ import { DesignStudio } from './design-studio';
 import PieceCreator from './piece-creator';
 import { DesignerWorkflow } from './designer-workflow';
 import DesignFeedbackThread from './design-feedback';
+import { ImageViewer } from './image-viewer';
 
 // ============================================================
 // Types
@@ -1706,23 +1707,9 @@ function GarmentDetailEditable({
         </div>
       )}
 
-      {/* Image Preview Modal */}
+      {/* Image Viewer with Zoom */}
       {previewImg && (
-        <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4" onClick={() => setPreviewImg(null)}>
-          <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setPreviewImg(null)}
-              className="absolute -top-3 -right-3 w-10 h-10 bg-white text-gray-800 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 z-10">
-              <X className="w-5 h-5" />
-            </button>
-            <img src={previewImg} alt="Preview" className="w-full h-full object-contain rounded-xl" style={{ maxHeight: '85vh' }} />
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-              <a href={previewImg} target="_blank" rel="noopener noreferrer"
-                className="px-4 py-2 bg-white text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-100">
-                Abrir original
-              </a>
-            </div>
-          </div>
-        </div>
+        <ImageViewer src={previewImg} alt="Preview" onClose={() => setPreviewImg(null)} />
       )}
     </div>
   );

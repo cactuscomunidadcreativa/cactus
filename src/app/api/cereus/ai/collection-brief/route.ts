@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
         const imagePrompts = buildMoodBoardPrompts(brief, season, maisonName);
         const dalleResults = await generateImages(imagePrompts, {
           size: '1024x1024',
-          quality: 'standard',
+          quality: 'hd',
           style: 'vivid',
         });
 
