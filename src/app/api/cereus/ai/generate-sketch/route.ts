@@ -11,7 +11,7 @@ import { uploadImageToSupabase } from '@/modules/cereus/lib/image-upload';
  */
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { template, fabric, fabrics, colors, collectionName, season, lang, maisonId, sketchStyle } = body;
+  const { template, fabric, fabrics, colors, collectionName, season, lang, maisonId, sketchStyle, userBrief } = body;
 
   if (!template) {
     return NextResponse.json({ error: 'template required' }, { status: 400 });
@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
   try {
     const anthropicKey = await getAPIKey('claude');
     if (anthropicKey) {
-      designBrief = await generateDesignBrief(anthropicKey, template, fabricName, colorList, season, collectionName, language, trainingContext);
+      const fullTraining = userBrief ? `${trainingContext}\n\nDesigner brief: ${userBrief}` : trainingContext;
+      designBrief = await generateDesignBrief(anthropicKey, template, fabricName, colorList, season, collectionName, language, fullTraining);
     }
   } catch {
     // Continue without Claude brief
@@ -55,12 +56,17 @@ export async function POST(request: NextRequest) {
     try {
       let dallePrompt: string;
 
+      const briefContext = userBrief ? ` Designer's vision: ${userBrief}.` : '';
+
       if (style === 'boceto') {
         // Privat B&W pencil sketch style
         const garmentType = template || 'garment';
-        dallePrompt = `Fashion illustration, black and white pencil sketch, clean editorial style. A ${garmentType} made of ${fabricName}. Full outfit centered on an A4 vertical format sheet with generous white space. Fine, elegant linework with soft grey shadows, not harsh contrast. High fashion illustration style. No background, minimal and refined composition. Garment only (no face, no arms unless necessary), focus on structure, seams, and fabric fall. Proportions stylized and feminine. Fabric texture suggested through delicate pencil shading (not heavy, not rough). Clean outlines, subtle volume. Balanced composition, garment slightly reduced in size to leave breathing space. Signature "Malu Privat" placed at bottom right, small, exact original handwritten signature. Overall look: luxury fashion sketch, haute couture presentation, refined, minimal, editorial.`;
+        dallePrompt = `Fashion illustration, black and white pencil sketch, clean editorial style. A ${garmentType} made of ${fabricName}.${briefContext} Full outfit centered on an A4 vertical format sheet with generous white space. Fine, elegant linework with soft grey shadows, not harsh contrast. High fashion illustration style. No background, minimal and refined composition. Garment only (no face, no arms unless necessary), focus on structure, seams, and fabric fall. Proportions stylized and feminine. Fabric texture suggested through delicate pencil shading (not heavy, not rough). Clean outlines, subtle volume. Balanced composition, garment slightly reduced in size to leave breathing space. Signature "Malu Privat" placed at bottom right, small, exact original handwritten signature. Overall look: luxury fashion sketch, haute couture presentation, refined, minimal, editorial.
+
+IMPORTANT: Generate TWO views side by side on the same image: FRONT view on the left half and BACK view on the right half. Both views of the exact same garment design, showing construction details from both angles.`;
       } else {
-        dallePrompt = designBrief?.dallePrompt || buildDallePrompt(template, fabricName, colorList, suggestions);
+        const basePrompt = designBrief?.dallePrompt || buildDallePrompt(template, fabricName, colorList, suggestions);
+        dallePrompt = briefContext ? `${basePrompt}${briefContext}` : basePrompt;
       }
 
       const res = await fetch('https://api.openai.com/v1/images/generations', {

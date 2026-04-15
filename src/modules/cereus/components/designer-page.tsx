@@ -1433,14 +1433,16 @@ function GarmentDetailEditable({
         body: JSON.stringify({ garmentId: garment.id, action: 'regenerate' }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.updatedImages) {
         setAiImageMsg('Imagen regenerada exitosamente');
-        onRefresh();
-      } else {
+        onUpdateImages(garment, data.updatedImages);
+      } else if (data.error) {
         setAiImageMsg(`Error: ${data.error}`);
+      } else {
+        setAiImageMsg('No se pudo regenerar');
       }
-    } catch {
-      setAiImageMsg('Error al regenerar');
+    } catch (err: any) {
+      setAiImageMsg(`Error: ${err.message || 'Error al regenerar'}`);
     }
     setRegenerating(false);
   }
@@ -1456,16 +1458,19 @@ function GarmentDetailEditable({
         body: JSON.stringify({ garmentId: garment.id, action: 'edit', editPrompt }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.updatedImages) {
         setAiImageMsg('Correccion aplicada exitosamente');
         setEditingImage(false);
         setEditPrompt('');
-        onRefresh();
-      } else {
+        // Update images locally so UI reflects immediately
+        onUpdateImages(garment, data.updatedImages);
+      } else if (data.error) {
         setAiImageMsg(`Error: ${data.error}`);
+      } else {
+        setAiImageMsg('No se pudo aplicar la correccion');
       }
-    } catch {
-      setAiImageMsg('Error al corregir');
+    } catch (err: any) {
+      setAiImageMsg(`Error: ${err.message || 'Error al corregir'}`);
     }
     setRegenerating(false);
   }
@@ -1485,15 +1490,17 @@ Style: Full color haute couture fashion illustration with realistic fabric textu
         body: JSON.stringify({ garmentId: garment.id, action: 'edit', editPrompt: colorPrompt }),
       });
       const data = await res.json();
-      if (data.success) {
-        setAiImageMsg('Versión a color generada');
+      if (data.success && data.updatedImages) {
+        setAiImageMsg('Version a color generada');
         setColorizing(false);
-        onRefresh();
-      } else {
+        onUpdateImages(garment, data.updatedImages);
+      } else if (data.error) {
         setAiImageMsg(`Error: ${data.error}`);
+      } else {
+        setAiImageMsg('No se pudo colorear');
       }
-    } catch {
-      setAiImageMsg('Error al colorear');
+    } catch (err: any) {
+      setAiImageMsg(`Error: ${err.message || 'Error al colorear'}`);
     }
     setRegenerating(false);
   }
@@ -2021,13 +2028,21 @@ function GarmentsTab({
 
   // Detail view — EDITABLE
   if (selectedGarment) {
+    // Get the freshest version of the garment from the list
+    const freshGarment = garments.find(g => g.id === selectedGarment.id) || selectedGarment;
     return (
       <GarmentDetailEditable
-        garment={selectedGarment}
+        garment={freshGarment}
         collections={collections}
         onBack={() => onSelectGarment(null)}
-        onRefresh={onRefresh}
-        onUpdateImages={handleUpdateImages}
+        onRefresh={async () => {
+          await onRefresh();
+        }}
+        onUpdateImages={async (g, imgs) => {
+          await handleUpdateImages(g, imgs);
+          // Also update selectedGarment so the detail view refreshes
+          onSelectGarment({ ...g, images: imgs });
+        }}
       />
     );
   }

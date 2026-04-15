@@ -182,6 +182,7 @@ export default function PieceCreator({
   const [subStep, setSubStep] = useState<1 | 2 | 3 | 4>(1);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
   const [sketchStyleMode, setSketchStyleMode] = useState<'color' | 'boceto'>('color');
+  const [userBrief, setUserBrief] = useState('');
   const [brief, setBrief] = useState<DesignBrief | null>(null);
   const [sketchResponse, setSketchResponse] = useState<SketchResponse | null>(null);
   const [pieceName, setPieceName] = useState('');
@@ -241,6 +242,7 @@ export default function PieceCreator({
             lang: 'es',
             maisonId,
             sketchStyle: sketchStyleMode,
+            userBrief: userBrief || undefined,
           }),
         });
         setAiPhase('Procesando respuesta...');
@@ -295,6 +297,7 @@ export default function PieceCreator({
           lang: 'es',
           maisonId,
           sketchStyle: sketchStyleMode,
+          userBrief: userBrief || undefined,
         }),
       });
       const data: SketchResponse = await res.json();
@@ -539,8 +542,26 @@ export default function PieceCreator({
             <div>
               <h2 className="text-lg font-semibold text-stone-800 mb-1">Elegir Silueta</h2>
               <p className="text-sm text-stone-500 mb-4">
-                Selecciona el tipo de prenda y el estilo de imagen
+                Describe tu idea, elige estilo y tipo de prenda
               </p>
+
+              {/* Brief / Idea input */}
+              <div className="mb-5 p-4 bg-cereus-gold/5 border border-cereus-gold/20 rounded-xl">
+                <label className="text-xs font-semibold text-cereus-gold uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Tu idea / Brief
+                </label>
+                <textarea
+                  value={userBrief}
+                  onChange={e => setUserBrief(e.target.value)}
+                  placeholder="Describe lo que quieres crear... Ej: Un vestido largo de seda con escote en V, espalda descubierta, corte sirena con cola. Inspirado en los atardeceres de Lima. Para una gala de noche."
+                  rows={3}
+                  className="w-full px-3 py-2.5 border border-cereus-gold/30 rounded-lg text-sm bg-white resize-none focus:outline-none focus:ring-2 focus:ring-cereus-gold/50 placeholder:text-stone-300"
+                />
+                <p className="text-[10px] text-stone-400 mt-1.5">
+                  Opcional pero recomendado. La IA usara esto para crear un diseno mas preciso a tu vision.
+                </p>
+              </div>
 
               {/* Style picker */}
               <div className="flex gap-3 mb-6">
