@@ -49,10 +49,13 @@ interface PendingInvite {
 
 // Available apps
 const APPS = [
-  { id: 'agave', name: 'AGAVE', emoji: '🌵', description: 'Asistente de pricing' },
+  { id: 'cereus', name: 'CEREUS', emoji: '🌸', description: 'Atelier de moda' },
   { id: 'ramona', name: 'RAMONA', emoji: '🎨', description: 'Contenido para redes' },
-  { id: 'tuna', name: 'TUNA', emoji: '🐟', description: 'Estados financieros' },
-  { id: 'saguaro', name: 'SAGUARO', emoji: '🌿', description: 'Planificacion semanal' },
+  { id: 'pita', name: 'PITA', emoji: '📊', description: 'Presentaciones' },
+  { id: 'weekflow', name: 'WEEKFLOW', emoji: '📅', description: 'Planificacion semanal' },
+  { id: 'agave', name: 'AGAVE', emoji: '🌵', description: 'Asistente de pricing' },
+  { id: 'tuna', name: 'TUNA', emoji: '🐟', description: 'Campanas y data' },
+  { id: 'saguaro', name: 'SAGUARO', emoji: '🌿', description: 'Workflows' },
 ];
 
 export function AppsAdmin() {

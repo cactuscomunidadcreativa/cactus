@@ -11,6 +11,7 @@ import { AuditLogPanel } from './audit-log-panel';
 import { WhatsAppTester } from './whatsapp-tester';
 import { AppsAdmin } from './apps-admin';
 import { CMSAdmin } from './cms-admin';
+import { UserManager } from './user-manager';
 
 type TabId = 'config' | 'users' | 'apps' | 'cms' | 'analytics' | 'audit' | 'whatsapp';
 
@@ -81,7 +82,13 @@ export function AdminApp() {
         <ConfigPanel configs={configs} onSave={saveConfig} />
       )}
       {activeTab === 'users' && (
-        <UsersPanel budgets={budgets} onSaveBudget={saveBudget} />
+        <div className="space-y-8">
+          <UserManager />
+          <div className="border-t border-border pt-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-4">Token Budgets</h3>
+            <UsersPanel budgets={budgets} onSaveBudget={saveBudget} />
+          </div>
+        </div>
       )}
       {activeTab === 'apps' && (
         <AppsAdmin />
