@@ -11,7 +11,7 @@ import { uploadImageToSupabase } from '@/modules/cereus/lib/image-upload';
  */
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { template, fabric, fabrics, colors, collectionName, season, lang, maisonId } = body;
+  const { template, fabric, fabrics, colors, collectionName, season, lang, maisonId, sketchStyle } = body;
 
   if (!template) {
     return NextResponse.json({ error: 'template required' }, { status: 400 });
@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
   const fabricName = fabricList.join(', ');
   const colorList = colors || ['#0A0A0A', '#B8943A'];
   const language = lang || 'es'; // Default to Spanish
+
+  // Sketch style: 'boceto' (B&W pencil) or 'color' (full color, default)
+  const style: 'boceto' | 'color' = sketchStyle === 'boceto' ? 'boceto' : 'color';
 
   // Load AI training context
   const trainingContext = maisonId ? await getTrainingContext(maisonId) : '';
@@ -50,7 +53,15 @@ export async function POST(request: NextRequest) {
 
   if (openaiKey) {
     try {
-      const dallePrompt = designBrief?.dallePrompt || buildDallePrompt(template, fabricName, colorList, suggestions);
+      let dallePrompt: string;
+
+      if (style === 'boceto') {
+        // Privat B&W pencil sketch style
+        const garmentType = template || 'garment';
+        dallePrompt = `Fashion illustration, black and white pencil sketch, clean editorial style. A ${garmentType} made of ${fabricName}. Full outfit centered on an A4 vertical format sheet with generous white space. Fine, elegant linework with soft grey shadows, not harsh contrast. High fashion illustration style. No background, minimal and refined composition. Garment only (no face, no arms unless necessary), focus on structure, seams, and fabric fall. Proportions stylized and feminine. Fabric texture suggested through delicate pencil shading (not heavy, not rough). Clean outlines, subtle volume. Balanced composition, garment slightly reduced in size to leave breathing space. Signature "Malu Privat" placed at bottom right, small, exact original handwritten signature. Overall look: luxury fashion sketch, haute couture presentation, refined, minimal, editorial.`;
+      } else {
+        dallePrompt = designBrief?.dallePrompt || buildDallePrompt(template, fabricName, colorList, suggestions);
+      }
 
       const res = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',

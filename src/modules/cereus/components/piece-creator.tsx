@@ -181,6 +181,7 @@ export default function PieceCreator({
   // ── Form state ──
   const [subStep, setSubStep] = useState<1 | 2 | 3 | 4>(1);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
+  const [sketchStyleMode, setSketchStyleMode] = useState<'color' | 'boceto'>('color');
   const [brief, setBrief] = useState<DesignBrief | null>(null);
   const [sketchResponse, setSketchResponse] = useState<SketchResponse | null>(null);
   const [pieceName, setPieceName] = useState('');
@@ -238,6 +239,8 @@ export default function PieceCreator({
             collectionName,
             season,
             lang: 'es',
+            maisonId,
+            sketchStyle: sketchStyleMode,
           }),
         });
         setAiPhase('Procesando respuesta...');
@@ -271,7 +274,7 @@ export default function PieceCreator({
         setAiPhase('');
       }
     },
-    [collectionName, season],
+    [collectionName, season, maisonId, sketchStyleMode],
   );
 
   // ── Regenerate visual ──
@@ -290,6 +293,8 @@ export default function PieceCreator({
           collectionName,
           season,
           lang: 'es',
+          maisonId,
+          sketchStyle: sketchStyleMode,
         }),
       });
       const data: SketchResponse = await res.json();
@@ -533,9 +538,38 @@ export default function PieceCreator({
           {subStep === 1 && (
             <div>
               <h2 className="text-lg font-semibold text-stone-800 mb-1">Elegir Silueta</h2>
-              <p className="text-sm text-stone-500 mb-6">
-                Selecciona el tipo de prenda para esta pieza
+              <p className="text-sm text-stone-500 mb-4">
+                Selecciona el tipo de prenda y el estilo de imagen
               </p>
+
+              {/* Style picker */}
+              <div className="flex gap-3 mb-6">
+                <button
+                  onClick={() => setSketchStyleMode('boceto')}
+                  className={`flex-1 p-4 rounded-xl border-2 transition-all text-center ${
+                    sketchStyleMode === 'boceto'
+                      ? 'border-stone-800 bg-stone-50 shadow-md'
+                      : 'border-stone-200 bg-white hover:border-stone-300'
+                  }`}
+                >
+                  <div className="text-2xl mb-1.5">✏️</div>
+                  <p className="text-sm font-semibold text-stone-800">Boceto B&N</p>
+                  <p className="text-[10px] text-stone-400 mt-0.5">Pencil sketch editorial, firma Malu Privat</p>
+                </button>
+                <button
+                  onClick={() => setSketchStyleMode('color')}
+                  className={`flex-1 p-4 rounded-xl border-2 transition-all text-center ${
+                    sketchStyleMode === 'color'
+                      ? 'border-cereus-gold bg-cereus-gold/5 shadow-md'
+                      : 'border-stone-200 bg-white hover:border-cereus-gold/30'
+                  }`}
+                >
+                  <div className="text-2xl mb-1.5">🎨</div>
+                  <p className="text-sm font-semibold text-stone-800">A Color</p>
+                  <p className="text-[10px] text-stone-400 mt-0.5">Ilustracion full color con tendencias AI</p>
+                </button>
+              </div>
+
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {GARMENT_TEMPLATES.map((tmpl) => (
                   <button
