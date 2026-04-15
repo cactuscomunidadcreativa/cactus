@@ -167,7 +167,7 @@ function formatPrice(n: number) {
 // ============================================================
 
 export function DesignerPage() {
-  const [mode, setMode] = useState<'workflow' | 'manage'>('workflow');
+  const [mode, setMode] = useState<'workflow' | 'manage' | 'new-piece'>('workflow');
   const [tab, setTab] = useState<'collections' | 'garments' | 'variants'>('collections');
   const [loading, setLoading] = useState(true);
   const [maisonId, setMaisonId] = useState<string | null>(null);
@@ -287,6 +287,15 @@ export function DesignerPage() {
             Flujo Creativo
           </button>
           <button
+            onClick={() => setMode('new-piece')}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
+              mode === 'new-piece' ? 'bg-cereus-gold text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Nueva Pieza
+          </button>
+          <button
             onClick={() => setMode('manage')}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
               mode === 'manage' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
@@ -300,6 +309,34 @@ export function DesignerPage() {
       {/* Workflow Mode */}
       {mode === 'workflow' && maisonId && (
         <DesignerWorkflow maisonId={maisonId} />
+      )}
+
+      {/* New Independent Piece Mode */}
+      {mode === 'new-piece' && maisonId && (
+        <div className="space-y-4">
+          <div className="bg-cereus-gold/5 border border-cereus-gold/20 rounded-xl p-4">
+            <h2 className="text-lg font-display font-bold flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-cereus-gold" />
+              Crear Pieza Independiente
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Diseña una prenda sin necesidad de asociarla a una coleccion. Puedes asignarla a una coleccion despues.
+            </p>
+          </div>
+          <PieceCreator
+            maisonId={maisonId}
+            collectionId=""
+            collectionName="Pieza Independiente"
+            season="spring_summer"
+            selectedMaterialIds={[]}
+            onComplete={() => {
+              if (maisonId) fetchGarments(maisonId);
+              setMode('manage');
+              setTab('garments');
+            }}
+            onBack={() => setMode('manage')}
+          />
+        </div>
       )}
 
       {/* Management Mode (existing tabs) */}
