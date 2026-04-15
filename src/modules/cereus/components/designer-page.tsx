@@ -1414,6 +1414,10 @@ function GarmentDetailEditable({
   const [editingImage, setEditingImage] = useState(false);
   const [editPrompt, setEditPrompt] = useState('');
   const [aiImageMsg, setAiImageMsg] = useState<string | null>(null);
+  const [colorizing, setColorizing] = useState(false);
+  const [colorFabric, setColorFabric] = useState('seda');
+  const [colorHex, setColorHex] = useState('#C9A84C');
+  const [colorTexture, setColorTexture] = useState('liso');
 
   const hasExpiredImages = garment.images?.some(img =>
     img.url.includes('oaidalleapiprodscus') || img.url.includes('blob.core.windows')
@@ -1462,6 +1466,34 @@ function GarmentDetailEditable({
       }
     } catch {
       setAiImageMsg('Error al corregir');
+    }
+    setRegenerating(false);
+  }
+
+  async function handleColorize() {
+    setRegenerating(true);
+    setAiImageMsg(null);
+    try {
+      const colorPrompt = `Transform this black and white fashion sketch into a full-color fashion illustration. Keep the EXACT same garment design, silhouette, and proportions. Apply these specifics:
+Fabric: ${colorFabric}
+Primary color: ${colorHex}
+Texture: ${colorTexture}
+Style: Full color haute couture fashion illustration with realistic fabric textures, proper light and shadow, editorial quality. Show the fabric drape and material properties clearly. Keep the elegant, refined composition of the original sketch. White/clean background.`;
+      const res = await fetch('/api/cereus/ai/regenerate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ garmentId: garment.id, action: 'edit', editPrompt: colorPrompt }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAiImageMsg('Versión a color generada');
+        setColorizing(false);
+        onRefresh();
+      } else {
+        setAiImageMsg(`Error: ${data.error}`);
+      }
+    } catch {
+      setAiImageMsg('Error al colorear');
     }
     setRegenerating(false);
   }
@@ -1697,6 +1729,12 @@ function GarmentDetailEditable({
             <Edit3 className="w-3.5 h-3.5" />
             Corregir con IA
           </button>
+          <button
+            onClick={() => setColorizing(!colorizing)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500 to-violet-500 text-white rounded-lg text-xs font-medium hover:opacity-90"
+          >
+            🎨 Colorear Boceto
+          </button>
           {aiImageMsg && (
             <span className={`text-xs ${aiImageMsg.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>
               {aiImageMsg}
@@ -1726,6 +1764,77 @@ function GarmentDetailEditable({
               </button>
               <button
                 onClick={() => { setEditingImage(false); setEditPrompt(''); }}
+                className="px-3 py-2 border border-input rounded-lg text-xs hover:bg-muted"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Colorize panel */}
+        {colorizing && (
+          <div className="mt-3 p-4 bg-gradient-to-r from-pink-500/5 to-violet-500/5 border border-pink-200 rounded-xl space-y-3">
+            <p className="text-xs font-semibold text-pink-600">🎨 Colorear Boceto — Elige tela, color y textura</p>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Tela</label>
+                <select value={colorFabric} onChange={e => setColorFabric(e.target.value)}
+                  className="w-full mt-1 px-2 py-1.5 rounded-lg border border-input bg-background text-sm">
+                  <option value="seda">Seda</option>
+                  <option value="lino">Lino</option>
+                  <option value="algodón orgánico">Algodón Orgánico</option>
+                  <option value="chiffon">Chiffon</option>
+                  <option value="terciopelo">Terciopelo</option>
+                  <option value="encaje">Encaje</option>
+                  <option value="organza">Organza</option>
+                  <option value="tafetán">Tafetán</option>
+                  <option value="georgette">Georgette</option>
+                  <option value="jersey">Jersey</option>
+                  <option value="denim">Denim</option>
+                  <option value="lana">Lana</option>
+                  <option value="tweed">Tweed</option>
+                  <option value="cuero">Cuero</option>
+                  <option value="satín">Satín</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Color</label>
+                <div className="flex gap-1.5 mt-1">
+                  <input type="color" value={colorHex} onChange={e => setColorHex(e.target.value)}
+                    className="w-8 h-8 rounded border border-input cursor-pointer" />
+                  <input value={colorHex} onChange={e => setColorHex(e.target.value)}
+                    className="flex-1 px-2 py-1.5 rounded-lg border border-input bg-background text-sm font-mono" />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Textura</label>
+                <select value={colorTexture} onChange={e => setColorTexture(e.target.value)}
+                  className="w-full mt-1 px-2 py-1.5 rounded-lg border border-input bg-background text-sm">
+                  <option value="liso">Liso</option>
+                  <option value="estampado floral">Estampado Floral</option>
+                  <option value="rayas">Rayas</option>
+                  <option value="cuadros">Cuadros</option>
+                  <option value="bordado">Bordado</option>
+                  <option value="jacquard">Jacquard</option>
+                  <option value="plisado">Plisado</option>
+                  <option value="drapeado">Drapeado</option>
+                  <option value="textura punto">Textura Punto</option>
+                  <option value="metalizado">Metalizado</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleColorize}
+                disabled={regenerating}
+                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-pink-500 to-violet-500 text-white rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50"
+              >
+                {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                Generar Version a Color
+              </button>
+              <button
+                onClick={() => setColorizing(false)}
                 className="px-3 py-2 border border-input rounded-lg text-xs hover:bg-muted"
               >
                 Cancelar
