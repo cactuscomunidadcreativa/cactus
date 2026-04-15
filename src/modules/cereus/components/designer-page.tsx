@@ -1663,23 +1663,44 @@ Style: Full color haute couture fashion illustration with realistic fabric textu
         {garment.images?.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
             {garment.images.map((img, i) => (
-              <div key={i} className="relative aspect-[3/4] group cursor-pointer rounded-xl overflow-hidden border border-border hover:border-cereus-gold/50 transition-all"
-                onClick={() => setPreviewImg(img.url)}>
-                <img src={img.url} alt={img.alt || ''} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Eye className="w-6 h-6 text-white" />
+              <div key={i} className="relative aspect-[3/4] cursor-pointer rounded-xl overflow-hidden border-2 transition-all hover:shadow-lg"
+                style={{ borderColor: i === 0 ? '#C9A84C' : 'var(--border)' }}>
+                <div onClick={() => setPreviewImg(img.url)}>
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
                 </div>
+                {i === 0 && (
+                  <span className="absolute top-1 left-1 px-1.5 py-0.5 text-[10px] bg-cereus-gold text-white rounded font-medium">Portada</span>
+                )}
                 <span className="absolute bottom-1 left-1 px-1.5 py-0.5 text-[10px] bg-black/60 text-white rounded">{img.type}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const newImages = garment.images.filter((_, j) => j !== i);
-                    onUpdateImages(garment, newImages);
-                  }}
-                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  ✕
-                </button>
+                {/* Action buttons - always visible */}
+                <div className="absolute top-1 right-1 flex gap-1">
+                  {i !== 0 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Move to first position (set as cover)
+                        const newImages = [garment.images[i], ...garment.images.filter((_, j) => j !== i)];
+                        onUpdateImages(garment, newImages);
+                      }}
+                      className="w-6 h-6 bg-cereus-gold text-white rounded-full text-[10px] flex items-center justify-center shadow-md hover:bg-cereus-gold/90"
+                      title="Elegir como portada"
+                    >
+                      ★
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!confirm('¿Eliminar esta imagen?')) return;
+                      const newImages = garment.images.filter((_, j) => j !== i);
+                      onUpdateImages(garment, newImages);
+                    }}
+                    className="w-6 h-6 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center shadow-md hover:bg-red-600"
+                    title="Eliminar imagen"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             ))}
           </div>
