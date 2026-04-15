@@ -18,9 +18,27 @@ const CONTACT = {
 const VCARD_DATA = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${CONTACT.name}\r\nTEL;TYPE=CELL:${CONTACT.phone}\r\nEMAIL:${CONTACT.email}\r\nURL:${CONTACT.website}\r\nURL:${CONTACT.instagram}\r\nADR;TYPE=HOME:;;;;;;${CONTACT.country}\r\nNOTE:IG: ${CONTACT.igHandle}\r\nEND:VCARD`
 
 function saveContact() {
-  // On mobile, navigate to the API endpoint which serves the .vcf file directly
-  // This triggers the native "Add to Contacts" prompt on iOS/Android
-  window.location.href = '/api/vcard?slug=malu-privat'
+  // Try direct navigation first (works best on iOS Safari)
+  // Create a hidden link with the .vcf file as blob
+  const blob = new Blob([VCARD_DATA], { type: 'text/vcard;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'malu-privat.vcf'
+  a.style.display = 'none'
+  document.body.appendChild(a)
+  a.click()
+
+  // Cleanup after a delay
+  setTimeout(() => {
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, 1000)
+
+  // Fallback: also try the API endpoint for iOS
+  setTimeout(() => {
+    window.location.href = '/api/vcard?slug=malu-privat'
+  }, 500)
 }
 
 export default function MaluVCard() {
