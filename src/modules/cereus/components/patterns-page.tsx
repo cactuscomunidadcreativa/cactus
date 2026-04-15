@@ -236,7 +236,11 @@ export default function PatternsPage() {
       const res = await fetch('/api/cereus/maison');
       if (res.status === 401) { router.push('/login'); return; }
       const data = await res.json();
-      if (!data.hasAccess) { router.push('/apps/cereus'); return; }
+      if (!data.hasAccess) {
+        const path = window.location.pathname;
+        router.push(path.startsWith('/cereus') ? '/cereus' : '/apps/cereus');
+        return;
+      }
       setMaisonId(data.maison.id);
     } catch {
       setError('Error al conectar con el servidor');
@@ -431,16 +435,21 @@ export default function PatternsPage() {
         {/* Garment selector */}
         <div className="bg-white rounded-xl border border-stone-200 p-5 mb-6">
           <label className="block text-sm font-medium text-stone-700 mb-2">
-            Seleccionar Prenda
+            Seleccionar Prenda {loading && '(cargando...)'}
           </label>
+          {!loading && garments.length === 0 && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 mb-3">
+              No hay prendas creadas. Ve al <a href="/cereus/designer" className="underline font-medium">Designer</a> para crear prendas primero.
+            </div>
+          )}
           <div className="relative">
             <select
               value={selectedGarmentId || ''}
               onChange={(e) => handleSelectGarment(e.target.value)}
               className="w-full border border-stone-300 rounded-lg px-4 py-2.5 pr-10 text-sm bg-white focus:ring-2 focus:ring-cereus-primary/30 focus:border-cereus-primary outline-none appearance-none"
             >
-              <option value="">-- Selecciona una prenda --</option>
-              {garments.map((g) => (
+              <option value="">-- Selecciona una prenda ({garments.length} disponibles) --</option>
+              {garments.filter(g => g.status !== 'archived').map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.name} {g.code ? `(${g.code})` : ''} — {CATEGORY_LABELS[g.category] || g.category}
                   {g.collection ? ` | ${g.collection.name}` : ''}
