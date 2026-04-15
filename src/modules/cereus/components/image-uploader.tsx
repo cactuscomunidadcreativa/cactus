@@ -71,15 +71,29 @@ export function ImageUploader({
     };
   }, [bucket, folder, maxSize]);
 
+  const uploadingRef = useRef(false);
+
   async function handleFiles(files: FileList | File[]) {
+    // Prevent double-trigger on iPad/mobile
+    if (uploadingRef.current) return;
+    uploadingRef.current = true;
     setError(null);
     setUploading(true);
 
     try {
       const fileArray = Array.from(files);
+      // Deduplicate by name+size to prevent double uploads
+      const seen = new Set<string>();
+      const uniqueFiles = fileArray.filter(f => {
+        const key = `${f.name}-${f.size}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
       const results: UploadedImage[] = [];
 
-      for (const file of fileArray) {
+      for (const file of uniqueFiles) {
         const result = await uploadFile(file);
         if (result) {
           results.push(result);
@@ -97,6 +111,7 @@ export function ImageUploader({
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setUploading(false);
+      uploadingRef.current = false;
     }
   }
 
@@ -140,7 +155,12 @@ export function ImageUploader({
           type="file"
           accept={accept}
           multiple={multiple}
-          onChange={(e) => e.target.files && handleFiles(e.target.files)}
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              handleFiles(e.target.files);
+              e.target.value = '';
+            }
+          }}
           className="hidden"
         />
 
@@ -224,7 +244,12 @@ export function ImageUploader({
           type="file"
           accept={accept}
           multiple={multiple}
-          onChange={(e) => e.target.files && handleFiles(e.target.files)}
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              handleFiles(e.target.files);
+              e.target.value = '';
+            }
+          }}
           className="hidden"
         />
       </div>
