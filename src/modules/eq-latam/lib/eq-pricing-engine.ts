@@ -613,3 +613,223 @@ export function getPackName(packId: PackId): string {
 export function getModalityName(modality: Modality): string {
   return MODALITY_LABELS[modality] ?? modality;
 }
+
+// ============================================================================
+// V2 ENGINE — Per-deal contribution under 2026 cash distribution model.
+//
+// This is the source of truth going forward. Old functions above are kept
+// for the legacy dashboard tabs until they migrate to the new model.
+// ============================================================================
+
+import type {
+  Deal,
+  DealContribution,
+  LicensingMode,
+} from '../types';
+import {
+  DISTRIBUTION_STRUCTURE,
+  EQ_WEEK_COST_MODEL,
+  DEFAULT_LICENSING_MODE,
+  FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES,
+} from './eq-data';
+import {
+  calcCertFacilitationCost,
+  bundleIncludesMerch,
+  HOURLY_RATE_GROUP_DEFAULT_USD,
+  getPackHours,
+} from './eq-cost-catalog';
+
+/**
+ * Resolves the wholesale price for a Full EQ Week deal by PAX.
+ * Falls back to linear interpolation between defined PAX tiers.
+ */
+export function resolveFullEqWeekWholesalePrice(pax: number): number {
+  const tiers = Object.keys(FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES)
+    .map(Number)
+    .sort((a, b) => a - b);
+  if (pax <= tiers[0]) return FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES[tiers[0]];
+  if (pax >= tiers[tiers.length - 1]) {
+    return FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES[tiers[tiers.length - 1]];
+  }
+  for (let i = 0; i < tiers.length - 1; i++) {
+    if (pax >= tiers[i] && pax <= tiers[i + 1]) {
+      const lo = tiers[i];
+      const hi = tiers[i + 1];
+      const loPrice = FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES[lo];
+      const hiPrice = FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES[hi];
+      const ratio = (pax - lo) / (hi - lo);
+      return loPrice + (hiPrice - loPrice) * ratio;
+    }
+  }
+  return FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES[15];
+}
+
+/**
+ * Computes the delivery cost for a deal. Currently optimized for FULL_EQ_WEEK;
+ * other products go through calcCertFacilitationCost.
+ */
+export function calcDeliveryCost(deal: Deal, pax: number): {
+  facilitation: number;
+  materials_kit: number;
+  merch: number;
+  merch_hidden_margin: number;
+  travel: number;
+  credits: number;
+  total: number;
+} {
+  const travel = deal.travel_usd ?? EQ_WEEK_COST_MODEL.default_travel_usd;
+  const credits = 0; // covered by annual maintenance to 6S Global
+
+  if (deal.product_code === 'FULL_EQ_WEEK') {
+    const facilitation =
+      EQ_WEEK_COST_MODEL.facilitation_days *
+      EQ_WEEK_COST_MODEL.facilitation_per_day_usd;
+    const materials_kit = EQ_WEEK_COST_MODEL.materials_kit_per_pax_usd * pax;
+    const merch = EQ_WEEK_COST_MODEL.merch_per_pax_usd * pax; // Full EQ Week incluye EQPC + EQPM
+    const merch_hidden_margin =
+      (EQ_WEEK_COST_MODEL.merch_retail_value_per_pax_usd -
+        EQ_WEEK_COST_MODEL.merch_per_pax_usd) *
+      pax;
+    return {
+      facilitation,
+      materials_kit,
+      merch,
+      merch_hidden_margin,
+      travel,
+      credits,
+      total: facilitation + materials_kit + merch + travel + credits,
+    };
+  }
+
+  // Pack online grupal — sum of facilitation hours × $50/hr (no merch, no travel default)
+  // Caller can override travel_usd if a pack happens to be in-person.
+  // Hide merch unless explicitly Full EQ Week.
+  // (Standalone certs use this path too via product_code = cert id.)
+  let facilitation = 0;
+  const packHours = getPackHours(
+    deal.product_code as PackId,
+    deal.modality,
+  );
+  if (packHours) {
+    facilitation = packHours.total_facilitation_hours * HOURLY_RATE_GROUP_DEFAULT_USD;
+  } else {
+    facilitation = calcCertFacilitationCost(
+      deal.product_code as CertificationId,
+      deal.modality,
+    );
+  }
+  const materials_kit = 0;
+  const merch = 0;
+  const merch_hidden_margin = 0;
+  return {
+    facilitation,
+    materials_kit,
+    merch,
+    merch_hidden_margin,
+    travel: 0, // online by default; caller overrides for in-person
+    credits,
+    total: facilitation,
+  };
+}
+
+/**
+ * Computes the full contribution breakdown for a deal under the active
+ * licensing mode.
+ *
+ * Cash distribution rules:
+ *   - Karla 3% if marketing_origin
+ *   - Closer 5% (or override up to 7%)
+ *   - Referrer 10% (or per-deal override) if channel = 'referrer'
+ *   - 6S Global: 0 if annual_flat mode, else 30% × revenue
+ */
+export function calcularContribucion(
+  deal: Deal,
+  licensingMode: LicensingMode = DEFAULT_LICENSING_MODE,
+): DealContribution {
+  const pax = deal.pax_actual ?? deal.pax_expected;
+
+  // Revenue: partner channel uses wholesale, others use retail.
+  const pricePerPax =
+    deal.channel === 'partner'
+      ? (deal.wholesale_price_per_pax_usd ??
+          resolveFullEqWeekWholesalePrice(pax))
+      : deal.retail_price_per_pax_usd;
+  const revenue = pricePerPax * pax;
+
+  // Karla 3% (only if marketing origin)
+  const karla = deal.marketing_origin
+    ? revenue * DISTRIBUTION_STRUCTURE.karlaMarketing
+    : 0;
+
+  // Closer 5% (or override up to 7%, validated)
+  const closerPct = Math.min(
+    deal.closer_commission_pct,
+    DISTRIBUTION_STRUCTURE.closerOverrideMax,
+  );
+  const closer = revenue * closerPct;
+
+  // Referrer 10% (only when channel = referrer)
+  const referrerPct =
+    deal.referrer_commission_pct_override ??
+    DISTRIBUTION_STRUCTURE.referrerDefault;
+  const referrer =
+    deal.channel === 'referrer' ? revenue * referrerPct : 0;
+
+  // 6S Global licensing — depends on mode
+  const licensing =
+    licensingMode.type === 'percentage_of_revenue'
+      ? revenue * licensingMode.rate
+      : 0; // annual_flat: already in burn fijo, not per-deal
+
+  const total_cash_distribution = karla + closer + referrer + licensing;
+
+  const delivery = calcDeliveryCost(deal, pax);
+
+  const contribution = revenue - total_cash_distribution - delivery.total;
+  const margin_pct = revenue > 0 ? contribution / revenue : 0;
+
+  return {
+    deal_id: deal.id,
+    pax,
+    revenue_usd: revenue,
+    karla_marketing_usd: karla,
+    closer_usd: closer,
+    referrer_usd: referrer,
+    licensing_global_usd: licensing,
+    total_cash_distribution_usd: total_cash_distribution,
+    facilitation_usd: delivery.facilitation,
+    materials_kit_usd: delivery.materials_kit,
+    merch_usd: delivery.merch,
+    merch_hidden_margin_usd: delivery.merch_hidden_margin,
+    travel_usd: delivery.travel,
+    credits_cost_usd: delivery.credits,
+    total_delivery_cost_usd: delivery.total,
+    contribution_usd: contribution,
+    margin_pct,
+  };
+}
+
+/**
+ * Runs the 4 PAX scenarios (min/expected/target/stretch) for a deal and
+ * returns the contribution breakdown for each. Handy for partner quoting
+ * UI: "tu margen pasa de $X a $Y si subes de 10 a 15 PAX".
+ */
+export function analizarEscenariosPax(
+  deal: Deal,
+  licensingMode: LicensingMode = DEFAULT_LICENSING_MODE,
+): Array<{ label: string; pax: number; contribution: DealContribution }> {
+  const scenarios: Array<{ label: string; pax: number }> = [
+    { label: 'Mínimo', pax: deal.pax_min },
+    { label: 'Esperado', pax: deal.pax_expected },
+    { label: 'Objetivo', pax: deal.pax_target },
+    { label: 'Stretch', pax: deal.pax_stretch },
+  ];
+  return scenarios.map(({ label, pax }) => ({
+    label,
+    pax,
+    contribution: calcularContribucion(
+      { ...deal, pax_actual: pax },
+      licensingMode,
+    ),
+  }));
+}

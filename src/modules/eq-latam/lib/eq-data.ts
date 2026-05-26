@@ -16,18 +16,23 @@ import type {
   AnnualBudget,
   MarketPrice,
   EqWeekConfig,
+  EqWeekCostModel,
+  LicensingMode,
 } from '../types';
 
 // ============================================================
 // CERTIFICATION NAMES
 // ============================================================
 
-export const CERT_NAMES: Record<CertificationId, { short: string; full: string }> = {
-  UEQ:  { short: 'UEQ',  full: 'Unlocking EQ' },
-  BPC:  { short: 'BPC',  full: 'Brain Profiler Certification' },
-  EQAC: { short: 'EQAC', full: 'EQ Assessor Certification' },
-  EQPC: { short: 'EQPC', full: 'EQ Performance Coach' },
-  EQPM: { short: 'EQPM', full: 'EQ Performance Mastery' },
+export const CERT_NAMES: Record<
+  CertificationId,
+  { short: string; full: string; is_lead_magnet: boolean }
+> = {
+  UEQ:  { short: 'UEQ',  full: 'Unlocking EQ', is_lead_magnet: true }, // reposicionado 2026
+  BPC:  { short: 'BPC',  full: 'Brain Profiler Certification', is_lead_magnet: false },
+  EQAC: { short: 'EQAC', full: 'EQ Assessor Certification', is_lead_magnet: false },
+  EQPC: { short: 'EQPC', full: 'EQ Performance Coach', is_lead_magnet: false },
+  EQPM: { short: 'EQPM', full: 'EQ Performance Mastery', is_lead_magnet: false },
 };
 
 export const ALL_CERT_IDS: CertificationId[] = ['UEQ', 'BPC', 'EQAC', 'EQPC', 'EQPM'];
@@ -183,55 +188,140 @@ export const IN_PERSON_RF_PACKS: InPersonCost[] = [
 export const PRICING_RULES: PricingRules = {
   suggestedMarkup: 0.25,
   partnerDiscount: 0.30,
-  distributionTotal: 0.50,
+  distributionTotal: 0.50, // legacy, retained for backward compat
   roundingNearest: 5,
 };
 
+/**
+ * Real cash distribution per deal (2026 model).
+ *
+ * Eduardo 10% Director, 5% ADS allocation, and 5% Base Salary allocation
+ * from the old spec are accounting items already covered by the burn fijo
+ * (retainer $1,500/mes + ADS budget $1,250/mes + salaries $4,700/mes).
+ * They do NOT leave as cash on each deal.
+ *
+ * What DOES leave as cash per deal:
+ *   - Karla 3% (marketing commission, always when marketing_origin = true)
+ *   - Closer 5% default / 7% override (whoever closes the deal)
+ *   - Referrer 10% (only when channel = 'referrer')
+ *   - 6S Global licensing — see LICENSING_MODE separately
+ */
 export const DISTRIBUTION_STRUCTURE: DistributionStructure = {
-  licensing6S: 0.30,
-  adsFund: 0.05,
-  baseSalary: 0.05,
-  commercialCommission: 0.10,
-  directorHybrid: 0.10,
+  karlaMarketing: 0.03,
+  closerDefault: 0.05,
+  closerOverrideMax: 0.07,
+  referrerDefault: 0.10,
 };
+
+/**
+ * Licensing mode for 6S Global payments.
+ *
+ * 2026 = annual flat $40,000 negotiated; no per-deal 30%.
+ * 2027+ default returns to 30% of revenue per deal until renegotiated.
+ *
+ * This is a config switch — admin can toggle to stress-test what the
+ * business looks like under 30% percentage mode.
+ */
+export const LICENSING_MODE_2026: LicensingMode = {
+  type: 'annual_flat',
+  amount_usd: 40_000,
+  year: 2026,
+};
+
+export const LICENSING_MODE_STRESS_TEST: LicensingMode = {
+  type: 'percentage_of_revenue',
+  rate: 0.30,
+};
+
+/** Default mode used by the platform until toggled by admin. */
+export const DEFAULT_LICENSING_MODE: LicensingMode = LICENSING_MODE_2026;
+
+// ============================================================
+// EQ WEEK COST MODEL (new, replaces in-person pack costs)
+// ============================================================
+
+/**
+ * Source: Master Cert Costos + Eduardo's operational restructure 2026.
+ * Replaces the prior inflated cost tables in IN_PERSON_*_PACKS.
+ */
+export const EQ_WEEK_COST_MODEL: EqWeekCostModel = {
+  facilitation_days: 5,
+  facilitation_per_day_usd: 1000,
+  materials_kit_per_pax_usd: 35,
+  merch_per_pax_usd: 90,                    // costo real
+  merch_retail_value_per_pax_usd: 150,      // valor de cotización (hidden margin $60/PAX)
+  default_travel_usd: 2500,
+};
+
+/**
+ * Partner wholesale pricing for FULL EQ WEEK (Talent Advisors confirmed).
+ * Sliding scale by PAX — more PAX = lower per-PAX price.
+ * Source: "Numeros EQ WEEK Partner TA.pdf"
+ */
+export const FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES: Record<number, number> = {
+  3:  4989.27,
+  5:  3370.51,
+  10: 2156.44,
+  15: 1751.75,  // TARGET
+  20: 1549.41,
+};
+
+/**
+ * Retail price suggested to the END CLIENT (whether via partner, direct, or referrer).
+ * Source: Eduardo confirmation — "el partner vende a 2500".
+ */
+export const FULL_EQ_WEEK_RETAIL_PRICE_PER_PAX_USD = 2500;
 
 // ============================================================
 // ANNUAL BUDGET
 // ============================================================
 
+/**
+ * ANNUAL BUDGET 2026 — post-restructure.
+ *
+ * Burn fijo mensual real: $10,983 (vs. $19,613 anterior).
+ *
+ * Eliminados:
+ *   - Health Insurance (último mes ya pasado)
+ *   - Training (ya no se hace)
+ *   - Products COGS (ya no hay productos físicos en catálogo fijo)
+ *
+ * Movidos a variable (cargados por evento, no fijo mensual):
+ *   - Travel ($667/mes → variable por destino)
+ *   - Shipping ($250/mes → variable por evento si hay envío)
+ *   - Supplies & Print ($375/mes → variable por evento)
+ *
+ * Eduardo retainer $1,500/mes (10% sobre ventas es contable, ya cubre el retainer).
+ * Karla subió a $1,100/mes al asumir Marketing (cubre función Comercial vacante).
+ */
 export const ANNUAL_BUDGET: AnnualBudget = {
-  totalAnnualCosts: 242360,
+  totalAnnualCosts: 131_796, // burn fijo anual real
   fixedCosts: [
-    { label: 'Director (Eduardo)', amount: 18000, category: 'team' },
+    { label: 'Director (Eduardo) retainer', amount: 18000, category: 'team' },
     { label: 'Natalia Vergara', amount: 7200, category: 'team' },
     { label: 'Liliana Rodriguez', amount: 7200, category: 'team' },
     { label: 'Otilia Esquivia', amount: 3600, category: 'team' },
-    { label: 'Karla Parra', amount: 6000, category: 'team' },
+    { label: 'Karla Parra (Marketing)', amount: 13200, category: 'team' }, // $1,100 × 12
     { label: 'Andreia Delpra', amount: 7200, category: 'team' },
     { label: 'Marketing & Ads', amount: 15000, category: 'marketing' },
     { label: 'IT & Technology', amount: 5000, category: 'operations' },
-    { label: 'Travel (EQ Weeks)', amount: 8000, category: 'operations' },
-    { label: 'Training', amount: 7000, category: 'operations' },
-    { label: 'Shipping Materials', amount: 3000, category: 'operations' },
-    { label: 'Supplies & Print', amount: 4500, category: 'operations' },
+    { label: 'Internet/Comms', amount: 2400, category: 'operations' },
     { label: 'Bank/PayPal Fees', amount: 1600, category: 'operations' },
-    { label: 'Health Insurance', amount: 6760, category: 'team' },
     { label: 'Rent/Business Office', amount: 9000, category: 'operations' },
-    { label: 'Shared Expenses (6S Global)', amount: 40000, category: 'shared' },
-    { label: 'Products COGS', amount: 11300, category: 'operations' },
+    { label: 'Shared Expenses (6S Global)', amount: 40000, category: 'shared' }, // flat negotiated 2026
   ],
-  variableCosts: 75000,
+  variableCosts: 0, // cargados por evento en cada Deal
   nonCertIncome: [
-    { category: 'consulting', label: 'Services/Consulting (EQ Biz)', amount: 103200, description: 'Corporate consulting and facilitation services' },
-    { category: 'assessments', label: 'Assessments', amount: 58200, description: 'EQ assessment tools and reports' },
-    { category: 'membership', label: 'Membership Fee Income', amount: 31300, description: 'Network membership fees' },
-    { category: 'products', label: 'Products', amount: 13400, description: 'Books, materials, and tools' },
-    { category: 'brazil', label: 'Subsidiary Brazil', amount: 1860, description: 'Brazil operations income' },
-    { category: 'donations', label: 'Donations', amount: 3000, description: 'Grants and donations' },
-    { category: 'impact', label: 'EQ Impact Programs', amount: 14900, description: 'Social impact and community programs' },
+    { category: 'consulting',  label: 'Services/Consulting (EQ Biz)',  amount: 103200, description: 'Andreia — consultoría corporativa y facilitación' },
+    { category: 'assessments', label: 'Assessments (créditos)',         amount: 146000, description: 'TARGET 2026 — créditos cubren el burn fijo' },
+    { category: 'membership',  label: 'Membership Fee Income',          amount: 31300,  description: 'Eduardo only' },
+    { category: 'products',    label: 'Products (merch + materials)',   amount: 13400,  description: 'Margen merch + materiales sueltos' },
+    { category: 'brazil',      label: 'Subsidiary Brazil',              amount: 1860,   description: 'Brazil operations income' },
+    { category: 'donations',   label: 'Donations',                      amount: 3000,   description: 'Grants and donations' },
+    { category: 'impact',      label: 'EQ Impact Programs',             amount: 14900,  description: 'Liliana + Otilia' },
   ],
-  totalNonCertIncome: 225860,
-  certMustCoverNet: 16500,
+  totalNonCertIncome: 313660,
+  certMustCoverNet: 0, // ya no aplica con el modelo nuevo — créditos cubren burn
 };
 
 // ============================================================

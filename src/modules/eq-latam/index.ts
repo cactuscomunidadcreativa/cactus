@@ -8,6 +8,7 @@
 
 // Types
 export * from './types';
+export * from './types/organization';
 
 // Data
 export {
@@ -23,6 +24,12 @@ export {
   IN_PERSON_RF_PACKS,
   PRICING_RULES,
   DISTRIBUTION_STRUCTURE,
+  LICENSING_MODE_2026,
+  LICENSING_MODE_STRESS_TEST,
+  DEFAULT_LICENSING_MODE,
+  EQ_WEEK_COST_MODEL,
+  FULL_EQ_WEEK_PARTNER_WHOLESALE_PRICES,
+  FULL_EQ_WEEK_RETAIL_PRICE_PER_PAX_USD,
   ANNUAL_BUDGET,
   EQ_WEEK_CONFIG,
   MARKET_PRICES,
@@ -31,8 +38,38 @@ export {
   PAX_OPTIONS_BY_MODALITY,
 } from './lib/eq-data';
 
+// Organization (users, areas, permissions, partners, referrers)
+export {
+  USERS,
+  BUSINESS_AREAS,
+  AREA_PERMISSIONS,
+  PARTNERS,
+  REFERRERS,
+  buildVisibilityContext,
+  getAreaById,
+  getUserById,
+  getPartnerById,
+  getReferrerById,
+} from './lib/eq-organization';
+export {
+  canUserSeeArea,
+  userLevelInArea,
+} from './types/organization';
+
+// Cost catalog (hours × rates by modality)
+export {
+  HOURLY_RATE_GROUP_DEFAULT_USD,
+  CERT_HOURS_CATALOG,
+  PACK_HOURS_CATALOG,
+  getCertHours,
+  getPackHours,
+  calcCertFacilitationCost,
+  bundleIncludesMerch,
+} from './lib/eq-cost-catalog';
+
 // Pricing Engine
 export {
+  // V1 (legacy, used by current dashboard tabs)
   pvpSugerido,
   precioPartner,
   neto6S,
@@ -56,6 +93,11 @@ export {
   getCertName,
   getPackName,
   getModalityName,
+  // V2 (2026 cash distribution model — source of truth going forward)
+  calcularContribucion,
+  analizarEscenariosPax,
+  calcDeliveryCost,
+  resolveFullEqWeekWholesalePrice,
 } from './lib/eq-pricing-engine';
 
 // Chat Prompt
