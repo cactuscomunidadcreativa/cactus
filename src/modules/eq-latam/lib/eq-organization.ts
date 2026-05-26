@@ -156,6 +156,16 @@ export const BUSINESS_AREAS: BusinessArea[] = [
     revenue_target_annual: 0,
     cost_allocation_annual: 0,
   },
+  {
+    id: 'system',
+    name: 'Sistema',
+    emoji: '🛡️',
+    description: 'Admin: usuarios, permisos, configuración',
+    is_revenue_generating: false,
+    admin_only: true, // solo Eduardo
+    revenue_target_annual: 0,
+    cost_allocation_annual: 0,
+  },
 ];
 
 // ============================================================

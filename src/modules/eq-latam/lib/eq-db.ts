@@ -13,20 +13,122 @@
 
 import { createClient } from '@/lib/supabase/client';
 import {
+  AREA_PERMISSIONS as SEED_PERMISSIONS,
   PARTNERS as SEED_PARTNERS,
   PARTNER_CONTACTS as SEED_CONTACTS,
   REFERRERS as SEED_REFERRERS,
+  USERS as SEED_USERS,
 } from './eq-organization';
 import type {
+  AreaId,
+  AreaPermission,
   Partner,
   PartnerContact,
   PartnerTier,
+  PermissionLevel,
   Quote,
   Referrer,
+  User,
+  UserRole,
 } from '../types/organization';
 
 // In-memory quote store for dev (until Supabase tables are applied)
 const QUOTES_IN_MEMORY: Quote[] = [];
+
+// ============================================================
+// USERS (internal team)
+// ============================================================
+
+export async function fetchUsers(): Promise<User[]> {
+  const supabase = createClient();
+  if (!supabase) return [...SEED_USERS];
+  const { data, error } = await supabase
+    .from('eq_users')
+    .select('*')
+    .order('name');
+  if (error || !data) return [...SEED_USERS];
+  return data.map((r: any) => ({
+    id: r.id,
+    name: r.name,
+    email: r.email,
+    role: r.role as UserRole,
+    monthly_salary_usd: Number(r.monthly_salary_usd ?? 0),
+    active: !!r.active,
+  }));
+}
+
+export async function upsertUser(u: User): Promise<boolean> {
+  const idx = SEED_USERS.findIndex(x => x.id === u.id);
+  if (idx >= 0) SEED_USERS[idx] = u;
+  else SEED_USERS.push(u);
+
+  const supabase = createClient();
+  if (!supabase) return true;
+  const { error } = await supabase
+    .from('eq_users')
+    .upsert({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      monthly_salary_usd: u.monthly_salary_usd,
+      active: u.active,
+    });
+  if (error) console.warn('[eq-db] upsertUser failed; kept locally:', error.message);
+  return true;
+}
+
+// ============================================================
+// AREA PERMISSIONS
+// ============================================================
+
+export async function fetchPermissions(): Promise<AreaPermission[]> {
+  const supabase = createClient();
+  if (!supabase) return [...SEED_PERMISSIONS];
+  const { data, error } = await supabase
+    .from('eq_permissions')
+    .select('user_id, area_id, level');
+  if (error || !data) return [...SEED_PERMISSIONS];
+  return data.map((r: any) => ({
+    user_id: r.user_id,
+    area_id: r.area_id as AreaId,
+    level: r.level as PermissionLevel,
+  }));
+}
+
+export async function setPermission(
+  user_id: string,
+  area_id: AreaId,
+  level: PermissionLevel | null,
+): Promise<boolean> {
+  // Mirror in memory
+  const idx = SEED_PERMISSIONS.findIndex(
+    p => p.user_id === user_id && p.area_id === area_id,
+  );
+  if (level === null) {
+    if (idx >= 0) SEED_PERMISSIONS.splice(idx, 1);
+  } else {
+    if (idx >= 0) SEED_PERMISSIONS[idx] = { user_id, area_id, level };
+    else SEED_PERMISSIONS.push({ user_id, area_id, level });
+  }
+
+  const supabase = createClient();
+  if (!supabase) return true;
+  if (level === null) {
+    const { error } = await supabase
+      .from('eq_permissions')
+      .delete()
+      .eq('user_id', user_id)
+      .eq('area_id', area_id);
+    if (error) console.warn('[eq-db] setPermission delete failed:', error.message);
+  } else {
+    const { error } = await supabase
+      .from('eq_permissions')
+      .upsert({ user_id, area_id, level }, { onConflict: 'user_id,area_id' });
+    if (error) console.warn('[eq-db] setPermission upsert failed:', error.message);
+  }
+  return true;
+}
 
 // ============================================================
 // PARTNERS

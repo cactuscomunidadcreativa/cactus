@@ -36,7 +36,8 @@ export type AreaId =
   | 'membership'     // Network memberships (Eduardo only)
   | 'impact'         // Social impact programs (Liliana + Otilia)
   | 'operations'     // Admin support function (Natalia + Liliana)
-  | 'partners';      // Partner relations CRM (Eduardo only)
+  | 'partners'       // Partner relations CRM (Eduardo only)
+  | 'system';        // Admin: users, permissions, settings (Eduardo only)
 
 export interface BusinessArea {
   id: AreaId;

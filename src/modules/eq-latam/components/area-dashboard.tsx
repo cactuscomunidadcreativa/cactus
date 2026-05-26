@@ -30,6 +30,7 @@ import { PartnersCrm } from './partners-crm';
 import { TeamInvitePanel } from './team-invite-panel';
 import { PayrollPanel } from './payroll-panel';
 import { KpiPanel } from './kpi-panel';
+import { AdminPanel } from './admin-panel';
 import { fetchPartners } from '../lib/eq-db';
 import type { Partner } from '..';
 import type {
@@ -51,6 +52,7 @@ const AREA_ICON: Record<AreaId, React.ReactNode> = {
   impact:      <Building2 className="w-4 h-4" />,
   operations:  <Settings className="w-4 h-4" />,
   partners:    <HandshakeIcon className="w-4 h-4" />,
+  system:      <Settings className="w-4 h-4" />,
 };
 
 // ============================================================
@@ -498,6 +500,12 @@ function AreaContent({
   isAdmin: boolean;
   licensingMode: LicensingMode;
 }) {
+  // The 'system' area is exclusively admin content — render directly,
+  // skipping the Resumen/KPIs tabs (those don't apply here).
+  if (areaId === 'system') {
+    return isAdmin ? <AdminPanel /> : null;
+  }
+
   // Which special panel (if any) belongs to this area + role?
   const hasSpecialAdmin =
     (areaId === 'partners' && isAdmin) || (areaId === 'operations' && isAdmin);
