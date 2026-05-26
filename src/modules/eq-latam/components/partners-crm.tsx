@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Mail, Edit2, TrendingUp, Globe, X } from 'lucide-react';
 import {
   PARTNERS,
@@ -11,6 +11,11 @@ import {
 } from '..';
 import type { Partner, PartnerTier } from '..';
 import { PartnerContactsPanel } from './partner-contacts-panel';
+import {
+  fetchPartners,
+  upsertPartner,
+  deactivatePartner as deactivatePartnerDb,
+} from '../lib/eq-db';
 
 const COUNTRY_LABELS: Record<string, string> = {
   PE: '🇵🇪 Perú',
@@ -21,28 +26,46 @@ const COUNTRY_LABELS: Record<string, string> = {
 
 /**
  * Partners CRM — Eduardo only. List, create, edit, deactivate partners.
- * Currently backed by in-memory PARTNERS array. Persistence comes in #15.
+ *
+ * Data: tries Supabase via eq-db helpers, falls back to in-memory PARTNERS
+ * when Supabase is not configured (dev) or the user has no access.
  */
 export function PartnersCrm() {
-  // useState seeded from the in-memory array so the UI is reactive even
-  // before Supabase wiring. Edits are lost on full page reload (expected).
   const [partners, setPartners] = useState<Partner[]>(PARTNERS);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = (p: Partner) => {
-    setPartners(prev => {
-      const exists = prev.find(x => x.id === p.id);
-      if (exists) return prev.map(x => (x.id === p.id ? p : x));
-      return [...prev, p];
+  // Initial load — fetch from DB (or seeds if no Supabase configured)
+  useEffect(() => {
+    let cancelled = false;
+    fetchPartners().then(rows => {
+      if (!cancelled && rows.length > 0) setPartners(rows);
     });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleSave = async (p: Partner) => {
+    setSaving(true);
+    const saved = await upsertPartner(p);
+    if (saved) {
+      setPartners(prev => {
+        const exists = prev.find(x => x.id === saved.id);
+        if (exists) return prev.map(x => (x.id === saved.id ? saved : x));
+        return [...prev, saved];
+      });
+    }
+    setSaving(false);
     setEditingId(null);
     setCreating(false);
   };
 
-  const handleDeactivate = (id: string) => {
+  const handleDeactivate = async (id: string) => {
     if (!confirm('¿Desactivar este partner? La historia se conserva, no aparecerá en nuevos deals.')) return;
-    setPartners(prev => prev.map(p => (p.id === id ? { ...p, active: false } : p)));
+    const ok = await deactivatePartnerDb(id);
+    if (ok) {
+      setPartners(prev => prev.map(p => (p.id === id ? { ...p, active: false } : p)));
+    }
   };
 
   const editing = editingId ? partners.find(p => p.id === editingId) : null;

@@ -11,6 +11,7 @@ import {
   type AssessmentCategory,
 } from '../lib/eq-assessments-catalog';
 import { formatPriceUSD } from '../lib/eq-pricing-engine';
+import { generateGraduateProposalPDF } from '../lib/eq-pdf';
 
 /**
  * Graduate / Practitioner public calculator.
@@ -227,9 +228,22 @@ export function GraduateCalculator() {
             <button
               disabled={totals.totalCredits === 0 || !email}
               onClick={() =>
-                alert(
-                  `[Preview] Generando propuesta PDF para "${clientName || 'tu cliente'}" — ${totals.totalCredits} créditos · ${formatPriceUSD(totals.retailUsd)} retail. Recibirás copia en ${email}.`,
-                )
+                generateGraduateProposalPDF({
+                  graduateName,
+                  clientName,
+                  email,
+                  lines: totals.lines.map(l => ({
+                    name: l.assessment.name,
+                    qty: l.qty,
+                    credits: l.credits,
+                  })),
+                  totalCredits: totals.totalCredits,
+                  costUsd: totals.costUsd,
+                  retailUsd: totals.retailUsd,
+                  margin: totals.margin,
+                  marginPct: totals.marginPct,
+                  markup,
+                })
               }
               className="w-full text-sm py-2 bg-eq-blue text-white rounded-lg hover:opacity-90 flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
             >

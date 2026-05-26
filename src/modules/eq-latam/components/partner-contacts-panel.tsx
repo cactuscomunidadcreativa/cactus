@@ -18,16 +18,38 @@ export function PartnerContactsPanel({ partner }: { partner: Partner }) {
   const [inviting, setInviting] = useState(false);
   const [recentlyCopied, setRecentlyCopied] = useState<string | null>(null);
 
-  const handleInvite = (c: Omit<PartnerContact, 'id' | 'partner_id'>) => {
-    const newContact: PartnerContact = {
+  const handleInvite = async (c: Omit<PartnerContact, 'id' | 'partner_id'>) => {
+    const tempId = `${partner.id}-${c.email.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+    const optimistic: PartnerContact = {
       ...c,
-      id: `${partner.id}-${c.email.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`,
+      id: tempId,
       partner_id: partner.id,
       invited_at: new Date().toISOString(),
     };
-    setContacts(prev => [...prev, newContact]);
-    PARTNER_CONTACTS.push(newContact);
+    setContacts(prev => [...prev, optimistic]);
     setInviting(false);
+
+    // Try real Supabase Auth invite via API; falls back silently to in-memory if not configured.
+    try {
+      const res = await fetch('/api/eq-latam/invite-partner-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          partner_id: partner.id,
+          name: c.name,
+          email: c.email,
+          role: c.role,
+        }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: 'unknown' }));
+        console.warn('[invite-partner-contact] API non-OK:', error);
+        PARTNER_CONTACTS.push(optimistic);
+      }
+    } catch (err) {
+      console.warn('[invite-partner-contact] network error, keeping local:', err);
+      PARTNER_CONTACTS.push(optimistic);
+    }
   };
 
   const handleCopyMagicLink = (contact: PartnerContact) => {

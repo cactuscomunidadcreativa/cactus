@@ -13,8 +13,12 @@ import {
   volumeBonusForPax,
 } from '..';
 import type { Partner } from '..';
+import { generatePartnerProposalPDF } from '../lib/eq-pdf';
+import { TAX_RATES, getTaxRate, applyTax, type TaxCountry } from '../lib/eq-tax';
+import { ServicesCatalogView } from './services-catalog-view';
 
 const PAX_OPTIONS = [3, 5, 10, 15, 20];
+type PortalTab = 'eq_week' | 'services';
 
 /**
  * Partner self-service portal.
@@ -28,6 +32,9 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
   const [pax, setPax] = useState<number>(15);
   const [clientName, setClientName] = useState<string>('');
   const [retailOverride, setRetailOverride] = useState<number | null>(null);
+  const [taxCountry, setTaxCountry] = useState<TaxCountry>(partner.country);
+  const [includeTax, setIncludeTax] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<PortalTab>('eq_week');
 
   const tier = getTierConfig(partner.tier);
 
@@ -98,6 +105,26 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
 
       {/* Body */}
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+        {/* Tab switcher */}
+        <div className="flex gap-1 border-b">
+          {[
+            { id: 'eq_week' as const, label: 'Full EQ Week' },
+            { id: 'services' as const, label: 'Servicios complementarios' },
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              className={`text-sm px-4 py-2 border-b-2 -mb-px ${
+                activeTab === t.id
+                  ? 'border-eq-blue text-eq-blue font-medium'
+                  : 'border-transparent text-muted-foreground hover:text-eq-navy'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         {/* Tier info */}
         <div className="bg-eq-cream/40 border rounded-xl p-4 text-sm">
           <div className="flex flex-wrap gap-4">
@@ -108,7 +135,7 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
             <Stat
               label="Bonus actual (por volumen)"
               value={
-                numbers.volumeBonus > 0
+                activeTab === 'eq_week' && numbers.volumeBonus > 0
                   ? `−${(numbers.volumeBonus * 100).toFixed(0)}%`
                   : '0%'
               }
@@ -123,6 +150,14 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
             />
           </div>
         </div>
+
+        {/* Services tab */}
+        {activeTab === 'services' && <ServicesCatalogView partner={partner} />}
+
+        {/* Full EQ Week calculator */}
+        {activeTab === 'eq_week' && (
+        <>
+        {/* (calculator content below) */}
 
         {/* Calculator */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -175,6 +210,28 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
                 Puedes subir el retail si tu mercado lo soporta.
               </p>
             </FormField>
+
+            <FormField label="País de factura (IVA/IGV)">
+              <select
+                value={taxCountry}
+                onChange={e => setTaxCountry(e.target.value as TaxCountry)}
+                className="w-full text-sm border rounded-lg px-3 py-2 bg-white"
+              >
+                {TAX_RATES.map(r => (
+                  <option key={r.country} value={r.country}>
+                    {r.label} {r.rate > 0 && `· ${r.short} ${(r.rate * 100).toFixed(0)}%`}
+                  </option>
+                ))}
+              </select>
+              <label className="flex items-center gap-2 mt-2 text-xs text-muted-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeTax}
+                  onChange={e => setIncludeTax(e.target.checked)}
+                />
+                Mostrar precio con impuesto incluido en propuesta
+              </label>
+            </FormField>
           </div>
 
           {/* Output */}
@@ -213,14 +270,44 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
                   }
                 />
               </div>
+              {includeTax && getTaxRate(taxCountry).rate > 0 && (
+                <div className="border-t pt-2 mt-2 text-xs">
+                  {(() => {
+                    const t = applyTax(numbers.retailTotal, taxCountry);
+                    const r = getTaxRate(taxCountry);
+                    return (
+                      <>
+                        <Row
+                          label={`+ ${r.short} ${(r.rate * 100).toFixed(0)}% (${r.label.replace(/^\S+\s/, '')})`}
+                          value={formatPriceUSD(t.tax)}
+                          muted
+                        />
+                        <Row
+                          label={<strong>Total al cliente con {r.short}</strong>}
+                          value={<strong>{formatPriceUSD(t.total)}</strong>}
+                        />
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button
                 onClick={() =>
-                  alert(
-                    `[Preview] Generando PDF para "${clientName || 'Cliente'}" con ${pax} PAX. La integración real va en próxima iteración.`,
-                  )
+                  generatePartnerProposalPDF({
+                    partnerName: partner.name,
+                    partnerTierLabel: tier.label,
+                    clientName,
+                    pax,
+                    retailPerPax: numbers.retail,
+                    wholesalePerPax: numbers.wholesalePerPax,
+                    retailTotal: numbers.retailTotal,
+                    wholesaleTotal: numbers.wholesaleTotal,
+                    partnerGross: numbers.partnerGross,
+                    partnerGrossPct: numbers.partnerGrossPct,
+                  })
                 }
                 className="text-sm py-2 bg-eq-blue text-white rounded-lg hover:opacity-90 flex items-center justify-center gap-1.5"
               >
@@ -235,6 +322,9 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
             </div>
           </div>
         </div>
+
+        </>
+        )}
 
         {/* Tier progress */}
         <div className="bg-white border rounded-xl p-4">
