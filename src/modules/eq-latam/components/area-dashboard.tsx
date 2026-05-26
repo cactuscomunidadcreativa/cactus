@@ -29,6 +29,7 @@ import {
 import { PartnersCrm } from './partners-crm';
 import { TeamInvitePanel } from './team-invite-panel';
 import { PayrollPanel } from './payroll-panel';
+import { KpiPanel } from './kpi-panel';
 import { fetchPartners } from '../lib/eq-db';
 import type { Partner } from '..';
 import type {
@@ -470,11 +471,60 @@ function AreaDetail({
       </div>
 
       {/* Area-specific content */}
-      {areaId === 'partners' && isAdmin ? (
-        <PartnersCrm />
-      ) : areaId === 'operations' && isAdmin ? (
-        <OperationsAdmin />
-      ) : (
+      <AreaContent
+        areaId={areaId}
+        areaName={area.name}
+        isAdmin={isAdmin}
+        licensingMode={licensingMode}
+      />
+    </div>
+  );
+}
+
+// ============================================================
+// AreaContent — sub-tab switcher inside each area drill-in
+// Shows Resumen / KPIs / (area-specific content)
+// ============================================================
+type AreaContentTab = 'overview' | 'kpis' | 'special';
+
+function AreaContent({
+  areaId,
+  areaName,
+  isAdmin,
+  licensingMode,
+}: {
+  areaId: AreaId;
+  areaName: string;
+  isAdmin: boolean;
+  licensingMode: LicensingMode;
+}) {
+  // Which special panel (if any) belongs to this area + role?
+  const hasSpecialAdmin =
+    (areaId === 'partners' && isAdmin) || (areaId === 'operations' && isAdmin);
+  const specialLabel =
+    areaId === 'partners' ? 'CRM Partners' : areaId === 'operations' ? 'Admin' : '';
+
+  const [tab, setTab] = useState<AreaContentTab>(
+    hasSpecialAdmin ? 'special' : 'kpis',
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1 border-b overflow-x-auto">
+        <TabButton active={tab === 'overview'} onClick={() => setTab('overview')}>
+          Resumen
+        </TabButton>
+        <TabButton active={tab === 'kpis'} onClick={() => setTab('kpis')}>
+          KPIs
+        </TabButton>
+        {hasSpecialAdmin && (
+          <TabButton active={tab === 'special'} onClick={() => setTab('special')}>
+            {specialLabel}
+          </TabButton>
+        )}
+      </div>
+
+      {tab === 'overview' && (
         <div className="bg-white rounded-xl border p-5">
           <h3 className="font-semibold text-sm mb-3">Deals & Productos</h3>
           <p className="text-xs text-muted-foreground italic">
@@ -490,7 +540,35 @@ function AreaDetail({
           </p>
         </div>
       )}
+
+      {tab === 'kpis' && <KpiPanel areaId={areaId} areaName={areaName} />}
+
+      {tab === 'special' && areaId === 'partners' && isAdmin && <PartnersCrm />}
+      {tab === 'special' && areaId === 'operations' && isAdmin && <OperationsAdmin />}
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`text-sm px-4 py-2 border-b-2 -mb-px whitespace-nowrap ${
+        active
+          ? 'border-eq-blue text-eq-blue font-medium'
+          : 'border-transparent text-muted-foreground hover:text-eq-navy'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 

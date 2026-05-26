@@ -307,6 +307,91 @@ function rowToQuote(r: any): Quote {
 }
 
 // ============================================================
+// KPI VALUES
+// ============================================================
+
+export interface KpiValueRow {
+  area_id: string;
+  kpi_code: string;
+  period_type: 'weekly' | 'monthly';
+  period_label: string;
+  value: number | null;
+  target?: number | null;
+  notes?: string;
+}
+
+const KPI_VALUES_IN_MEMORY: KpiValueRow[] = [];
+
+const kpiKey = (r: { area_id: string; kpi_code: string; period_type: string; period_label: string }) =>
+  `${r.area_id}|${r.kpi_code}|${r.period_type}|${r.period_label}`;
+
+export async function fetchKpiValues(
+  areaId: string,
+  periodType: 'weekly' | 'monthly',
+): Promise<KpiValueRow[]> {
+  const local = KPI_VALUES_IN_MEMORY.filter(
+    v => v.area_id === areaId && v.period_type === periodType,
+  );
+  const supabase = createClient();
+  if (!supabase) return local;
+  const { data, error } = await supabase
+    .from('eq_kpi_values')
+    .select('area_id,kpi_code,period_type,period_label,value,target,notes')
+    .eq('area_id', areaId)
+    .eq('period_type', periodType);
+  if (error || !data) return local;
+  return data.map((r: any) => ({
+    area_id: r.area_id,
+    kpi_code: r.kpi_code,
+    period_type: r.period_type,
+    period_label: r.period_label,
+    value: r.value != null ? Number(r.value) : null,
+    target: r.target != null ? Number(r.target) : undefined,
+    notes: r.notes ?? undefined,
+  }));
+}
+
+export async function saveKpiValue(row: KpiValueRow): Promise<boolean> {
+  // Mirror in-memory
+  const idx = KPI_VALUES_IN_MEMORY.findIndex(v => kpiKey(v) === kpiKey(row));
+  if (idx >= 0) KPI_VALUES_IN_MEMORY[idx] = row;
+  else KPI_VALUES_IN_MEMORY.push(row);
+
+  const supabase = createClient();
+  if (!supabase) return true;
+  const { error } = await supabase
+    .from('eq_kpi_values')
+    .upsert(
+      {
+        area_id: row.area_id,
+        kpi_code: row.kpi_code,
+        period_type: row.period_type,
+        period_label: row.period_label,
+        value: row.value,
+        target: row.target ?? null,
+        notes: row.notes ?? null,
+      },
+      { onConflict: 'area_id,kpi_code,period_type,period_label' },
+    );
+  if (error) {
+    console.warn('[eq-db] saveKpiValue Supabase failed; kept locally:', error.message);
+  }
+  return true;
+}
+
+/**
+ * Bulk import — accepts a list of KpiValueRow and upserts each.
+ */
+export async function importKpiValues(rows: KpiValueRow[]): Promise<number> {
+  let ok = 0;
+  for (const r of rows) {
+    const success = await saveKpiValue(r);
+    if (success) ok++;
+  }
+  return ok;
+}
+
+// ============================================================
 // MAPPERS — DB row → TS type
 // ============================================================
 
