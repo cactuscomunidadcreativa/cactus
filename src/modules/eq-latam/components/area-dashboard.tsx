@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   Briefcase,
@@ -20,12 +20,16 @@ import {
   DEFAULT_LICENSING_MODE,
   LICENSING_MODE_2026,
   LICENSING_MODE_STRESS_TEST,
+  PARTNERS,
   USERS,
   buildVisibilityContext,
   canUserSeeArea,
   formatPriceUSD,
 } from '..';
 import { PartnersCrm } from './partners-crm';
+import { TeamInvitePanel } from './team-invite-panel';
+import { fetchPartners } from '../lib/eq-db';
+import type { Partner } from '..';
 import type {
   AreaId,
   BusinessArea,
@@ -65,6 +69,28 @@ export function AreaDashboard({
     DEFAULT_LICENSING_MODE,
   );
   const [drilledInto, setDrilledInto] = useState<AreaId | null>(null);
+  const [partners, setPartners] = useState<Partner[]>(PARTNERS);
+
+  // Load partners on mount for YTD aggregate metrics on area cards.
+  useEffect(() => {
+    let cancelled = false;
+    fetchPartners().then(rows => {
+      if (!cancelled && rows.length > 0) setPartners(rows);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  // YTD revenue aggregated per area. Partners' ytd_revenue belongs to Education
+  // (where EQ Weeks live). When deals attribute to other areas we can split here.
+  const ytdByArea = useMemo<Record<AreaId, { revenue: number; pax: number }>>(() => {
+    const totals: Record<string, { revenue: number; pax: number }> = {};
+    BUSINESS_AREAS.forEach(a => (totals[a.id] = { revenue: 0, pax: 0 }));
+    for (const p of partners) {
+      totals.education.revenue += p.ytd_revenue;
+      totals.education.pax += p.ytd_pax;
+    }
+    return totals as Record<AreaId, { revenue: number; pax: number }>;
+  }, [partners]);
 
   const ctx = useMemo(() => buildVisibilityContext(activeUserId), [activeUserId]);
   if (!ctx) return null;
@@ -112,6 +138,7 @@ export function AreaDashboard({
                 <AreaCard
                   key={area.id}
                   area={area}
+                  ytdRevenue={ytdByArea[area.id]?.revenue ?? 0}
                   onClick={() => setDrilledInto(area.id)}
                 />
               ))}
@@ -301,12 +328,16 @@ function Metric({
 // ============================================================
 function AreaCard({
   area,
+  ytdRevenue,
   onClick,
 }: {
   area: BusinessArea;
+  ytdRevenue: number;
   onClick: () => void;
 }) {
-  const progressPct = 0; // placeholder — wire to actual deals when DB exists
+  const progressPct = area.revenue_target_annual > 0
+    ? Math.min(100, (ytdRevenue / area.revenue_target_annual) * 100)
+    : 0;
   const showRevenue = area.is_revenue_generating;
 
   return (
@@ -330,7 +361,7 @@ function AreaCard({
           <div className="flex justify-between text-xs mb-1">
             <span className="text-muted-foreground">YTD</span>
             <span className="font-medium">
-              {formatPriceUSD(0)} / {formatPriceUSD(area.revenue_target_annual)}
+              {formatPriceUSD(ytdRevenue)} / {formatPriceUSD(area.revenue_target_annual)}
             </span>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
@@ -440,6 +471,8 @@ function AreaDetail({
       {/* Area-specific content */}
       {areaId === 'partners' && isAdmin ? (
         <PartnersCrm />
+      ) : areaId === 'operations' && isAdmin ? (
+        <TeamInvitePanel />
       ) : (
         <div className="bg-white rounded-xl border p-5">
           <h3 className="font-semibold text-sm mb-3">Deals & Productos</h3>

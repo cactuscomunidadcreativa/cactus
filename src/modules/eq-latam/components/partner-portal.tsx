@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FileText, TrendingUp, Users as UsersIcon } from 'lucide-react';
 import {
   EQ_WEEK_COST_MODEL,
@@ -16,11 +16,12 @@ import type { Partner } from '..';
 import { generatePartnerProposalPDF } from '../lib/eq-pdf';
 import { TAX_RATES, getTaxRate, applyTax, type TaxCountry } from '../lib/eq-tax';
 import { ServicesCatalogView } from './services-catalog-view';
-import { savePartnerCustomPricing } from '../lib/eq-db';
-import { Save, Check } from 'lucide-react';
+import { savePartnerCustomPricing, createQuote, closeQuote, fetchQuotes } from '../lib/eq-db';
+import { Save, Check, CheckCircle, Clock } from 'lucide-react';
+import type { Quote } from '../types/organization';
 
 const PAX_OPTIONS = [3, 5, 10, 15, 20];
-type PortalTab = 'eq_week' | 'services' | 'my_prices';
+type PortalTab = 'eq_week' | 'services' | 'my_prices' | 'history';
 
 /**
  * Partner self-service portal.
@@ -123,6 +124,7 @@ export function PartnerPortal({ partner: initialPartner }: { partner: Partner })
             { id: 'eq_week' as const, label: 'Full EQ Week' },
             { id: 'services' as const, label: 'Servicios complementarios' },
             { id: 'my_prices' as const, label: 'Mis precios' },
+            { id: 'history' as const, label: 'Historial' },
           ].map(t => (
             <button
               key={t.id}
@@ -172,6 +174,9 @@ export function PartnerPortal({ partner: initialPartner }: { partner: Partner })
           <MyPricesPanel partner={partner} onSaved={setPartner} />
         )}
 
+        {/* History tab */}
+        {activeTab === 'history' && <QuoteHistoryPanel partner={partner} />}
+
         {/* Full EQ Week calculator */}
         {activeTab === 'eq_week' && (
         <>
@@ -194,20 +199,32 @@ export function PartnerPortal({ partner: initialPartner }: { partner: Partner })
             </FormField>
 
             <FormField label="# de participantes">
-              <div className="grid grid-cols-5 gap-1">
-                {PAX_OPTIONS.map(n => (
-                  <button
-                    key={n}
-                    onClick={() => setPax(n)}
-                    className={`text-sm py-2 rounded-lg border transition-colors ${
-                      pax === n
-                        ? 'bg-eq-blue text-white border-eq-blue'
-                        : 'bg-white hover:bg-gray-50'
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
+              <div className="space-y-1.5">
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={pax}
+                  onChange={e =>
+                    setPax(Math.max(1, Math.min(50, Number(e.target.value) || 1)))
+                  }
+                  className="w-full text-sm border rounded-lg px-3 py-2 text-center font-medium"
+                />
+                <div className="grid grid-cols-5 gap-1">
+                  {PAX_OPTIONS.map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setPax(n)}
+                      className={`text-xs py-1.5 rounded border transition-colors ${
+                        pax === n
+                          ? 'bg-eq-blue text-white border-eq-blue'
+                          : 'bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
               </div>
             </FormField>
 
@@ -315,7 +332,7 @@ export function PartnerPortal({ partner: initialPartner }: { partner: Partner })
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button
-                onClick={() =>
+                onClick={async () => {
                   generatePartnerProposalPDF({
                     partnerName: partner.name,
                     partnerTierLabel: tier.label,
@@ -327,17 +344,51 @@ export function PartnerPortal({ partner: initialPartner }: { partner: Partner })
                     wholesaleTotal: numbers.wholesaleTotal,
                     partnerGross: numbers.partnerGross,
                     partnerGrossPct: numbers.partnerGrossPct,
-                  })
-                }
+                  });
+                  // Persist quote
+                  await createQuote({
+                    partner_id: partner.id,
+                    product_code: 'FULL_EQ_WEEK',
+                    client_name: clientName || undefined,
+                    country: partner.country,
+                    pax,
+                    retail_per_pax_usd: numbers.retail,
+                    wholesale_per_pax_usd: numbers.wholesalePerPax,
+                    retail_total_usd: numbers.retailTotal,
+                    wholesale_total_usd: numbers.wholesaleTotal,
+                    partner_gross_usd: numbers.partnerGross,
+                  });
+                }}
                 className="text-sm py-2 bg-eq-blue text-white rounded-lg hover:opacity-90 flex items-center justify-center gap-1.5"
               >
                 <FileText className="w-4 h-4" /> Generar propuesta PDF
               </button>
               <button
-                disabled
-                className="text-sm py-2 border rounded-lg text-muted-foreground opacity-50 cursor-not-allowed flex items-center justify-center gap-1.5"
+                onClick={async () => {
+                  if (!confirm(`¿Confirmar deal cerrado con ${clientName || 'cliente'} (${pax} PAX × ${formatPriceUSD(numbers.retail)})?\n\nEsto suma ${pax} al YTD PAX y ${formatPriceUSD(numbers.wholesaleTotal)} al YTD Revenue del partner.`)) return;
+                  const q = await createQuote({
+                    partner_id: partner.id,
+                    product_code: 'FULL_EQ_WEEK',
+                    client_name: clientName || undefined,
+                    country: partner.country,
+                    pax,
+                    retail_per_pax_usd: numbers.retail,
+                    wholesale_per_pax_usd: numbers.wholesalePerPax,
+                    retail_total_usd: numbers.retailTotal,
+                    wholesale_total_usd: numbers.wholesaleTotal,
+                    partner_gross_usd: numbers.partnerGross,
+                  });
+                  if (q) await closeQuote(q.id);
+                  // Bump partner YTD locally to re-render dashboard immediately
+                  setPartner(p => ({
+                    ...p,
+                    ytd_pax: p.ytd_pax + pax,
+                    ytd_revenue: p.ytd_revenue + numbers.wholesaleTotal,
+                  }));
+                }}
+                className="text-sm py-2 bg-emerald-600 text-white rounded-lg hover:opacity-90 flex items-center justify-center gap-1.5"
               >
-                <UsersIcon className="w-4 h-4" /> Comunicar a 6S Latam
+                <CheckCircle className="w-4 h-4" /> Marcar deal cerrado
               </button>
             </div>
           </div>
@@ -451,6 +502,97 @@ function TierProgress({ partner }: { partner: Partner }) {
 // ============================================================
 // MyPricesPanel — partner saves their own retail prices
 // ============================================================
+// ============================================================
+// QuoteHistoryPanel — list of cotizaciones for this partner
+// ============================================================
+function QuoteHistoryPanel({ partner }: { partner: Partner }) {
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchQuotes(partner.id).then(rows => {
+      if (!cancelled) {
+        setQuotes(rows);
+        setLoading(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [partner.id]);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl border p-6 text-center text-sm text-muted-foreground">
+        Cargando historial…
+      </div>
+    );
+  }
+
+  if (quotes.length === 0) {
+    return (
+      <div className="bg-white rounded-xl border p-8 text-center">
+        <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm font-medium">Sin historial todavía</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Genera tu primera propuesta PDF en el tab "Full EQ Week" y aparecerá aquí.
+        </p>
+      </div>
+    );
+  }
+
+  const statusBadge = (s: Quote['status']) => {
+    const cls = {
+      draft: 'bg-gray-100 text-gray-700',
+      sent: 'bg-blue-100 text-blue-700',
+      closed: 'bg-emerald-100 text-emerald-700',
+      lost: 'bg-red-100 text-red-700',
+    }[s];
+    const label = { draft: 'Borrador', sent: 'Enviada', closed: 'Cerrada', lost: 'Perdida' }[s];
+    return (
+      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cls}`}>{label}</span>
+    );
+  };
+
+  return (
+    <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="px-4 py-3 border-b">
+        <h3 className="font-semibold text-sm">Historial de cotizaciones</h3>
+        <p className="text-xs text-muted-foreground">
+          {quotes.length} cotizaciones · {quotes.filter(q => q.status === 'closed').length} cerradas
+        </p>
+      </div>
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50 text-xs text-muted-foreground">
+          <tr>
+            <th className="text-left px-4 py-2 font-medium">Cliente</th>
+            <th className="text-left px-4 py-2 font-medium">Producto</th>
+            <th className="text-right px-4 py-2 font-medium">PAX</th>
+            <th className="text-right px-4 py-2 font-medium">Revenue (a 6S Latam)</th>
+            <th className="text-right px-4 py-2 font-medium">Margen partner</th>
+            <th className="text-center px-4 py-2 font-medium">Estado</th>
+            <th className="text-right px-4 py-2 font-medium">Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {quotes.map(q => (
+            <tr key={q.id} className="border-t">
+              <td className="px-4 py-2 font-medium">{q.client_name || '—'}</td>
+              <td className="px-4 py-2 text-xs text-muted-foreground">{q.product_code}</td>
+              <td className="px-4 py-2 text-right">{q.pax ?? '—'}</td>
+              <td className="px-4 py-2 text-right">{formatPriceUSD(q.wholesale_total_usd)}</td>
+              <td className="px-4 py-2 text-right text-emerald-600">{formatPriceUSD(q.partner_gross_usd)}</td>
+              <td className="px-4 py-2 text-center">{statusBadge(q.status)}</td>
+              <td className="px-4 py-2 text-right text-xs text-muted-foreground">
+                {new Date(q.created_at).toLocaleDateString('es')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function MyPricesPanel({
   partner,
   onSaved,

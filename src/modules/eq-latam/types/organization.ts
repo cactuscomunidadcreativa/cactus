@@ -151,6 +151,33 @@ export interface Partner {
 }
 
 /**
+ * A quote (cotización) — every time someone generates a partner proposal
+ * a row is created. When the partner says "deal closed", we promote it
+ * to a real Deal and bump partner/referrer YTD.
+ */
+export interface Quote {
+  id: string;
+  partner_id?: string;
+  referrer_id?: string;
+  product_code: string;             // 'FULL_EQ_WEEK' or service code
+  client_name?: string;
+  city?: string;
+  country: 'PE' | 'CO' | 'MX' | 'OTHER';
+  pax?: number;
+  retail_per_pax_usd?: number;
+  wholesale_per_pax_usd?: number;
+  retail_total_usd: number;
+  wholesale_total_usd: number;
+  partner_gross_usd: number;
+  status: 'draft' | 'sent' | 'closed' | 'lost';
+  pdf_filename?: string;
+  notes?: string;
+  created_at: string;
+  closed_at?: string;
+  closed_deal_id?: string;
+}
+
+/**
  * Contact person at a partner organization.
  * One partner can have multiple contacts (lead + collaborators).
  * Contacts get invited via magic-link email and see ONLY their own partner's data.

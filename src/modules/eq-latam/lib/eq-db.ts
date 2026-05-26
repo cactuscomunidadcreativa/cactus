@@ -21,8 +21,12 @@ import type {
   Partner,
   PartnerContact,
   PartnerTier,
+  Quote,
   Referrer,
 } from '../types/organization';
+
+// In-memory quote store for dev (until Supabase tables are applied)
+const QUOTES_IN_MEMORY: Quote[] = [];
 
 // ============================================================
 // PARTNERS
@@ -161,6 +165,145 @@ export async function fetchReferrers(): Promise<Referrer[]> {
 
   if (error || !data) return SEED_REFERRERS;
   return data.map(rowToReferrer);
+}
+
+// ============================================================
+// QUOTES (cotización history)
+// ============================================================
+
+export async function fetchQuotes(partnerId?: string): Promise<Quote[]> {
+  const supabase = createClient();
+  if (!supabase) {
+    return partnerId
+      ? QUOTES_IN_MEMORY.filter(q => q.partner_id === partnerId)
+      : [...QUOTES_IN_MEMORY];
+  }
+  let query = supabase
+    .from('eq_quotes')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (partnerId) query = query.eq('partner_id', partnerId);
+  const { data, error } = await query;
+  if (error || !data) {
+    return partnerId
+      ? QUOTES_IN_MEMORY.filter(q => q.partner_id === partnerId)
+      : [...QUOTES_IN_MEMORY];
+  }
+  return data.map(rowToQuote);
+}
+
+export async function createQuote(q: Omit<Quote, 'id' | 'created_at' | 'status'>): Promise<Quote | null> {
+  const newQuote: Quote = {
+    ...q,
+    id: crypto.randomUUID(),
+    status: 'draft',
+    created_at: new Date().toISOString(),
+  };
+
+  // Always mirror in-memory so UI lists update without Supabase.
+  QUOTES_IN_MEMORY.unshift(newQuote);
+
+  const supabase = createClient();
+  if (!supabase) return newQuote;
+
+  const { data, error } = await supabase
+    .from('eq_quotes')
+    .insert({
+      partner_id: q.partner_id ?? null,
+      referrer_id: q.referrer_id ?? null,
+      product_code: q.product_code,
+      client_name: q.client_name ?? null,
+      city: q.city ?? null,
+      country: q.country,
+      pax: q.pax ?? null,
+      retail_per_pax_usd: q.retail_per_pax_usd ?? null,
+      wholesale_per_pax_usd: q.wholesale_per_pax_usd ?? null,
+      retail_total_usd: q.retail_total_usd,
+      wholesale_total_usd: q.wholesale_total_usd,
+      partner_gross_usd: q.partner_gross_usd,
+      pdf_filename: q.pdf_filename ?? null,
+      notes: q.notes ?? null,
+    })
+    .select()
+    .single();
+
+  if (error || !data) {
+    console.warn('[eq-db] createQuote — Supabase insert failed (migrations 027 likely not applied); kept locally:', error?.message);
+    return newQuote;
+  }
+  return rowToQuote(data);
+}
+
+/**
+ * Promote a quote to a closed Deal — bumps partner + referrer YTD.
+ * Calls the eq_close_quote() Postgres function when Supabase is available;
+ * otherwise simulates the side-effects in-memory.
+ */
+export async function closeQuote(quoteId: string): Promise<boolean> {
+  const supabase = createClient();
+  const idx = QUOTES_IN_MEMORY.findIndex(q => q.id === quoteId);
+  const local = idx >= 0 ? QUOTES_IN_MEMORY[idx] : null;
+
+  if (!supabase) {
+    if (local) {
+      QUOTES_IN_MEMORY[idx] = { ...local, status: 'closed', closed_at: new Date().toISOString() };
+      // Bump in-memory partner YTD
+      if (local.partner_id) {
+        const pIdx = SEED_PARTNERS.findIndex(p => p.id === local.partner_id);
+        if (pIdx >= 0) {
+          SEED_PARTNERS[pIdx] = {
+            ...SEED_PARTNERS[pIdx],
+            ytd_pax: SEED_PARTNERS[pIdx].ytd_pax + (local.pax ?? 0),
+            ytd_revenue: SEED_PARTNERS[pIdx].ytd_revenue + local.wholesale_total_usd,
+          };
+        }
+      }
+    }
+    return true;
+  }
+
+  const { error } = await supabase.rpc('eq_close_quote', { p_quote_id: quoteId });
+  if (error) {
+    console.warn('[eq-db] closeQuote RPC failed, applying locally:', error.message);
+    if (local) {
+      QUOTES_IN_MEMORY[idx] = { ...local, status: 'closed', closed_at: new Date().toISOString() };
+      if (local.partner_id) {
+        const pIdx = SEED_PARTNERS.findIndex(p => p.id === local.partner_id);
+        if (pIdx >= 0) {
+          SEED_PARTNERS[pIdx] = {
+            ...SEED_PARTNERS[pIdx],
+            ytd_pax: SEED_PARTNERS[pIdx].ytd_pax + (local.pax ?? 0),
+            ytd_revenue: SEED_PARTNERS[pIdx].ytd_revenue + local.wholesale_total_usd,
+          };
+        }
+      }
+    }
+  }
+  return true;
+}
+
+function rowToQuote(r: any): Quote {
+  return {
+    id: r.id,
+    partner_id: r.partner_id ?? undefined,
+    referrer_id: r.referrer_id ?? undefined,
+    product_code: r.product_code,
+    client_name: r.client_name ?? undefined,
+    city: r.city ?? undefined,
+    country: r.country,
+    pax: r.pax ?? undefined,
+    retail_per_pax_usd: r.retail_per_pax_usd != null ? Number(r.retail_per_pax_usd) : undefined,
+    wholesale_per_pax_usd: r.wholesale_per_pax_usd != null ? Number(r.wholesale_per_pax_usd) : undefined,
+    retail_total_usd: Number(r.retail_total_usd ?? 0),
+    wholesale_total_usd: Number(r.wholesale_total_usd ?? 0),
+    partner_gross_usd: Number(r.partner_gross_usd ?? 0),
+    status: r.status,
+    pdf_filename: r.pdf_filename ?? undefined,
+    notes: r.notes ?? undefined,
+    created_at: r.created_at,
+    closed_at: r.closed_at ?? undefined,
+    closed_deal_id: r.closed_deal_id ?? undefined,
+  };
 }
 
 // ============================================================
