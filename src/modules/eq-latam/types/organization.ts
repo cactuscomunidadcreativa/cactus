@@ -127,6 +127,13 @@ export function suggestTierForYtdPax(ytdPax: number): PartnerTier {
   return 'EXPLORER';
 }
 
+export interface PartnerCustomPricing {
+  /** Override of the Full EQ Week retail price the partner charges their client. */
+  full_eq_week_retail_per_pax_usd?: number;
+  /** Per-service retail overrides keyed by service code. */
+  services?: Record<string, number>;
+}
+
 export interface Partner {
   id: string;
   name: string;
@@ -139,6 +146,8 @@ export interface Partner {
   ytd_cac_absorbed: number;
   active_since: string; // ISO date
   active: boolean;
+  /** Partner's saved retail prices — pre-populate the cotizador. */
+  custom_pricing?: PartnerCustomPricing;
 }
 
 /**

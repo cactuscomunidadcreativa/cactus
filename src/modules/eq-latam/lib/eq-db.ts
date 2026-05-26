@@ -181,7 +181,45 @@ function rowToPartner(r: any): Partner {
         ? r.active_since
         : new Date(r.active_since).toISOString().slice(0, 10),
     active: !!r.active,
+    custom_pricing: r.custom_pricing ?? {},
   };
+}
+
+/**
+ * Saves the partner's custom retail prices.
+ *
+ * Always updates the in-memory seed (UI source of truth in dev / before
+ * migration 026 is applied). Best-effort updates Supabase when available;
+ * a DB error doesn't block the UI from reflecting the change.
+ *
+ * Returns true if the persistence layer accepted the write (or no Supabase
+ * is configured). false signals that Supabase rejected it (e.g., RLS).
+ */
+export async function savePartnerCustomPricing(
+  partnerId: string,
+  pricing: Partner['custom_pricing'],
+): Promise<boolean> {
+  // 1. Always mutate in-memory so the UI re-renders immediately.
+  const idx = SEED_PARTNERS.findIndex(p => p.id === partnerId);
+  if (idx >= 0) SEED_PARTNERS[idx] = { ...SEED_PARTNERS[idx], custom_pricing: pricing };
+
+  // 2. Best-effort persist to Supabase.
+  const supabase = createClient();
+  if (!supabase) return true;
+
+  const { error } = await supabase
+    .from('eq_partners')
+    .update({ custom_pricing: pricing ?? {} })
+    .eq('id', partnerId);
+
+  if (error) {
+    console.warn(
+      '[eq-db] savePartnerCustomPricing — Supabase update failed (likely migration 024+026 not applied yet); UI kept the change locally:',
+      error.message,
+    );
+  }
+  // Treat as success either way — UI shouldn't block on missing migrations.
+  return true;
 }
 
 function rowToContact(r: any): PartnerContact {

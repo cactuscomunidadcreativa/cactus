@@ -16,9 +16,11 @@ import type { Partner } from '..';
 import { generatePartnerProposalPDF } from '../lib/eq-pdf';
 import { TAX_RATES, getTaxRate, applyTax, type TaxCountry } from '../lib/eq-tax';
 import { ServicesCatalogView } from './services-catalog-view';
+import { savePartnerCustomPricing } from '../lib/eq-db';
+import { Save, Check } from 'lucide-react';
 
 const PAX_OPTIONS = [3, 5, 10, 15, 20];
-type PortalTab = 'eq_week' | 'services';
+type PortalTab = 'eq_week' | 'services' | 'my_prices';
 
 /**
  * Partner self-service portal.
@@ -28,7 +30,10 @@ type PortalTab = 'eq_week' | 'services';
  * client, and their gross margin. They do NOT see 6S Latam's internal
  * costs, distribution, commissions, or other partners.
  */
-export function PartnerPortal({ partner }: { partner: Partner }) {
+export function PartnerPortal({ partner: initialPartner }: { partner: Partner }) {
+  // Hold partner in local state so MyPricesPanel saves trigger a re-render
+  // of the cotizador with the new defaults.
+  const [partner, setPartner] = useState<Partner>(initialPartner);
   const [pax, setPax] = useState<number>(15);
   const [clientName, setClientName] = useState<string>('');
   const [retailOverride, setRetailOverride] = useState<number | null>(null);
@@ -36,11 +41,18 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
   const [includeTax, setIncludeTax] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<PortalTab>('eq_week');
 
+  /**
+   * Partner's saved Full EQ Week retail (pre-populates the cotizador).
+   * Falls back to platform default if the partner hasn't customized.
+   */
+  const savedEqWeekRetail =
+    partner.custom_pricing?.full_eq_week_retail_per_pax_usd ??
+    FULL_EQ_WEEK_RETAIL_PRICE_PER_PAX_USD;
+
   const tier = getTierConfig(partner.tier);
 
   const numbers = useMemo(() => {
-    const retailDefault = FULL_EQ_WEEK_RETAIL_PRICE_PER_PAX_USD;
-    const retail = retailOverride ?? retailDefault;
+    const retail = retailOverride ?? savedEqWeekRetail;
 
     // Wholesale: PDF-defined sliding scale (already incorporates Strategic tier ~30%)
     // For Explorer/Growth/Elite the price scales off the discount table.
@@ -71,7 +83,7 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
       volumeBonus,
       combinedDiscount,
     };
-  }, [pax, retailOverride, partner.tier, tier.discount_pct]);
+  }, [pax, retailOverride, savedEqWeekRetail, partner.tier, tier.discount_pct]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,10 +118,11 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
       {/* Body */}
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
         {/* Tab switcher */}
-        <div className="flex gap-1 border-b">
+        <div className="flex gap-1 border-b overflow-x-auto">
           {[
             { id: 'eq_week' as const, label: 'Full EQ Week' },
             { id: 'services' as const, label: 'Servicios complementarios' },
+            { id: 'my_prices' as const, label: 'Mis precios' },
           ].map(t => (
             <button
               key={t.id}
@@ -154,6 +167,11 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
         {/* Services tab */}
         {activeTab === 'services' && <ServicesCatalogView partner={partner} />}
 
+        {/* My prices tab */}
+        {activeTab === 'my_prices' && (
+          <MyPricesPanel partner={partner} onSaved={setPartner} />
+        )}
+
         {/* Full EQ Week calculator */}
         {activeTab === 'eq_week' && (
         <>
@@ -197,7 +215,7 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
               <input
                 type="number"
                 min={0}
-                placeholder={`Default: ${FULL_EQ_WEEK_RETAIL_PRICE_PER_PAX_USD}`}
+                placeholder={`Tu precio guardado: ${savedEqWeekRetail}`}
                 value={retailOverride ?? ''}
                 onChange={e =>
                   setRetailOverride(
@@ -207,7 +225,9 @@ export function PartnerPortal({ partner }: { partner: Partner }) {
                 className="w-full text-sm border rounded-lg px-3 py-2"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Puedes subir el retail si tu mercado lo soporta.
+                {partner.custom_pricing?.full_eq_week_retail_per_pax_usd
+                  ? `Estás usando tu precio guardado de ${formatPriceUSD(savedEqWeekRetail)}. Cámbialo en "Mis precios".`
+                  : 'Puedes guardar tu precio default en "Mis precios" para no escribirlo cada vez.'}
               </p>
             </FormField>
 
@@ -424,6 +444,112 @@ function TierProgress({ partner }: { partner: Partner }) {
           style={{ width: `${progress * 100}%` }}
         />
       </div>
+    </div>
+  );
+}
+
+// ============================================================
+// MyPricesPanel — partner saves their own retail prices
+// ============================================================
+function MyPricesPanel({
+  partner,
+  onSaved,
+}: {
+  partner: Partner;
+  onSaved: (next: Partner) => void;
+}) {
+  const initial = partner.custom_pricing ?? {};
+  const [eqWeekRetail, setEqWeekRetail] = useState<string>(
+    initial.full_eq_week_retail_per_pax_usd != null
+      ? String(initial.full_eq_week_retail_per_pax_usd)
+      : '',
+  );
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+
+  const persist = async (pricing: Partner['custom_pricing']) => {
+    setSaving(true);
+    const ok = await savePartnerCustomPricing(partner.id, pricing);
+    if (ok) {
+      const updated = { ...partner, custom_pricing: pricing };
+      onSaved(updated);
+      setSavedAt(new Date());
+    }
+    setSaving(false);
+  };
+
+  const handleSave = () =>
+    persist({
+      ...initial,
+      full_eq_week_retail_per_pax_usd:
+        eqWeekRetail === '' ? undefined : Number(eqWeekRetail),
+    });
+
+  const handleClear = () => {
+    setEqWeekRetail('');
+    return persist({ ...initial, full_eq_week_retail_per_pax_usd: undefined });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-eq-cream/40 border rounded-xl p-4 text-sm">
+        <div className="font-semibold mb-1">Tus precios guardados</div>
+        <p className="text-xs text-muted-foreground">
+          Aquí defines tu precio retail por defecto para que no lo escribas en
+          cada cotización. Tu wholesale lo calcula el sistema con tu descuento de
+          tier {partner.tier}.
+        </p>
+      </div>
+
+      <div className="bg-white border rounded-xl p-5">
+        <h3 className="font-semibold text-sm mb-3">Full EQ Week</h3>
+        <div className="flex items-end gap-3 flex-wrap">
+          <div className="flex-1 min-w-[200px]">
+            <label className="text-xs text-muted-foreground block mb-1">
+              Tu precio retail por participante (USD)
+            </label>
+            <input
+              type="number"
+              min={0}
+              placeholder={`Default platform: ${FULL_EQ_WEEK_RETAIL_PRICE_PER_PAX_USD}`}
+              value={eqWeekRetail}
+              onChange={e => setEqWeekRetail(e.target.value)}
+              className="w-full text-sm border rounded-lg px-3 py-2"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Mercado típico Latam: $2,500–$3,500/PAX.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="text-sm px-4 py-2 bg-eq-blue text-white rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {savedAt && !saving ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saving ? 'Guardando…' : savedAt ? 'Guardado' : 'Guardar'}
+            </button>
+            {initial.full_eq_week_retail_per_pax_usd != null && (
+              <button
+                onClick={handleClear}
+                disabled={saving}
+                className="text-sm px-3 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <p className="text-xs text-muted-foreground text-center">
+        Próximamente: guardar tus precios sugeridos por cada servicio
+        complementario.
+      </p>
     </div>
   );
 }
