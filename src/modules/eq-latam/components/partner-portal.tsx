@@ -93,14 +93,14 @@ export function PartnerPortal({ partner: initialPartner }: { partner: Partner })
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-eq-gradient flex items-center justify-center text-white text-sm font-bold">
-              EQ
+              6S
             </div>
             <div>
               <h1 className="font-display font-bold text-eq-navy text-sm">
                 Portal Partner · {partner.name}
               </h1>
               <p className="text-xs text-muted-foreground">
-                EQ Latam · Six Seconds
+                Six Seconds Latam
               </p>
             </div>
           </div>

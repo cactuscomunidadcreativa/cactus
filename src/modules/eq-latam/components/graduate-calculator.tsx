@@ -90,14 +90,14 @@ export function GraduateCalculator() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-eq-gradient flex items-center justify-center text-white text-sm font-bold">
-              EQ
+              6S
             </div>
             <div>
               <h1 className="font-display font-bold text-eq-navy text-base">
-                Calculadora para Practitioners
+                Six Seconds Latam · Calculadora para Practitioners
               </h1>
               <p className="text-xs text-muted-foreground">
-                Six Seconds Latam · Cotiza tu engagement con créditos
+                Cotiza tu engagement con créditos
               </p>
             </div>
           </div>

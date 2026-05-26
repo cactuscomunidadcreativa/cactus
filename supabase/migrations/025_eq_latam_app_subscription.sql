@@ -10,8 +10,8 @@
 insert into public.apps (id, name, description, is_active)
 values (
   'eq-latam',
-  'EQ Latam',
-  'Six Seconds Latam operating platform — areas, partners, deals, KPIs',
+  'Six Seconds Latam',
+  'Plataforma operativa — áreas, partners, deals, KPIs, liquidación',
   true
 )
 on conflict (id) do update set

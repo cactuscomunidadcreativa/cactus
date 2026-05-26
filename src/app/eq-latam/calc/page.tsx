@@ -1,7 +1,7 @@
 import { GraduateCalculator } from '@/modules/eq-latam/components/graduate-calculator';
 
 export const metadata = {
-  title: 'Calculadora para Practitioners — EQ Latam',
+  title: 'Six Seconds Latam · Calculadora para Practitioners',
   description:
     'Cotiza tu engagement de Inteligencia Emocional con créditos Six Seconds. Versión Latam.',
 };

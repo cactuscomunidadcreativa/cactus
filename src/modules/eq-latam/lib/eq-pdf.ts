@@ -136,7 +136,7 @@ export function generatePartnerProposalPDF(input: PartnerProposalPdfInput) {
     40,
     doc.internal.pageSize.getHeight() - 50,
   );
-  doc.text('Six Seconds Latam · EQ Latam Operating Platform', 40, doc.internal.pageSize.getHeight() - 35);
+  doc.text('Six Seconds Latam · Plataforma operativa', 40, doc.internal.pageSize.getHeight() - 35);
 
   const filename = `propuesta-${(input.clientName || 'cliente').toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`;
   doc.save(filename);

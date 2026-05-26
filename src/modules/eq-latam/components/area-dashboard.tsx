@@ -28,6 +28,7 @@ import {
 } from '..';
 import { PartnersCrm } from './partners-crm';
 import { TeamInvitePanel } from './team-invite-panel';
+import { PayrollPanel } from './payroll-panel';
 import { fetchPartners } from '../lib/eq-db';
 import type { Partner } from '..';
 import type {
@@ -189,14 +190,14 @@ function Header({
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-eq-gradient flex items-center justify-center text-white text-sm font-bold">
-            EQ
+            6S
           </div>
           <div>
             <h1 className="font-display font-bold text-eq-navy text-sm">
-              EQ LATAM OPERATING PLATFORM
+              Six Seconds Latam
             </h1>
             <p className="text-xs text-muted-foreground">
-              Áreas · Deals · P&L · KPIs
+              Plataforma operativa · Áreas · Deals · P&L
             </p>
           </div>
         </div>
@@ -472,7 +473,7 @@ function AreaDetail({
       {areaId === 'partners' && isAdmin ? (
         <PartnersCrm />
       ) : areaId === 'operations' && isAdmin ? (
-        <TeamInvitePanel />
+        <OperationsAdmin />
       ) : (
         <div className="bg-white rounded-xl border p-5">
           <h3 className="font-semibold text-sm mb-3">Deals & Productos</h3>
@@ -489,6 +490,36 @@ function AreaDetail({
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================
+// OperationsAdmin — admin-only Operations content with sub-tabs
+// ============================================================
+function OperationsAdmin() {
+  const [tab, setTab] = useState<'payroll' | 'team'>('payroll');
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1 border-b">
+        {[
+          { id: 'payroll' as const, label: 'Liquidación' },
+          { id: 'team' as const, label: 'Equipo' },
+        ].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`text-sm px-4 py-2 border-b-2 -mb-px ${
+              tab === t.id
+                ? 'border-eq-blue text-eq-blue font-medium'
+                : 'border-transparent text-muted-foreground hover:text-eq-navy'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {tab === 'payroll' ? <PayrollPanel /> : <TeamInvitePanel />}
     </div>
   );
 }
