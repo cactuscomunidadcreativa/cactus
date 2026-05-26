@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { getMonthKey } from '@/lib/utils';
 
+// Auth-gated route; never prerender — depends on request-time Supabase session.
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const result = await requireAdmin();
   if (result instanceof NextResponse) return result;

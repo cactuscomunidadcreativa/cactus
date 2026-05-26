@@ -97,16 +97,145 @@ export interface InPersonCost {
 export interface PricingRules {
   suggestedMarkup: number;      // 0.25 = +25%
   partnerDiscount: number;      // 0.30 = -30%
-  distributionTotal: number;    // 0.50 = 50%
+  distributionTotal: number;    // legacy, kept for backward compat
   roundingNearest: number;      // 5 = round to $5
 }
 
+/**
+ * Real cash leaving 6S Latam on each deal.
+ *
+ * Eduardo (10%), ADS (5%), and Base Salary (5%) from the original spec
+ * are NOT cash distribution — they are accounting allocations already
+ * covered by the fixed monthly burn (retainer + ADS budget + salaries).
+ *
+ * Licensing 6S Global is handled separately via LicensingMode.
+ */
 export interface DistributionStructure {
-  licensing6S: number;          // 0.30
-  adsFund: number;              // 0.05
-  baseSalary: number;           // 0.05
-  commercialCommission: number; // 0.10
-  directorHybrid: number;       // 0.10
+  /** Karla Marketing commission, applies on every deal that has marketing origin. */
+  karlaMarketing: number;       // 0.03
+  /** Closer commission default. Override per-deal up to 0.07. */
+  closerDefault: number;        // 0.05
+  closerOverrideMax: number;    // 0.07
+  /** Referrer commission default (external referrer like Yisseth). */
+  referrerDefault: number;      // 0.10
+}
+
+/**
+ * How 6S Global gets paid. Switchable per year.
+ *
+ *  - annual_flat: a fixed yearly fee, no per-deal cost (2026 negotiated).
+ *  - percentage_of_revenue: per-deal cash out (likely 2027+ default).
+ */
+export type LicensingMode =
+  | { type: 'annual_flat'; amount_usd: number; year: number }
+  | { type: 'percentage_of_revenue'; rate: number };
+
+// ============================================================
+// EQ WEEK COST MODEL (new — simplified per actual operations)
+// ============================================================
+
+/**
+ * Real cost structure for a Full EQ Week event.
+ * - Facilitación flat (5 días × $1,000 por defecto)
+ * - Materials kit per PAX
+ * - Merch per PAX (only when bundle includes EQPC + EQPM)
+ * - Credits cost is $0 (covered by annual maintenance to 6S Global)
+ * - Travel configurable per destination
+ */
+export interface EqWeekCostModel {
+  facilitation_days: number;          // 5
+  facilitation_per_day_usd: number;   // 1000
+  materials_kit_per_pax_usd: number;  // 35
+  merch_per_pax_usd: number;          // 90 (only if Full EQ Week)
+  merch_retail_value_per_pax_usd: number; // 150 (hidden margin marker)
+  default_travel_usd: number;         // 2500
+}
+
+// ============================================================
+// DEAL — the central transactional entity
+// ============================================================
+
+export type DealStatus =
+  | 'quoted'
+  | 'closed'
+  | 'delivered'
+  | 'cancelled'
+  | 'relationship_event';
+
+export type SalesChannel = 'direct' | 'partner' | 'referrer';
+
+export interface Deal {
+  id: string;
+  area_id: string;                    // BusinessArea id
+  product_code: string;               // 'FULL_EQ_WEEK' | cert code | bundle code
+  modality: Modality;
+  trainerRole?: TrainerRole;
+
+  /** Identity / logistics */
+  city?: string;                      // 'Cartagena'
+  country: 'PE' | 'CO' | 'MX' | 'OTHER';
+  event_date?: string;                // ISO
+
+  /** Volume */
+  pax_min: number;                    // 5 default
+  pax_expected: number;               // closes here
+  pax_target: number;                 // 15 default
+  pax_stretch: number;                // 20 default
+  pax_actual?: number;                // when closed/delivered
+
+  /** Attribution — exactly one channel */
+  channel: SalesChannel;
+  partner_id?: string;                // when channel='partner'
+  referrer_id?: string;               // when channel='referrer'
+
+  /** Internal closer */
+  closer_user_id: string;
+  closer_commission_pct: number;      // 0.05 or 0.07
+  marketing_origin: boolean;          // triggers Karla 3%
+
+  /** Override referrer commission (else use referrer's default) */
+  referrer_commission_pct_override?: number;
+
+  /** Pricing */
+  retail_price_per_pax_usd: number;   // what end client pays
+  wholesale_price_per_pax_usd?: number; // what partner pays 6S Latam (if partner channel)
+
+  /** Cost overrides per deal */
+  travel_usd?: number;                // override default
+
+  status: DealStatus;
+  notes?: string;
+}
+
+/**
+ * Per-deal contribution breakdown. Result of the pricing engine.
+ */
+export interface DealContribution {
+  deal_id: string;
+  pax: number;
+
+  revenue_usd: number;
+
+  // Cash out (real)
+  karla_marketing_usd: number;
+  closer_usd: number;
+  referrer_usd: number;
+  licensing_global_usd: number;       // 0 if annual_flat mode, else 30% revenue
+
+  total_cash_distribution_usd: number;
+
+  // Delivery cost
+  facilitation_usd: number;
+  materials_kit_usd: number;
+  merch_usd: number;
+  merch_hidden_margin_usd: number;    // $60/PAX × pax if Full EQ Week
+  travel_usd: number;
+  credits_cost_usd: number;
+  total_delivery_cost_usd: number;
+
+  // Final
+  contribution_usd: number;
+  margin_pct: number;
 }
 
 // ============================================================

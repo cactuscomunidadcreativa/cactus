@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { clearConfigCache } from '@/lib/ai/config';
 
+export const dynamic = 'force-dynamic';
 export async function GET() {
   const result = await requireAdmin();
   if (result instanceof NextResponse) return result;

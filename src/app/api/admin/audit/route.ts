@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 
+export const dynamic = 'force-dynamic';
 export async function GET() {
   const result = await requireAdmin();
   if (result instanceof NextResponse) return result;

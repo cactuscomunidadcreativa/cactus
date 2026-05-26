@@ -7,6 +7,16 @@ export const metadata = {
   description: 'The First Emotional Algorithmic Atelier',
 }
 
+/**
+ * Force dynamic rendering for all cereus routes.
+ *
+ * These pages require an authenticated Supabase session resolved at
+ * request time. Without this, Next.js attempts to statically generate
+ * the shell at build time, which crashes Vercel preview deploys that
+ * don't expose SUPABASE_URL / ANON_KEY.
+ */
+export const dynamic = 'force-dynamic'
+
 export default async function CereusLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   if (!supabase) redirect('/login')
