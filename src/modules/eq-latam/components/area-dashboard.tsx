@@ -25,6 +25,7 @@ import {
   canUserSeeArea,
   formatPriceUSD,
 } from '..';
+import { PartnersCrm } from './partners-crm';
 import type {
   AreaId,
   BusinessArea,
@@ -49,9 +50,17 @@ const AREA_ICON: Record<AreaId, React.ReactNode> = {
 // ============================================================
 // Main component
 // ============================================================
-export function AreaDashboard() {
-  // "Logged-in" user simulator (Phase 0 — real auth comes later)
-  const [activeUserId, setActiveUserId] = useState<string>('eduardo');
+export function AreaDashboard({
+  initialUserId = 'eduardo',
+}: {
+  /**
+   * The id of the currently-authenticated team member. When the parent
+   * page resolves a real Supabase session and finds a matching seeded
+   * user by email, it passes their id. Otherwise defaults to admin.
+   */
+  initialUserId?: string;
+} = {}) {
+  const [activeUserId, setActiveUserId] = useState<string>(initialUserId);
   const [licensingMode, setLicensingMode] = useState<LicensingMode>(
     DEFAULT_LICENSING_MODE,
   );
@@ -428,21 +437,25 @@ function AreaDetail({
         )}
       </div>
 
-      {/* Deals — placeholder */}
-      <div className="bg-white rounded-xl border p-5">
-        <h3 className="font-semibold text-sm mb-3">Deals & Productos</h3>
-        <p className="text-xs text-muted-foreground italic">
-          Aquí va el listado de deals del área cuando esté wireada la persistencia.
-          {isAdmin && (
-            <>
-              {' '}Modo licencia activo:{' '}
-              {licensingMode.type === 'annual_flat'
-                ? 'Flat anual (sin 30% por deal)'
-                : `${(licensingMode.rate * 100).toFixed(0)}% por deal`}
-            </>
-          )}
-        </p>
-      </div>
+      {/* Area-specific content */}
+      {areaId === 'partners' && isAdmin ? (
+        <PartnersCrm />
+      ) : (
+        <div className="bg-white rounded-xl border p-5">
+          <h3 className="font-semibold text-sm mb-3">Deals & Productos</h3>
+          <p className="text-xs text-muted-foreground italic">
+            Aquí va el listado de deals del área cuando esté wireada la persistencia.
+            {isAdmin && (
+              <>
+                {' '}Modo licencia activo:{' '}
+                {licensingMode.type === 'annual_flat'
+                  ? 'Flat anual (sin 30% por deal)'
+                  : `${(licensingMode.rate * 100).toFixed(0)}% por deal`}
+              </>
+            )}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import type {
   AreaPermission,
   BusinessArea,
   Partner,
+  PartnerContact,
   Referrer,
   User,
   VisibilityContext,
@@ -248,6 +249,12 @@ export const PARTNERS: Partner[] = [
 ];
 
 // ============================================================
+// PARTNER CONTACTS (seed empty — will be populated via invites)
+// ============================================================
+
+export const PARTNER_CONTACTS: PartnerContact[] = [];
+
+// ============================================================
 // REFERRERS (external referrers)
 // ============================================================
 
@@ -290,4 +297,8 @@ export function getPartnerById(partnerId: string): Partner | undefined {
 
 export function getReferrerById(referrerId: string): Referrer | undefined {
   return REFERRERS.find(r => r.id === referrerId);
+}
+
+export function getPartnerContacts(partnerId: string): PartnerContact[] {
+  return PARTNER_CONTACTS.filter(c => c.partner_id === partnerId);
 }

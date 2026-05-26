@@ -44,16 +44,24 @@ export {
   BUSINESS_AREAS,
   AREA_PERMISSIONS,
   PARTNERS,
+  PARTNER_CONTACTS,
   REFERRERS,
   buildVisibilityContext,
   getAreaById,
   getUserById,
   getPartnerById,
   getReferrerById,
+  getPartnerContacts,
 } from './lib/eq-organization';
 export {
   canUserSeeArea,
   userLevelInArea,
+  PARTNER_TIERS,
+  PARTNER_VOLUME_BONUS_CAP_PCT,
+  PARTNER_COMBINED_DISCOUNT_CAP_PCT,
+  volumeBonusForPax,
+  getTierConfig,
+  suggestTierForYtdPax,
 } from './types/organization';
 
 // Cost catalog (hours × rates by modality)
@@ -66,6 +74,15 @@ export {
   calcCertFacilitationCost,
   bundleIncludesMerch,
 } from './lib/eq-cost-catalog';
+
+// Assessments catalog (credits per assessment, for Graduate calc)
+export {
+  ASSESSMENTS,
+  CATEGORY_LABELS as ASSESSMENT_CATEGORY_LABELS,
+  CATEGORY_ORDER as ASSESSMENT_CATEGORY_ORDER,
+  GRADUATE_DEFAULT_MARKUP_MULTIPLIER,
+} from './lib/eq-assessments-catalog';
+export type { Assessment, AssessmentCategory } from './lib/eq-assessments-catalog';
 
 // Pricing Engine
 export {
