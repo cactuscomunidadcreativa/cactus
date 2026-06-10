@@ -224,7 +224,7 @@ footer b{color:var(--cactus)}
   <h1>¿QUIÉN GANA?<span class="thin"> · la brecha en vivo</span></h1>
   <p class="sub">Análisis abierto del conteo oficial ONPE entre Roberto Sánchez (Juntos por el Perú) y Keiko Fujimori (Fuerza Popular) — pensado para leerse desde cualquier lado. No declaramos un ganador: estimamos la <b>probabilidad de cada candidato</b>, contestamos si la tendencia se sostiene y acumulamos el histórico real mientras avanza el cómputo.</p>
   <div class="stampline">
-    <span class="stamp"><span class="dot" id="liveDot"></span>Datos: <b id="stampTime">10 jun 2026 · 10:48 UTC</b> · <span id="stampActas">97.017%</span> de actas</span>
+    <span class="stamp"><span class="dot" id="liveDot"></span>Datos: <b id="stampTime">cargando…</b> · <span id="stampActas">—</span> de actas</span>
     <button class="refresh" id="btnRefresh">↻ Actualizar ahora</button>
     <span class="stamp-status" id="liveStatus">auto-actualiza cada 60 s desde el feed de datos abiertos</span>
     <span class="stamp-status" id="nextUpd"></span>
@@ -293,8 +293,8 @@ footer b{color:var(--cactus)}
   <section>
     <h2>Lo que falta <span class="tag">actas y votos pendientes</span></h2>
     <div class="grid3">
-      <div class="stat"><div class="big" id="actasPend">2&thinsp;767</div><div class="lbl">actas pendientes de contabilizar (de 92&thinsp;766 en total)</div></div>
-      <div class="stat"><div class="big">~1&thinsp;553</div><div class="lbl">actas observadas en el JEE (votos impugnados / inconsistencias): pueden resolverse con votos anulados</div></div>
+      <div class="stat"><div class="big" id="actasPend">2&thinsp;767</div><div class="lbl" id="actasPendLbl">actas aún no contabilizadas (incluye las enviadas al JEE)</div></div>
+      <div class="stat"><div class="big" id="actasJee">1&thinsp;553</div><div class="lbl">actas observadas <b>enviadas al JEE</b> (impugnaciones / inconsistencias); pueden resolverse con votos anulados <span id="jeeDetail"></span></div></div>
       <div class="stat"><div class="big" id="votosRest">~453 mil</div><div class="lbl">votos válidos estimados aún por entrar, <b>ya descontado</b> el ausentismo del exterior</div></div>
     </div>
     <div class="geo">
@@ -345,7 +345,7 @@ footer b{color:var(--cactus)}
         <div class="ctrl">
           <label>Ruido por actas observadas (JEE) <b id="jeeVal">±7k</b></label>
           <input type="range" id="jee" min="0" max="20" value="7" step="1">
-          <div class="hint">Las ~1&thinsp;553 actas en el JEE pueden resolverse con anulaciones. Modela cuánto puede mover eso el resultado, en cualquier dirección.</div>
+          <div class="hint">Las actas observadas enviadas al JEE pueden resolverse con anulaciones. Modela cuánto puede mover eso el resultado, en cualquier dirección.</div>
         </div>
       </div>
 
@@ -373,7 +373,7 @@ footer b{color:var(--cactus)}
         <ol>
           <li>El resultado depende de <b>una sola palanca dominante</b>: las ~900 mesas pendientes de Lima. Si votan como su histórico (~64% Keiko) ella voltea casi seguro; si se comportan como el voto reciente, la elección se vuelve a abrir.</li>
           <li>Los % del exterior (España con muy pocas mesas contadas, Japón al 92%) salen de <b>muestras diminutas</b>: el porcentaje es real, pero la cantidad de votos detrás es pequeña y muy sensible al ausentismo.</li>
-          <li>Las ~1&thinsp;553 actas observadas en el JEE pueden no sumar como mesa normal si hay anulaciones.</li>
+          <li>Las actas observadas enviadas al JEE pueden no sumar como mesa normal si hay anulaciones.</li>
           <li>El resultado <b>oficial definitivo</b> lo proclama el JNE recién hacia mediados de julio, tras resolver impugnaciones.</li>
         </ol>
       </div>
@@ -634,9 +634,9 @@ function renderReadout(r){
 
 function renderScenarios(){
   const presets = [
-    ["Conservador (Sánchez)", {ff:0.40,lam:0.55,unc:1,jee:7000}],
-    ["Central",               {ff:0.55,lam:0.30,unc:1,jee:7000}],
-    ["Optimista (Keiko)",     {ff:0.85,lam:0.05,unc:1,jee:7000}]
+    ["Exterior bajo · regresión alta",  {ff:0.40,lam:0.55,unc:1,jee:7000}],
+    ["Escenario central",               {ff:0.55,lam:0.30,unc:1,jee:7000}],
+    ["Exterior alto · histórico puro",  {ff:0.85,lam:0.05,unc:1,jee:7000}]
   ];
   const box = document.getElementById("scenRows");
   box.innerHTML = "";
@@ -834,7 +834,14 @@ renderModel();
 /* ============ actualización en vivo ============ */
 // Cadena de datos: API interna ONPE → scraper (repo GitHub, CORS abierto) → este HTML.
 const FEED = "https://raw.githubusercontent.com/oscarzamora/onpe-scraper-2026-2/main/resumen/resumen_nacional.txt";
-const POLL_MS = 60 * 1000; // auto-refresh cada 60 segundos
+const FEED_MESAS = "https://raw.githubusercontent.com/oscarzamora/onpe-scraper-2026-2/main/output/mesas_data.txt";
+const POLL_MS = 60 * 1000;        // resumen nacional: cada 60 segundos
+const POLL_MESAS_MS = 10 * 60 * 1000; // estados de actas (archivo pesado): cada 10 min
+
+// hora en la zona horaria del dispositivo del visitante
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fmtFecha = d => d.getDate() + " " + MESES[d.getMonth()] + " " +
+  String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
 const fmt = n => n.toLocaleString("es-PE").replace(/[.,]/g, " ");
 const $ = id => document.getElementById(id);
 let nextAt = Date.now() + POLL_MS;
@@ -888,7 +895,7 @@ async function actualizar(manual){
     // punto nuevo en la gráfica histórica (y se guarda en este navegador)
     const lastPct = serie[serie.length-1][0];
     const d = new Date(ts);
-    const lbl = d.getUTCDate() + " jun " + String(d.getUTCHours()).padStart(2,"0") + ":" + String(d.getUTCMinutes()).padStart(2,"0");
+    const lbl = fmtFecha(d);
     if (actasPct > lastPct + 0.0005){ serie.push([actasPct, gap, lbl]); }
     else { serie[serie.length-1] = [actasPct, gap, lbl]; }
     saveHist();
@@ -896,7 +903,7 @@ async function actualizar(manual){
     renderChart();
 
     // stamp
-    $("stampTime").textContent = lbl + " UTC";
+    $("stampTime").textContent = lbl + " · tu hora local";
     $("stampActas").textContent = actasPct.toFixed(3) + "%";
     const ageMin = Math.round((Date.now() - d.getTime())/60000);
     setStatus(ageMin <= 30 ? "ok" : "stale",
@@ -907,9 +914,30 @@ async function actualizar(manual){
   }
 }
 
-document.getElementById("btnRefresh").addEventListener("click", ()=>actualizar(true));
+/* ============ estados de actas (enviadas al JEE / pendientes) ============ */
+// El resumen nacional no separa las actas observadas: ese detalle vive en el
+// archivo mesa-a-mesa (codigo_estado_acta: C contabilizada, E para envío al
+// JEE, P pendiente). Es pesado, así que se consulta con menos frecuencia.
+async function actualizarEstados(){
+  try{
+    const res = await fetch(FEED_MESAS + "?t=" + Date.now(), {cache:"no-store"});
+    if(!res.ok) return;
+    const txt = await res.text();
+    const nJee  = (txt.match(/\tE\tPara envío al JEE/g) || []).length;
+    const nPend = (txt.match(/\tP\tPendiente/g) || []).length;
+    if(nJee + nPend === 0) return;
+    $("actasJee").innerHTML = fmt(nJee);
+    $("jeeDetail").textContent = "";
+    $("actasPendLbl").innerHTML = "actas aún no contabilizadas · detalle mesa a mesa: " +
+      fmt(nPend) + " por procesar + " + fmt(nJee) + " enviadas al JEE";
+  }catch(e){ /* si falla, se mantiene el último dato conocido */ }
+}
+
+document.getElementById("btnRefresh").addEventListener("click", ()=>{ actualizar(true); actualizarEstados(); });
 actualizar(false);
+actualizarEstados();
 setInterval(()=>actualizar(false), POLL_MS);
+setInterval(actualizarEstados, POLL_MESAS_MS);
 
 // al volver a la pestaña, refresca de inmediato
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) actualizar(false); });
