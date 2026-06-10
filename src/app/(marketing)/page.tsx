@@ -17,9 +17,7 @@ import {
   MessageSquare,
   CheckCircle,
   Mail,
-  Phone,
   MapPin,
-  Send,
   ChevronRight,
   Star,
   TrendingUp,
@@ -27,7 +25,9 @@ import {
   Code,
   Layers,
   ExternalLink,
+  MessageCircle,
 } from 'lucide-react';
+import { ContactForm } from '@/components/marketing/contact-form';
 
 // ═══════════════════════════════════════
 // ECOSYSTEM APPS — The Cactus Species
@@ -715,82 +715,75 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════
           CONTACT
           ═══════════════════════════════════════ */}
-      <section id="contacto" className="py-24 px-4 bg-muted/30">
-        <div className="max-w-5xl mx-auto">
+      <section id="contacto" className="relative py-24 px-4 bg-muted/30 overflow-hidden">
+        {/* Decorative glows */}
+        <div aria-hidden className="pointer-events-none absolute -top-32 -right-32 w-96 h-96 rounded-full bg-cactus-green/15 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-40 -left-32 w-[28rem] h-[28rem] rounded-full bg-cactus-green-light/10 blur-3xl" />
+
+        <div className="relative max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <p className="text-xs tracking-[0.3em] uppercase text-cactus-green mb-4">Conectemos / Connect</p>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold mb-4">
+            <h2 className="text-3xl sm:text-4xl font-display font-bold mb-4 bg-gradient-to-r from-foreground via-cactus-green to-foreground bg-clip-text">
               Hagamos que tu negocio florezca.
             </h2>
             <p className="text-lg text-muted-foreground">
               Estamos listos para transformar tu negocio con inteligencia artificial.
             </p>
+            <span className="inline-flex items-center gap-2 mt-5 px-4 py-1.5 rounded-full border border-cactus-green/30 bg-cactus-green/10 text-sm text-cactus-green font-medium">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cactus-green opacity-60" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cactus-green" />
+              </span>
+              Disponibles ahora — respuesta en minutos
+            </span>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Contact Form */}
-            <div className="bg-card border border-border rounded-2xl p-8">
+            {/* Contact Form — opens WhatsApp / email with the message */}
+            <div className="bg-card border border-border rounded-2xl p-8 shadow-sm hover:shadow-xl hover:shadow-cactus-green/10 transition-shadow">
               <h3 className="text-xl font-semibold mb-6">Envianos un mensaje</h3>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Nombre</label>
-                  <input
-                    type="text"
-                    placeholder="Tu nombre"
-                    className="w-full px-4 py-3 border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-cactus-green"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
-                  <input
-                    type="email"
-                    placeholder="tu@email.com"
-                    className="w-full px-4 py-3 border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-cactus-green"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Mensaje</label>
-                  <textarea
-                    rows={4}
-                    placeholder="Cuentanos sobre tu proyecto..."
-                    className="w-full px-4 py-3 border border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-cactus-green resize-none"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full px-6 py-3 bg-cactus-green text-white rounded-xl font-medium hover:bg-cactus-green/90 transition-colors flex items-center justify-center gap-2"
-                >
-                  Enviar Mensaje
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
+              <ContactForm />
             </div>
 
             {/* Contact Info */}
             <div className="space-y-6">
-              <div className="bg-card border border-border rounded-2xl p-6">
+              <a
+                href="https://wa.me/17863954654"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-card border border-border rounded-2xl p-6 group hover:border-[#25D366]/60 hover:shadow-lg hover:shadow-[#25D366]/15 hover:-translate-y-0.5 transition-all"
+              >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-cactus-green/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-[#25D366]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <MessageCircle className="w-6 h-6 text-[#25D366]" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-1">WhatsApp</h4>
+                    <p className="text-muted-foreground">+1 (786) 395-4654</p>
+                    <p className="text-xs text-cactus-green mt-1 flex items-center gap-1">
+                      Escribir ahora <ChevronRight className="w-3 h-3" />
+                    </p>
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href="mailto:eduardo@cactuscomunidadcreativa.com"
+                className="block bg-card border border-border rounded-2xl p-6 group hover:border-cactus-green/60 hover:shadow-lg hover:shadow-cactus-green/15 hover:-translate-y-0.5 transition-all"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-cactus-green/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                     <Mail className="w-6 h-6 text-cactus-green" />
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1">Email</h4>
-                    <p className="text-muted-foreground">hola@cactuscomunidadcreativa.com</p>
+                    <p className="text-muted-foreground break-all">eduardo@cactuscomunidadcreativa.com</p>
+                    <p className="text-xs text-cactus-green mt-1 flex items-center gap-1">
+                      Enviar correo <ChevronRight className="w-3 h-3" />
+                    </p>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-card border border-border rounded-2xl p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-cactus-green/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-6 h-6 text-cactus-green" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Telefono</h4>
-                    <p className="text-muted-foreground">+51 999 999 999</p>
-                  </div>
-                </div>
-              </div>
+              </a>
 
               <div className="bg-card border border-border rounded-2xl p-6">
                 <div className="flex items-start gap-4">
@@ -805,7 +798,7 @@ export default async function HomePage() {
               </div>
 
               {/* CTA Card */}
-              <div className="bg-cactus-green/10 border border-cactus-green/20 rounded-2xl p-6 text-center">
+              <div className="bg-gradient-to-br from-cactus-green/15 to-cactus-green-light/10 border border-cactus-green/20 rounded-2xl p-6 text-center">
                 <p className="font-semibold mb-2">No solo construimos apps</p>
                 <p className="text-sm text-muted-foreground mb-4">Cultivamos futuro.</p>
                 <p className="text-xs text-muted-foreground/60 italic">We don&apos;t just build apps — we cultivate the future.</p>
