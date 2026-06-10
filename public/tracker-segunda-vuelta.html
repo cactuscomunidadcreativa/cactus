@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Brecha · Segunda Vuelta Perú 2026 · Cactus</title>
+<meta name="description" content="Tracker estadístico del conteo oficial ONPE de la segunda vuelta 2026, con modelo de simulación Monte Carlo y ajuste por ausentismo del voto exterior. Cactus Comunidad CreatIVA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@500;700;900&family=Archivo:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ----- marca Cactus Comunidad CreatIVA: noche del desierto ----- */
+  --noche:#0A130E;          /* fondo, verde casi negro */
+  --noche-2:#10211A;        /* tarjeta */
+  --noche-3:#19302584;      /* borde / hover (con alfa) */
+  --surface-3:#193025;      /* sólido para barras */
+  --arena:#ECE6D6;          /* texto principal (arena clara) */
+  --arena-dim:#9FB1A2;      /* texto secundario (salvia) */
+  --cactus:#3FBE82;         /* acento de marca (verde cactus) */
+  --cactus-2:#74D6A6;       /* verde claro */
+  --espina:#E0B24A;         /* oro espina, acento de dato neutro */
+  /* ----- colores de partido (intactos) ----- */
+  --keiko:#F2873A;          /* naranja · Fuerza Popular */
+  --sanchez:#E23B4E;        /* rojo · Juntos por el Perú */
+  --linea:rgba(236,230,214,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1100px 560px at 72% -12%, #14361F 0%, transparent 58%),
+    radial-gradient(900px 500px at 10% 8%, #0E2519 0%, transparent 55%),
+    var(--noche);
+  color:var(--arena);
+  font-family:'Archivo','Segoe UI',Roboto,'Helvetica Neue',Arial,system-ui,sans-serif;
+  font-size:15px; line-height:1.55;
+  padding:clamp(14px,3vw,40px);
+}
+.wrap{max-width:880px;margin:0 auto}
+
+/* ---------- cabecera ---------- */
+.brandbar{display:flex;align-items:center;gap:9px;margin-bottom:18px;font-family:'Spline Sans Mono',Consolas,Menlo,monospace;font-size:12px;color:var(--arena-dim)}
+.brandbar b{color:var(--cactus);font-weight:700}
+.eyebrow{
+  font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--cactus);margin-bottom:10px;
+}
+h1{
+  font-family:'Archivo Expanded','Arial Black','Archivo',Impact,sans-serif;font-weight:900;
+  font-size:clamp(30px,6vw,54px);line-height:.98;letter-spacing:-.01em;
+}
+h1 .thin{color:var(--arena-dim);font-weight:500}
+.sub{color:var(--arena-dim);margin-top:10px;max-width:62ch}
+.stamp{
+  display:inline-block;margin-top:14px;padding:5px 12px;border:1px solid var(--linea);
+  border-radius:99px;font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:11.5px;color:var(--arena-dim);
+}
+.stamp b{color:var(--espina);font-weight:700}
+
+/* ---------- marcador ---------- */
+.score{
+  margin-top:26px;background:var(--noche-2);border:1px solid var(--linea);
+  border-radius:18px;overflow:hidden;
+}
+.score-row{display:grid;grid-template-columns:1fr auto 1fr}
+.cand{padding:22px 20px 16px}
+.cand.k{text-align:right}
+.cand .party{font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase}
+.cand.s .party{color:var(--sanchez)} .cand.k .party{color:var(--keiko)}
+.cand .name{font-family:'Archivo Expanded',sans-serif;font-weight:700;font-size:clamp(15px,2.6vw,21px);margin:4px 0 8px}
+.cand .votes{font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:clamp(17px,3.4vw,26px);font-weight:700}
+.cand .pct{color:var(--arena-dim);font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:13px;margin-top:2px}
+.vs{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 14px;border-left:1px dashed var(--linea);border-right:1px dashed var(--linea);
+}
+.vs .gap-label{font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:10px;letter-spacing:.18em;color:var(--arena-dim);text-transform:uppercase}
+.vs .gap{font-family:'Archivo Expanded',sans-serif;font-weight:900;font-size:clamp(22px,4.6vw,38px);color:var(--sanchez)}
+.vs .gap-sub{font-size:11.5px;color:var(--arena-dim);text-align:center}
+.bar{display:flex;height:14px}
+.bar .s{background:var(--sanchez)} .bar .k{background:var(--keiko)}
+.bar .mid{width:2px;background:var(--arena)}
+
+/* ---------- secciones ---------- */
+section{margin-top:34px}
+h2{
+  font-family:'Archivo Expanded',sans-serif;font-weight:700;font-size:clamp(17px,3vw,22px);
+  display:flex;align-items:baseline;gap:10px;margin-bottom:6px;
+}
+h2 .tag{font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:10.5px;letter-spacing:.18em;color:var(--cactus);text-transform:uppercase;font-weight:500}
+.note{color:var(--arena-dim);font-size:13.5px;max-width:70ch}
+
+/* ---------- gráfica brecha ---------- */
+.chart-card{background:var(--noche-2);border:1px solid var(--linea);border-radius:18px;padding:18px 14px 8px;margin-top:14px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:11.5px;color:var(--arena-dim);padding:0 8px 6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+svg{width:100%;height:auto;display:block}
+.tooltip-note{font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:10.5px;color:var(--arena-dim);text-align:right;padding:6px 8px 8px}
+
+/* ---------- pendientes ---------- */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.stat{background:var(--noche-2);border:1px solid var(--linea);border-radius:14px;padding:16px}
+.stat .big{font-family:'Archivo Expanded',sans-serif;font-weight:900;font-size:clamp(20px,3.6vw,30px);color:var(--espina)}
+.stat .lbl{font-size:12.5px;color:var(--arena-dim);margin-top:4px;line-height:1.4}
+
+.geo{margin-top:14px;background:var(--noche-2);border:1px solid var(--linea);border-radius:18px;padding:18px}
+.geo-row{display:grid;grid-template-columns:150px 1fr 64px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--linea)}
+.geo-row:last-child{border-bottom:none}
+.geo-row .g-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.geo-row .g-name small{display:block;font-weight:400;color:var(--arena-dim);font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:10px;line-height:1.35}
+.flag-ext{font-family:'Spline Sans Mono',monospace;font-size:8.5px;letter-spacing:.08em;color:var(--espina);border:1px solid rgba(224,178,74,.5);border-radius:4px;padding:1px 4px;text-transform:uppercase}
+.g-bar{height:12px;border-radius:6px;background:var(--surface-3);overflow:hidden;display:flex}
+.g-bar .gk{background:var(--keiko)} .g-bar .gs{background:var(--sanchez)}
+.g-pct{font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:12px;text-align:right;color:var(--keiko)}
+.g-pct small{display:block;color:var(--arena-dim);font-size:9.5px}
+
+/* ---------- modelo / sliders ---------- */
+.model{
+  margin-top:14px;border-radius:18px;padding:24px 22px;
+  background:linear-gradient(135deg,#15301F 0%, #10211A 72%);
+  border:1px solid rgba(63,190,130,.32);
+}
+.verdict{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.verdict .prob{
+  font-family:'Archivo Expanded',sans-serif;font-weight:900;font-size:clamp(30px,7vw,52px);
+  color:var(--cactus);line-height:1;
+}
+.verdict .prob small{display:block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--arena-dim);font-family:'Spline Sans Mono',monospace;font-weight:500;margin-bottom:4px}
+.verdict .cond{font-size:13.5px;color:var(--arena-dim);max-width:42ch}
+
+.ci{margin-top:18px;background:rgba(10,19,14,.5);border:1px solid var(--linea);border-radius:12px;padding:14px 16px}
+.ci .ci-line{font-family:'Spline Sans Mono',monospace;font-size:13px;color:var(--arena);margin-bottom:4px}
+.ci .ci-line b{color:var(--espina)}
+.ci .ci-sub{font-size:11.5px;color:var(--arena-dim)}
+
+.controls{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px 22px}
+.ctrl label{display:flex;justify-content:space-between;font-size:12px;color:var(--arena-dim);margin-bottom:6px;font-family:'Spline Sans Mono',monospace}
+.ctrl label b{color:var(--cactus-2)}
+.ctrl input[type=range]{width:100%;accent-color:var(--cactus);height:4px}
+.ctrl .hint{font-size:10.5px;color:var(--arena-dim);margin-top:3px;line-height:1.35}
+
+.needle{margin-top:22px}
+.needle .scale{position:relative;height:30px;border-radius:8px;overflow:hidden;
+  background:linear-gradient(90deg,var(--sanchez) 0 50%, var(--keiko) 50% 100%);}
+.needle .band{position:absolute;top:0;bottom:0;background:rgba(236,230,214,.22);border-left:1px solid var(--arena);border-right:1px solid var(--arena)}
+.needle .mark{position:absolute;top:0;bottom:0;width:3px;background:var(--arena)}
+.needle .mark.brk{background:var(--cactus)}
+.needle .mark::after{content:attr(data-l);position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+  font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:10px;white-space:nowrap;color:var(--arena)}
+.needle .mark.brk::after{color:var(--cactus-2)}
+.needle .axis{display:flex;justify-content:space-between;font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:10px;color:var(--arena-dim);margin-top:8px}
+
+.dist{margin-top:22px}
+.dist .dlabel{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--arena-dim);margin-bottom:6px}
+
+.scen{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.scen .s-card{background:rgba(10,19,14,.45);border:1px solid var(--linea);border-radius:12px;padding:13px 14px}
+.scen .s-card h4{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--arena-dim);font-weight:500;margin-bottom:8px}
+.scen .s-card .s-res{font-family:'Archivo Expanded',sans-serif;font-weight:900;font-size:18px}
+.scen .s-card .s-sub{font-size:10.5px;color:var(--arena-dim);margin-top:4px;line-height:1.4;font-family:'Spline Sans Mono',monospace}
+
+.caveats{margin-top:20px;padding-top:14px;border-top:1px dashed rgba(236,230,214,.22);font-size:12.5px;color:var(--arena-dim)}
+.caveats b{color:var(--arena)}
+.caveats ol{margin:8px 0 0 18px;padding:0}
+.caveats li{margin-bottom:6px}
+
+/* ---------- live ---------- */
+.stampline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.stampline .stamp{margin-top:0}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cactus);margin-right:8px;vertical-align:1px}
+.dot.stale{background:var(--espina)}.dot.err{background:var(--sanchez)}
+@media(prefers-reduced-motion:no-preference){.dot{animation:pulse 2.2s infinite}@keyframes pulse{50%{opacity:.35}}}
+.refresh{font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:11.5px;color:var(--arena);background:var(--surface-3);
+  border:1px solid var(--linea);border-radius:99px;padding:6px 14px;cursor:pointer}
+.refresh:hover{border-color:var(--cactus)} .refresh:focus-visible{outline:2px solid var(--cactus);outline-offset:2px}
+.stamp-status{font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:10.5px;color:var(--arena-dim)}
+footer{margin-top:36px;font-family:'Spline Sans Mono','SF Mono',Consolas,Menlo,monospace;font-size:11px;color:var(--arena-dim);line-height:1.7}
+footer b{color:var(--cactus)}
+
+/* ---------- lectura / tendencia ---------- */
+.readout{margin-top:16px;background:var(--noche-2);border:1px solid var(--linea);border-left:3px solid var(--cactus);border-radius:12px;padding:15px 18px}
+.readout .r-tag{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--cactus);margin-bottom:6px}
+.readout .r-text{font-size:14px;color:var(--arena);line-height:1.65}
+.readout .r-text b{color:var(--espina)}
+.readout .r-text .k{color:var(--keiko);font-weight:700}
+.readout .r-text .s{color:var(--sanchez);font-weight:700}
+
+/* ---------- probabilidades dobles ---------- */
+.probs{display:flex;align-items:center;gap:18px}
+.prob{font-family:'Archivo Expanded',sans-serif;font-weight:900;font-size:clamp(26px,6vw,46px);line-height:1}
+.prob small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--arena-dim);font-family:'Spline Sans Mono',monospace;font-weight:500;margin-bottom:4px}
+.prob.k{color:var(--keiko)} .prob.s{color:var(--sanchez)}
+.probvs{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--arena-dim)}
+.probbar{display:flex;height:12px;margin-top:14px;border-radius:6px;overflow:hidden;background:var(--surface-3)}
+.probbar .pb-s{background:var(--sanchez);transition:width .5s ease} .probbar .pb-k{background:var(--keiko);transition:width .5s ease} .probbar .pb-mid{width:2px;background:var(--arena)}
+
+/* ---------- toggle + zoom de la gráfica ---------- */
+.chart-toggle{display:flex;gap:6px;margin:0 8px 10px;flex-wrap:wrap}
+.chart-toggle button{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--arena-dim);background:transparent;border:1px solid var(--linea);border-radius:99px;padding:4px 12px;cursor:pointer}
+.chart-toggle button.on{color:var(--noche);background:var(--cactus);border-color:var(--cactus);font-weight:700}
+.chart-zoomrow{display:flex;align-items:center;gap:10px;margin:0 8px 12px;font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--arena-dim)}
+.chart-zoomrow input[type=range]{flex:1;accent-color:var(--cactus);height:4px;min-width:120px}
+.chart-zoomrow .zinfo{white-space:nowrap;color:var(--cactus-2)}
+
+@media(max-width:640px){
+  .score-row{grid-template-columns:1fr}
+  .cand.k{text-align:left}
+  .vs{flex-direction:row;gap:10px;border:none;border-top:1px dashed var(--linea);border-bottom:1px dashed var(--linea);padding:10px}
+  .grid3{grid-template-columns:1fr}
+  .geo-row{grid-template-columns:118px 1fr 56px}
+  .controls{grid-template-columns:1fr}
+  .scen{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:no-preference){
+  .bar .s,.bar .k{transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brandbar">🌵 <b>Cactus</b> Comunidad CreatIVA · análisis de datos</div>
+
+  <div class="eyebrow">Segunda vuelta · Perú · 7 de junio 2026</div>
+  <h1>¿QUIÉN GANA?<span class="thin"> · la brecha en vivo</span></h1>
+  <p class="sub">Análisis abierto del conteo oficial ONPE entre Roberto Sánchez (Juntos por el Perú) y Keiko Fujimori (Fuerza Popular) — pensado para leerse desde cualquier lado. No declaramos un ganador: estimamos la <b>probabilidad de cada candidato</b>, contestamos si la tendencia se sostiene y acumulamos el histórico real mientras avanza el cómputo.</p>
+  <div class="stampline">
+    <span class="stamp"><span class="dot" id="liveDot"></span>Datos: <b id="stampTime">10 jun 2026 · 10:48 UTC</b> · <span id="stampActas">97.017%</span> de actas</span>
+    <button class="refresh" id="btnRefresh">↻ Actualizar ahora</button>
+    <span class="stamp-status" id="liveStatus">auto-actualiza cada 60 s desde el feed de datos abiertos</span>
+    <span class="stamp-status" id="nextUpd"></span>
+  </div>
+
+  <!-- MARCADOR -->
+  <div class="score">
+    <div class="score-row">
+      <div class="cand s">
+        <div class="party">Juntos por el Perú</div>
+        <div class="name">Roberto Sánchez</div>
+        <div class="votes" id="vS">8&thinsp;979&thinsp;564</div>
+        <div class="pct" id="pS">50.073% de válidos</div>
+      </div>
+      <div class="vs">
+        <span class="gap-label">Brecha</span>
+        <span class="gap" id="gapNum">26&thinsp;161</span>
+        <span class="gap-sub" id="gapSub">votos a favor<br>de Sánchez</span>
+      </div>
+      <div class="cand k">
+        <div class="party">Fuerza Popular</div>
+        <div class="name">Keiko Fujimori</div>
+        <div class="votes" id="vK">8&thinsp;953&thinsp;403</div>
+        <div class="pct" id="pK">49.927% de válidos</div>
+      </div>
+    </div>
+    <div class="bar">
+      <div class="s" id="barS" style="width:50.073%"></div>
+      <div class="mid"></div>
+      <div class="k" id="barK" style="width:49.927%"></div>
+    </div>
+  </div>
+
+  <!-- LECTURA EN VIVO -->
+  <div class="readout">
+    <div class="r-tag">La lectura de ahora · ¿sigue la tendencia?</div>
+    <p class="r-text" id="readoutText">Cargando datos del conteo…</p>
+  </div>
+
+  <!-- GRÁFICA -->
+  <section>
+    <h2>El cruce <span class="tag">evolución de la brecha · histórico acumulado</span></h2>
+    <p class="note">Diferencia de votos (Keiko − Sánchez) según avanza el conteo. Keiko llegó a estar <b style="color:var(--keiko)">+535 mil arriba</b> al 80% (las actas urbanas entran primero); el voto rural y amazónico la volteó. Ahora el final del conteo —Lima rezagada y el exterior— vuelve a empujar hacia el cero. Cada lectura nueva se guarda en este navegador, así la curva se va engrosando sola.</p>
+    <div class="chart-card">
+      <div class="chart-toggle">
+        <button id="tgFinal">Recta final</button>
+        <button id="tgZoom" class="on">Cierre (92%+)</button>
+        <button id="tgFull">Todo (desde 80%)</button>
+      </div>
+      <div class="chart-zoomrow">
+        <span>🔍︎ zoom</span>
+        <input type="range" id="zoomRange" min="0" max="100" value="0" step="1" aria-label="Zoom de la gráfica">
+        <span class="zinfo" id="zoomInfo"></span>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--keiko)"></i>Keiko adelante</span>
+        <span><i style="background:var(--sanchez)"></i>Sánchez adelante</span>
+        <span><i style="background:var(--cactus);height:2px;border-radius:0;vertical-align:3px"></i>Empate (0)</span>
+      </div>
+      <svg id="gapChart" viewBox="0 0 840 430" role="img" aria-label="Evolución de la brecha de votos entre Keiko Fujimori y Roberto Sánchez"></svg>
+      <div class="tooltip-note">eje x: % de actas contabilizadas · eje y: miles de votos · mueve el zoom para separar los puntos</div>
+    </div>
+  </section>
+
+  <!-- LO QUE FALTA -->
+  <section>
+    <h2>Lo que falta <span class="tag">actas y votos pendientes</span></h2>
+    <div class="grid3">
+      <div class="stat"><div class="big" id="actasPend">2&thinsp;767</div><div class="lbl">actas pendientes de contabilizar (de 92&thinsp;766 en total)</div></div>
+      <div class="stat"><div class="big">~1&thinsp;553</div><div class="lbl">actas observadas en el JEE (votos impugnados / inconsistencias): pueden resolverse con votos anulados</div></div>
+      <div class="stat"><div class="big" id="votosRest">~453 mil</div><div class="lbl">votos válidos estimados aún por entrar, <b>ya descontado</b> el ausentismo del exterior</div></div>
+    </div>
+    <div class="geo">
+      <p class="note" style="margin-bottom:12px">Dónde están las mesas pendientes y cómo viene votando esa misma zona en lo ya contado (% de Keiko sobre el voto a dos). El sello <span class="flag-ext">EXT</span> marca voto exterior, donde el % proviene de muestras pequeñas y la concurrencia real suele ser menor:</p>
+      <div id="geoRows"></div>
+    </div>
+  </section>
+
+  <!-- MODELO -->
+  <section>
+    <h2>El modelo <span class="tag">simulación Monte Carlo · ¿quién gana?</span></h2>
+    <p class="note">En vez de multiplicar <i>mesas pendientes × promedio de votos por mesa</i> (que asume que las mesas que faltan son iguales a las ya contadas), corremos <b id="nSims">6&thinsp;000</b> simulaciones. En cada una sorteamos, por zona, el % de cada candidato alrededor de lo observado —con más dispersión donde hay poca muestra o es exterior— y la <b>concurrencia efectiva</b> de las mesas del exterior. El resultado no es un número: es una distribución, y de ahí sale la probabilidad de cada quien.</p>
+
+    <div class="model">
+      <div class="verdict">
+        <div class="probs">
+          <div class="prob s"><small>Sánchez gana</small><span id="pSan">—</span></div>
+          <div class="probvs">vs</div>
+          <div class="prob k"><small>Keiko gana</small><span id="pKeiko">—</span></div>
+        </div>
+        <div class="cond">Probabilidad de cada candidato según el modelo, bajo los supuestos actuales. Mueve los controles para someter el análisis a estrés: es aritmética <b>condicionada</b>, no un pronóstico.</div>
+      </div>
+      <div class="probbar"><div class="pb-s" id="pbS"></div><div class="pb-mid"></div><div class="pb-k" id="pbK"></div></div>
+
+      <div class="ci">
+        <div class="ci-line">Resultado final (mediana): <b id="ciMed">—</b></div>
+        <div class="ci-line">Intervalo del 80%: <b id="ci80">—</b></div>
+        <div class="ci-sub">Es decir: en el 80% de las simulaciones el resultado cae dentro de ese rango. Cuanto más ancho, menos resuelta está la elección.</div>
+      </div>
+
+      <!-- CONTROLES -->
+      <div class="controls">
+        <div class="ctrl">
+          <label>Concurrencia del exterior <b id="ffVal">55%</b></label>
+          <input type="range" id="ff" min="25" max="100" value="55" step="1">
+          <div class="hint">Votos efectivos por mesa en el exterior vs. una mesa nacional. Bajo = más ausentismo en consulados → menos votos reales para Keiko de los que sugiere el %.</div>
+        </div>
+        <div class="ctrl">
+          <label>Las mesas rezagadas se parecen al voto reciente <b id="lamVal">45%</b></label>
+          <input type="range" id="lam" min="0" max="100" value="45" step="1">
+          <div class="hint">0% = cada zona pendiente vota como su propio histórico. 100% = todo lo que falta vota como la última tanda nacional (que viene favoreciendo a Sánchez).</div>
+        </div>
+        <div class="ctrl">
+          <label>Incertidumbre general <b id="uncVal">1.1×</b></label>
+          <input type="range" id="unc" min="50" max="220" value="110" step="5">
+          <div class="hint">Ensancha o reduce la dispersión de todos los sorteos. Más alto = reconoces que sabes menos de las mesas que faltan.</div>
+        </div>
+        <div class="ctrl">
+          <label>Ruido por actas observadas (JEE) <b id="jeeVal">±7k</b></label>
+          <input type="range" id="jee" min="0" max="20" value="7" step="1">
+          <div class="hint">Las ~1&thinsp;553 actas en el JEE pueden resolverse con anulaciones. Modela cuánto puede mover eso el resultado, en cualquier dirección.</div>
+        </div>
+      </div>
+
+      <!-- AGUJA -->
+      <div class="needle">
+        <div class="scale">
+          <div class="band" id="needBand"></div>
+          <div class="mark brk" id="markBrk" data-l="empate 50%"></div>
+          <div class="mark" id="markMed" data-l="mediana"></div>
+        </div>
+        <div class="axis"><span>0% — todo para Sánchez</span><span>% efectivo de Keiko en lo que falta</span><span>100%</span></div>
+      </div>
+
+      <!-- DISTRIBUCIÓN -->
+      <div class="dist">
+        <div class="dlabel">Distribución del resultado final simulado (cada barra = nº de simulaciones)</div>
+        <svg id="distChart" viewBox="0 0 840 220" role="img" aria-label="Distribución del resultado final simulado"></svg>
+      </div>
+
+      <!-- ESCENARIOS -->
+      <div class="scen" id="scenRows"></div>
+
+      <div class="caveats">
+        <b>Lo que el modelo no puede saber (y por qué ninguna tesis es certeza):</b>
+        <ol>
+          <li>El resultado depende de <b>una sola palanca dominante</b>: las ~900 mesas pendientes de Lima. Si votan como su histórico (~64% Keiko) ella voltea casi seguro; si se comportan como el voto reciente, la elección se vuelve a abrir.</li>
+          <li>Los % del exterior (España con muy pocas mesas contadas, Japón al 92%) salen de <b>muestras diminutas</b>: el porcentaje es real, pero la cantidad de votos detrás es pequeña y muy sensible al ausentismo.</li>
+          <li>Las ~1&thinsp;553 actas observadas en el JEE pueden no sumar como mesa normal si hay anulaciones.</li>
+          <li>El resultado <b>oficial definitivo</b> lo proclama el JNE recién hacia mediados de julio, tras resolver impugnaciones.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Fuente: API interna de ONPE (resultadosegundavuelta.onpe.gob.pe) vía extracción mesa-a-mesa de datos abiertos + prensa para la serie histórica. Modelo propio: simulación Monte Carlo sobre la composición geográfica de las mesas pendientes, con concurrencia diferenciada exterior/nacional y dispersión escalada por tamaño de muestra. Supuestos editables; documento informativo, no oficial.<br>
+    Análisis y visualización: <b>🌵 Cactus Comunidad CreatIVA</b> · cactuscomunidadcreativa.com
+  </footer>
+</div>
+
+<script>
+/* ============ paleta desde CSS (para el SVG) ============ */
+const CSS = getComputedStyle(document.documentElement);
+const C = n => CSS.getPropertyValue(n).trim();
+const COL = {
+  keiko:C('--keiko'), sanchez:C('--sanchez'), cactus:C('--cactus'),
+  arena:C('--arena'), dim:C('--arena-dim'), espina:C('--espina'), noche:C('--noche')
+};
+
+/* ============ datos base ============ */
+// [% actas contabilizadas, brecha Keiko - Sánchez, etiqueta de tiempo]
+let serie = [
+  [80.49,  535261, "8 jun 02h"],
+  [92.72,   48856, "8 jun am"],
+  [93.65,    6561, "8 jun 11:42"],
+  [93.78,    2914, "8 jun 12h"],
+  [94.08,  -10279, "8 jun 13:42"],
+  [94.39,  -16599, "8 jun 14:58"],
+  [95.04,  -41303, "8 jun 19:50"],
+  [95.69,  -26472, "9 jun am"],
+  [96.38,  -42091, "9 jun pm"],
+  [97.00,  -25844, "10 jun 02:20"],
+  [97.012, -25392, "10 jun 03:05"],
+  [97.017, -26161, "10 jun 10:48"]
+];
+
+// nombre, mesas pendientes, mesas ya contadas (≈, para dimensionar la incertidumbre),
+// % Keiko a dos en esa zona (0-1), ¿exterior?
+const geos = [
+  ["Lima",       909, 9200, 0.636, false],
+  ["España",     404,   42, 0.619, true ],
+  ["EE.UU.",     352,  397, 0.777, true ],
+  ["Chile",      246,   90, 0.511, true ],
+  ["Argentina",  236,   80, 0.586, true ],
+  ["Loreto",      75,  900, 0.548, false],
+  ["Italia",      72,   60, 0.509, true ],
+  ["Cusco",       71, 1100, 0.225, false],
+  ["Callao",      69, 1500, 0.656, false],
+  ["Piura",       62, 2200, 0.579, false],
+  ["Japón",       32,   40, 0.920, true ]
+];
+
+const RECIENTE_K = 0.485; // % de Keiko en la última tanda nacional (favorece levemente a Sánchez)
+let LIVE = { gap:-26161, vpm:199, totalPend:2767 }; // se actualiza con el feed
+
+/* ============ histórico acumulado (localStorage) ============ */
+// En el sitio real esto persiste entre visitas; en entornos que bloquean
+// almacenamiento simplemente cae a la serie semilla, sin romperse.
+const STORE = "labrecha2026_serie";
+function loadHist(){
+  try{ const raw = localStorage.getItem(STORE);
+    if(raw){ const a = JSON.parse(raw); if(Array.isArray(a) && a.length) return a; }
+  }catch(e){}
+  return null;
+}
+function saveHist(){
+  try{ localStorage.setItem(STORE, JSON.stringify(serie.slice(-600))); }catch(e){}
+}
+(function initHist(){
+  const h = loadHist(); if(!h) return;
+  const map = new Map();
+  serie.forEach(p => map.set((+p[0]).toFixed(3), p)); // semilla
+  h.forEach(p => map.set((+p[0]).toFixed(3), p));      // lo guardado pisa la semilla
+  serie = [...map.values()].sort((a,b)=>a[0]-b[0]);
+})();
+
+/* ============ filas geográficas ============ */
+const geoRows = document.getElementById("geoRows");
+function renderGeo(){
+  geoRows.innerHTML = "";
+  geos.forEach(([n, mesas, cont, k, ext]) => {
+    const pk = (k*100);
+    const row = document.createElement("div");
+    row.className = "geo-row";
+    row.innerHTML = `
+      <div class="g-name">${n}${ext?' <span class="flag-ext">ext</span>':''}<small>${mesas} mesas pend · ${cont} contadas</small></div>
+      <div class="g-bar"><div class="gk" style="width:${pk}%"></div><div class="gs" style="width:${100-pk}%"></div></div>
+      <div class="g-pct">${pk.toFixed(1)}%<small>Keiko</small></div>`;
+    geoRows.appendChild(row);
+  });
+}
+renderGeo();
+
+/* ============ utilidades estadísticas ============ */
+function gauss(){ // Box-Muller
+  let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+
+// dispersión del % de una zona: mayor donde es exterior, poco contada o muestra chica
+function sigmaShare(g, uncMult){
+  const [,pend,cont,,ext]=g;
+  const frac = cont/(cont+pend);
+  let s = 0.024;
+  if(ext) s *= 1.8;
+  if(frac < 0.25) s *= 1.5;
+  if(cont < 80)  s *= 1.5;
+  return s * uncMult;
+}
+
+/* ============ motor del modelo ============ */
+function params(){
+  return {
+    ff:  +document.getElementById("ff").value/100,   // concurrencia exterior
+    lam: +document.getElementById("lam").value/100,  // regresión al voto reciente
+    unc: +document.getElementById("unc").value/100,  // multiplicador de incertidumbre
+    jee: +document.getElementById("jee").value*1000  // sd ruido JEE
+  };
+}
+
+// resultado determinista (medias) -> usado para escenarios y como referencia
+function projectDet(p){
+  let net=0, listPend=0;
+  geos.forEach(g=>{
+    const [,pend,,k,ext]=g;
+    listPend+=pend;
+    const vpm = LIVE.vpm * (ext ? p.ff : 1);
+    const sh  = (1-p.lam)*k + p.lam*RECIENTE_K;
+    net += pend * vpm * (2*sh - 1);
+  });
+  const otras = Math.max(0, LIVE.totalPend - listPend);
+  const shO = (1-p.lam)*0.49 + p.lam*RECIENTE_K;
+  net += otras * LIVE.vpm * (2*shO - 1);
+  return LIVE.gap + net;
+}
+
+// simulación Monte Carlo -> {pwin, med, lo, hi, shareMed, shareLo, shareHi, finals[]}
+function simulate(p, N){
+  const finals = new Array(N);
+  const shares = new Array(N); // % efectivo de Keiko en lo que falta
+  let listPend=0; geos.forEach(g=>listPend+=g[1]);
+  const otras = Math.max(0, LIVE.totalPend - listPend);
+  for(let i=0;i<N;i++){
+    let net=0, kVotes=0, totVotes=0;
+    for(const g of geos){
+      const [,pend,,k,ext]=g;
+      const sig = sigmaShare(g,p.unc);
+      const baseSh = (1-p.lam)*k + p.lam*RECIENTE_K;
+      const sh = clamp(baseSh + gauss()*sig, 0.02, 0.98);
+      const meanVpm = LIVE.vpm * (ext ? p.ff : 1);
+      const sdVpm   = meanVpm * (ext ? 0.25 : 0.08) * p.unc;
+      const vpm = Math.max(meanVpm*0.15, meanVpm + gauss()*sdVpm);
+      const v = pend*vpm;
+      net += v*(2*sh-1); kVotes += v*sh; totVotes += v;
+    }
+    // bloque "otras mesas" (resto sin detalle público)
+    const shO = clamp((1-p.lam)*0.49 + p.lam*RECIENTE_K + gauss()*0.05*p.unc, 0.05, 0.95);
+    const vO = otras*LIVE.vpm;
+    net += vO*(2*shO-1); kVotes += vO*shO; totVotes += vO;
+    // ruido por actas observadas en el JEE
+    net += gauss()*p.jee;
+    finals[i] = LIVE.gap + net;
+    shares[i] = totVotes>0 ? kVotes/totVotes : 0.5;
+  }
+  finals.sort((a,b)=>a-b); shares.sort((a,b)=>a-b);
+  const q = (arr,t)=>arr[Math.min(arr.length-1,Math.floor(t*arr.length))];
+  let win=0; for(const f of finals) if(f>0) win++;
+  return {
+    pwin: win/N, finals,
+    med:q(finals,.5), lo:q(finals,.1), hi:q(finals,.9),
+    shareMed:q(shares,.5), shareLo:q(shares,.1), shareHi:q(shares,.9)
+  };
+}
+
+/* ============ render del modelo ============ */
+const fmtK = v => (v>=0?"+":"−") + Math.round(Math.abs(v)/1000).toLocaleString("es-PE") + " mil";
+const fmtName = v => v>=0 ? "Keiko" : "Sánchez";
+
+function renderModel(){
+  const p = params();
+  document.getElementById("ffVal").textContent  = Math.round(p.ff*100)+"%";
+  document.getElementById("lamVal").textContent = Math.round(p.lam*100)+"%";
+  document.getElementById("uncVal").textContent = p.unc.toFixed(2)+"×";
+  document.getElementById("jeeVal").textContent = "±"+Math.round(p.jee/1000)+"k";
+
+  const r = simulate(p, 6000);
+
+  // probabilidades de ganar (modelo)
+  const pk = Math.round(r.pwin*100), ps = 100 - pk;
+  document.getElementById("pKeiko").textContent = pk + "%";
+  document.getElementById("pSan").textContent  = ps + "%";
+  document.getElementById("pbK").style.width = pk + "%";
+  document.getElementById("pbS").style.width = ps + "%";
+
+  // intervalo
+  document.getElementById("ciMed").innerHTML = fmtName(r.med)+" "+fmtK(r.med).replace(/^[+−]/,"");
+  document.getElementById("ci80").innerHTML  =
+    "desde "+fmtName(r.lo)+" "+fmtK(r.lo).replace(/^[+−]/,"") +
+    " &nbsp;hasta&nbsp; "+fmtName(r.hi)+" "+fmtK(r.hi).replace(/^[+−]/,"");
+
+  // aguja: % efectivo de Keiko en lo restante
+  const toPct = s => clamp(s*100,1,99);
+  document.getElementById("markMed").style.left = toPct(r.shareMed)+"%";
+  document.getElementById("markMed").setAttribute("data-l","mediana "+(r.shareMed*100).toFixed(1)+"%");
+  const b = document.getElementById("needBand");
+  b.style.left = toPct(r.shareLo)+"%";
+  b.style.width = (toPct(r.shareHi)-toPct(r.shareLo))+"%";
+
+  renderDist(r.finals);
+  renderScenarios();
+  renderReadout(r);
+}
+
+/* ============ lectura en vivo: ¿sigue la tendencia? ============ */
+function renderReadout(r){
+  const n = serie.length;
+  if(n < 2){ return; }
+  const last = serie[n-1], gap = last[1], pct = last[0];
+  const lider = gap>=0 ? "Keiko Fujimori" : "Roberto Sánchez";
+  const liderCls = gap>=0 ? "k" : "s";
+
+  // punto de referencia: ~0.8 puntos de actas atrás, o 4 lecturas atrás
+  let ref = serie[Math.max(0, n-4)];
+  for(let i=n-1; i>=0; i--){ if(pct - serie[i][0] >= 0.8){ ref = serie[i]; break; } }
+  const dGap = gap - ref[1];
+  const haciaCls = dGap>=0 ? "k" : "s";
+  const hacia = dGap>=0 ? "Keiko" : "Sánchez";
+
+  // extrapolación ingenua de la tendencia hasta el 100%
+  const dx = pct - ref[0];
+  const slope = dx>0 ? dGap/dx : 0;
+  const proj = gap + slope*(100 - pct);
+  const tendWin = proj>=0 ? "Keiko" : "Sánchez";
+  const tendCls = proj>=0 ? "k" : "s";
+  const modelWin = r.med>=0 ? "Keiko" : "Sánchez";
+  const modelCls = r.med>=0 ? "k" : "s";
+  const coinciden = (proj>=0) === (r.med>=0);
+
+  const fmtV = v => Math.round(Math.abs(v)).toLocaleString("es-PE");
+  const movim = Math.abs(dGap) < 400
+    ? `prácticamente <b>no se movió</b> (la brecha está congelada)`
+    : `se movió <b>${fmtV(dGap)}</b> votos hacia <span class="${haciaCls}">${hacia}</span>`;
+
+  const cierre = coinciden
+    ? `Las dos señales <b>coinciden</b> en favor de <span class="${modelCls}">${modelWin}</span>, pero el intervalo del modelo todavía toca el empate: nada está cerrado.`
+    : `Las dos señales <b>NO coinciden</b> —la inercia reciente apunta a <span class="${tendCls}">${tendWin}</span> y el modelo geográfico a <span class="${modelCls}">${modelWin}</span>—, justamente por eso el resultado sigue abierto.`;
+
+  document.getElementById("readoutText").innerHTML =
+    `Con el <b>${pct.toFixed(3)}%</b> de actas, lidera <span class="${liderCls}">${lider}</span> por <b>${fmtV(gap)}</b> votos. ` +
+    `En el último tramo contado la brecha ${movim}. ` +
+    `Si solo prolongáramos esa inercia hasta el cierre, terminaría adelante <span class="${tendCls}">${tendWin}</span>; ` +
+    `el modelo geográfico —que pondera <i>dónde</i> están las mesas que faltan y descuenta el ausentismo del exterior— apunta a <span class="${modelCls}">${modelWin}</span>. ` +
+    cierre;
+}
+
+function renderScenarios(){
+  const presets = [
+    ["Conservador (Sánchez)", {ff:0.40,lam:0.55,unc:1,jee:7000}],
+    ["Central",               {ff:0.55,lam:0.30,unc:1,jee:7000}],
+    ["Optimista (Keiko)",     {ff:0.85,lam:0.05,unc:1,jee:7000}]
+  ];
+  const box = document.getElementById("scenRows");
+  box.innerHTML = "";
+  presets.forEach(([name,pp])=>{
+    const f = projectDet(pp);
+    const col = f>=0 ? COL.keiko : COL.sanchez;
+    const c = document.createElement("div");
+    c.className = "s-card";
+    c.innerHTML = `<h4>${name}</h4>
+      <div class="s-res" style="color:${col}">${fmtName(f)} ${fmtK(f).replace(/^[+−]/,'')}</div>
+      <div class="s-sub">conc. ext ${Math.round(pp.ff*100)}% · regresión ${Math.round(pp.lam*100)}%</div>`;
+    box.appendChild(c);
+  });
+}
+
+/* ============ histograma de la distribución ============ */
+function renderDist(finals){
+  const svg = document.getElementById("distChart"); svg.innerHTML="";
+  const W=840,H=220,mL=10,mR=10,mT=14,mB=30, iw=W-mL-mR, ih=H-mT-mB;
+  const NS="http://www.w3.org/2000/svg";
+  const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e;};
+
+  const lo=finals[0], hi=finals[finals.length-1];
+  const span=Math.max(1,hi-lo), pad=span*0.05;
+  const xMin=lo-pad, xMax=hi+pad;
+  const X=v=>mL+(v-xMin)/(xMax-xMin)*iw;
+
+  const BINS=46, bins=new Array(BINS).fill(0), bw=(xMax-xMin)/BINS;
+  finals.forEach(f=>{ let i=Math.floor((f-xMin)/bw); i=Math.max(0,Math.min(BINS-1,i)); bins[i]++; });
+  const maxB=Math.max(...bins);
+
+  // banda de empate (cero)
+  el("rect",{x:X(0)-0.8,y:mT,width:1.6,height:ih,fill:COL.cactus});
+  el("text",{x:clamp(X(0),mL+18,W-mR-18),y:mT+12,fill:COL.cactus,"text-anchor":"middle","font-size":"10.5","font-family":"'Spline Sans Mono',monospace"}).textContent="EMPATE";
+
+  bins.forEach((c,i)=>{
+    if(!c) return;
+    const x0=X(xMin+i*bw), x1=X(xMin+(i+1)*bw);
+    const mid=xMin+(i+0.5)*bw;
+    const h=c/maxB*(ih-14);
+    el("rect",{x:x0+0.6,y:mT+ih-h,width:Math.max(0.5,x1-x0-1.2),height:h,
+      fill: mid>=0?COL.keiko:COL.sanchez, opacity:0.85, rx:1});
+  });
+
+  // ejes en miles
+  [xMin, (xMin+xMax)/2, xMax].forEach(v=>{
+    el("text",{x:clamp(X(v),mL+24,W-mR-24),y:H-10,fill:COL.dim,"text-anchor":"middle","font-size":"10","font-family":"'Spline Sans Mono',monospace"})
+      .textContent=(v>=0?"+":"−")+Math.round(Math.abs(v)/1000)+"k";
+  });
+  el("text",{x:X(xMax),y:mT+12,fill:COL.keiko,"text-anchor":"end","font-size":"10","font-family":"'Spline Sans Mono',monospace"}).textContent="Keiko gana →";
+  el("text",{x:X(xMin),y:mT+12,fill:COL.sanchez,"text-anchor":"start","font-size":"10","font-family":"'Spline Sans Mono',monospace"}).textContent="← Sánchez gana";
+}
+
+/* ============ gráfica brecha histórica (vistas + zoom, sin etiquetas montadas) ============ */
+let chartView = 'cierre';   // 'final' | 'cierre' | 'full' | 'custom'
+let zoomStart = null;       // % de actas desde donde mostrar (modo custom, lo fija el deslizador)
+
+function serieMinPct(){ return Math.min(...serie.map(d=>d[0])); }
+function serieMaxPct(){ return serie[serie.length-1][0]; }
+
+function viewStart(){
+  const minP = serieMinPct(), maxP = serieMaxPct();
+  if(chartView === 'full')   return minP;
+  if(chartView === 'cierre') return Math.min(92.5, maxP - 0.3);
+  if(chartView === 'custom' && zoomStart != null) return clamp(zoomStart, minP, maxP - 0.15);
+  return Math.max(minP, maxP - 1.2); // recta final
+}
+
+function stepFor(yAbs){ if(yAbs<=80000) return 20000; if(yAbs<=200000) return 50000; return 100000; }
+function xTickStep(range){
+  if(range <= 0.6)  return 0.1;
+  if(range <= 1.5)  return 0.25;
+  if(range <= 3)    return 0.5;
+  if(range <= 8)    return 1;
+  return 2;
+}
+
+function renderChart(){
+  const svg = document.getElementById("gapChart"); svg.innerHTML = "";
+  const W = 840, H = 430, mL = 58, mR = 16, mT = 30, mB = 44;
+  const iw = W - mL - mR, ih = H - mT - mB;
+
+  const start = viewStart();
+  let data = serie.filter(d => d[0] >= start - 1e-9);
+  if(data.length < 2) data = serie.slice(-2);
+  if(data.length < 2){ return; }
+
+  const pad = Math.max(0.06, (data[data.length-1][0] - data[0][0]) * 0.06);
+  const xMin = data[0][0] - pad;
+  const xMax = data[data.length-1][0] + pad;
+  const yAbs = Math.max(60000, ...data.map(d=>Math.abs(d[1])));
+  const step = stepFor(yAbs);
+  const yMax = Math.ceil(yAbs/step)*step, yMin = -yMax;
+
+  const X = v => mL + (v - xMin) / (xMax - xMin) * iw;
+  const Y = v => mT + (yMax - v) / (yMax - yMin) * ih;
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); svg.appendChild(e); return e; };
+
+  for(let v=-yMax+step; v<yMax; v+=step){
+    el("line",{x1:mL,x2:W-mR,y1:Y(v),y2:Y(v),stroke: v===0 ? COL.cactus : "rgba(236,230,214,.12)","stroke-width": v===0?1.6:1,"stroke-dasharray": v===0?"none":"3 4"});
+    el("text",{x:mL-8,y:Y(v)+4,fill:COL.dim,"text-anchor":"end","font-size":"11","font-family":"'Spline Sans Mono',monospace"}).textContent = v===0 ? "EMPATE" : (v/1000)+"k";
+  }
+  // eje x con paso adaptado al nivel de zoom
+  const tStep = xTickStep(xMax - xMin);
+  const dec = tStep < 1 ? (tStep < 0.25 ? 1 : 2) : 0;
+  for(let v=Math.ceil(xMin/tStep)*tStep; v<=xMax+1e-9; v+=tStep){
+    el("text",{x:X(v),y:H-14,fill:COL.dim,"text-anchor":"middle","font-size":"11","font-family":"'Spline Sans Mono',monospace"}).textContent = v.toFixed(dec)+"%";
+    el("line",{x1:X(v),x2:X(v),y1:mT,y2:H-mB,stroke:"rgba(236,230,214,.06)"});
+  }
+
+  const cl = v => Math.max(Math.min(v,yMax),yMin);
+  const pts = data.map(d=>[X(d[0]), Y(cl(d[1]))]);
+  const line = pts.map((p,i)=>(i?"L":"M")+p[0]+","+p[1]).join(" ");
+  const y0 = Y(0);
+
+  const defs = document.createElementNS(NS,"defs"); svg.appendChild(defs);
+  const mkClip = (id, y, h) => { const c=document.createElementNS(NS,"clipPath"); c.setAttribute("id",id);
+    const r=document.createElementNS(NS,"rect"); r.setAttribute("x",mL); r.setAttribute("y",y); r.setAttribute("width",iw); r.setAttribute("height",Math.max(0,h));
+    c.appendChild(r); defs.appendChild(c); };
+  mkClip("up", mT, y0-mT); mkClip("down", y0, H-mB-y0);
+
+  const area = line + ` L${pts[pts.length-1][0]},${y0} L${pts[0][0]},${y0} Z`;
+  el("path",{d:area,fill:"rgba(242,135,58,.26)","clip-path":"url(#up)"});
+  el("path",{d:area,fill:"rgba(226,59,78,.28)","clip-path":"url(#down)"});
+  el("path",{d:line,fill:"none",stroke:COL.keiko,"stroke-width":2.4,"clip-path":"url(#up)"});
+  el("path",{d:line,fill:"none",stroke:COL.sanchez,"stroke-width":2.4,"clip-path":"url(#down)"});
+
+  // ── etiquetas sin montarse: solo se dibujan si hay aire horizontal,
+  //    y se alternan cerca/lejos del punto para que no se pisen entre sí ──
+  const many = data.length;
+  const MIN_GAP_PX = 68;            // aire mínimo entre etiquetas
+  let lastLblX = -1e9, flip = false;
+  data.forEach((d,i)=>{
+    const [px,py] = pts[i];
+    el("circle",{cx:px,cy:py,r: many>34?2.5:4,fill: d[1]>=0 ? COL.keiko : COL.sanchez,stroke:COL.noche,"stroke-width":1.4});
+    const isLast = i === many-1;
+    if(!isLast && px - lastLblX < MIN_GAP_PX) return;   // se montaría: se salta
+    lastLblX = px; flip = !flip;
+    const up = d[1] >= 0;
+    const base = up ? (flip ? -12 : -40) : (flip ? 18 : 46);
+    const yVal = clamp(py + base, mT + 22, H - mB - 16);
+    const yTime = up ? yVal - 13 : yVal + 13;
+    const lbl = (d[1]>0?"+":"") + (Math.abs(d[1])>=1000 ? (d[1]/1000).toFixed(1)+"k" : d[1]);
+    el("text",{x:px,y:yVal,fill:COL.arena,"text-anchor": isLast ? "end" : "middle","font-size":"11","font-weight":"700","font-family":"'Spline Sans Mono',monospace"}).textContent = lbl;
+    el("text",{x:px,y:clamp(yTime, mT+10, H-mB-4),fill:COL.dim,"text-anchor": isLast ? "end" : "middle","font-size":"9.5","font-family":"'Spline Sans Mono',monospace"}).textContent = d[2];
+  });
+
+  if(chartView !== 'full' && xMin > 81){
+    el("text",{x:W-mR-4,y:mT+14,fill:COL.keiko,"text-anchor":"end","font-size":"11","font-family":"'Spline Sans Mono',monospace"}).textContent = "pico al 80%: Keiko +535k · míralo en “todo”";
+  }
+}
+
+/* ============ controles de vista y zoom ============ */
+function syncViewUI(){
+  document.getElementById("tgFinal").classList.toggle("on", chartView==='final');
+  document.getElementById("tgZoom").classList.toggle("on", chartView==='cierre');
+  document.getElementById("tgFull").classList.toggle("on", chartView==='full');
+  // refleja la vista actual en el deslizador (0 = todo, 100 = máximo acercamiento)
+  const minP = serieMinPct(), maxP = serieMaxPct();
+  const span = Math.max(0.001, (maxP - 0.15) - minP);
+  const t = clamp((viewStart() - minP) / span, 0, 1);
+  document.getElementById("zoomRange").value = Math.round(t*100);
+  document.getElementById("zoomInfo").textContent = "desde " + viewStart().toFixed(2) + "% de actas";
+}
+function setView(v){
+  chartView = v;
+  syncViewUI();
+  renderChart();
+}
+document.getElementById("tgFinal").addEventListener("click", ()=>setView('final'));
+document.getElementById("tgZoom").addEventListener("click", ()=>setView('cierre'));
+document.getElementById("tgFull").addEventListener("click", ()=>setView('full'));
+document.getElementById("zoomRange").addEventListener("input", e=>{
+  const t = (+e.target.value)/100;
+  const minP = serieMinPct(), maxP = serieMaxPct();
+  zoomStart = minP + t * ((maxP - 0.15) - minP);
+  chartView = 'custom';
+  document.getElementById("tgFinal").classList.remove("on");
+  document.getElementById("tgZoom").classList.remove("on");
+  document.getElementById("tgFull").classList.remove("on");
+  document.getElementById("zoomInfo").textContent = "desde " + viewStart().toFixed(2) + "% de actas";
+  renderChart();
+});
+
+syncViewUI();
+renderChart();
+renderModel();
+
+/* ============ controles del modelo ============ */
+["ff","lam","unc","jee"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", renderModel);
+});
+
+/* ============ actualización en vivo ============ */
+// Cadena de datos: API interna ONPE → scraper (repo GitHub, CORS abierto) → este HTML.
+const FEED = "https://raw.githubusercontent.com/oscarzamora/onpe-scraper-2026-2/main/resumen/resumen_nacional.txt";
+const POLL_MS = 60 * 1000; // auto-refresh cada 60 segundos
+const fmt = n => n.toLocaleString("es-PE").replace(/[.,]/g, " ");
+const $ = id => document.getElementById(id);
+let nextAt = Date.now() + POLL_MS;
+
+function setStatus(kind, msg){
+  $("liveDot").className = "dot" + (kind==="ok" ? "" : kind==="stale" ? " stale" : " err");
+  $("liveStatus").textContent = msg;
+}
+
+async function actualizar(manual){
+  nextAt = Date.now() + POLL_MS;
+  try{
+    if(manual) setStatus("stale","actualizando…");
+    const res = await fetch(FEED + "?t=" + Date.now(), {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const txt = await res.text();
+    const rows = txt.trim().split("\n").map(r=>r.split("\t"));
+    const head = rows[0];
+    const col = name => head.indexOf(name);
+    const get = nombre => rows.find(r => (r[col("nombre_agrupacion_politica")]||"").includes(nombre));
+    const S = get("JUNTOS"), K = get("FUERZA");
+    if(!S || !K) throw new Error("formato inesperado del feed");
+
+    const vS = +S[col("votos_validos")], vK = +K[col("votos_validos")];
+    const pS = +S[col("pct_votos_validos")], pK = +K[col("pct_votos_validos")];
+    const actasPct = +S[col("actas_contabilizadas_pct")];
+    const cont = +S[col("contabilizadas")], tot = +S[col("total_actas")];
+    const ts = S[col("fecha_actualizacion")];
+    const gap = vK - vS; // positivo = Keiko adelante
+
+    // marcador
+    $("vS").innerHTML = fmt(vS); $("vK").innerHTML = fmt(vK);
+    $("pS").textContent = pS.toFixed(3) + "% de válidos";
+    $("pK").textContent = pK.toFixed(3) + "% de válidos";
+    $("gapNum").innerHTML = fmt(Math.abs(gap));
+    $("gapNum").style.color = gap >= 0 ? "var(--keiko)" : "var(--sanchez)";
+    $("gapSub").innerHTML = "votos a favor<br>de " + (gap >= 0 ? "Keiko" : "Sánchez");
+    $("barS").style.width = pS + "%"; $("barK").style.width = pK + "%";
+
+    // pendientes
+    const pend = tot - cont;
+    $("actasPend").innerHTML = fmt(pend);
+    const vpm = (vS + vK) / cont;                 // votos válidos por acta ya contada
+    const restVal = Math.round(vpm * pend * 0.92); // estimación rápida con ~8% de merma JEE
+    $("votosRest").textContent = "~" + Math.round(restVal/1000) + " mil";
+
+    // alimentar el modelo con datos en vivo y re-simular
+    LIVE = { gap, vpm, totalPend: pend };
+    renderModel();
+
+    // punto nuevo en la gráfica histórica (y se guarda en este navegador)
+    const lastPct = serie[serie.length-1][0];
+    const d = new Date(ts);
+    const lbl = d.getUTCDate() + " jun " + String(d.getUTCHours()).padStart(2,"0") + ":" + String(d.getUTCMinutes()).padStart(2,"0");
+    if (actasPct > lastPct + 0.0005){ serie.push([actasPct, gap, lbl]); }
+    else { serie[serie.length-1] = [actasPct, gap, lbl]; }
+    saveHist();
+    syncViewUI();
+    renderChart();
+
+    // stamp
+    $("stampTime").textContent = lbl + " UTC";
+    $("stampActas").textContent = actasPct.toFixed(3) + "%";
+    const ageMin = Math.round((Date.now() - d.getTime())/60000);
+    setStatus(ageMin <= 30 ? "ok" : "stale",
+      ageMin <= 30 ? "en vivo · feed con dato de hace " + ageMin + " min"
+                   : "feed sin corrida nueva hace " + (ageMin<120? ageMin+" min" : Math.round(ageMin/60)+" h") + " · auto-reintenta cada 60 s");
+  }catch(e){
+    setStatus("err","no se pudo leer el feed (" + e.message + ") · mostrando último dato conocido");
+  }
+}
+
+document.getElementById("btnRefresh").addEventListener("click", ()=>actualizar(true));
+actualizar(false);
+setInterval(()=>actualizar(false), POLL_MS);
+
+// al volver a la pestaña, refresca de inmediato
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) actualizar(false); });
+
+// contador visible hasta la próxima actualización
+setInterval(()=>{
+  const s = Math.max(0, Math.ceil((nextAt - Date.now())/1000));
+  $("nextUpd").textContent = "· próxima en " + s + " s";
+}, 1000);
+</script>
+</body>
+</html>
