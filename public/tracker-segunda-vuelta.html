@@ -216,7 +216,28 @@ footer b{color:var(--cactus)}
 .sr-nav::-webkit-scrollbar{display:none}
 .sr-nav a{font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:var(--arena-dim);text-decoration:none;border:1px solid var(--linea);border-radius:99px;padding:3px 11px;white-space:nowrap}
 .sr-nav a.on{color:var(--noche);background:var(--cactus);border-color:var(--cactus);font-weight:700}
-#marcador,#cruce,#pendientes,#modelo,#compartir{scroll-margin-top:100px}
+#marcador,#cruce,#mapa,#pendientes,#modelo,#compartir{scroll-margin-top:100px}
+
+/* ---------- mapa por departamento + lupa ---------- */
+.map-card{margin-top:14px;background:var(--noche-2);border:1px solid var(--linea);border-radius:18px;padding:18px;display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:start}
+.map-stage{position:relative}
+#peruMap{width:100%;height:auto}
+#peruMap path{stroke:var(--noche);stroke-width:1.1;cursor:zoom-in;transition:filter .15s}
+#peruMap path:hover{filter:brightness(1.25);stroke:var(--arena)}
+#peruMap.zoomed path{cursor:zoom-out}
+#mapReset{position:absolute;top:8px;left:8px;z-index:2}
+.map-panel{background:rgba(10,19,14,.5);border:1px solid var(--linea);border-radius:14px;padding:16px;min-height:170px}
+.map-panel .mp-name{font-family:'Archivo Expanded',sans-serif;font-weight:900;font-size:19px;display:flex;align-items:center;gap:8px}
+.map-panel .mp-row{font-family:'Spline Sans Mono',monospace;font-size:12.5px;margin-top:7px;display:flex;justify-content:space-between;gap:10px}
+.map-panel .mp-row b.k{color:var(--keiko)} .map-panel .mp-row b.s{color:var(--sanchez)}
+.map-panel .mp-sub{font-size:11px;color:var(--arena-dim);margin-top:8px;line-height:1.5}
+.map-panel .map-hint{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--arena-dim)}
+.map-legend{display:flex;gap:14px;flex-wrap:wrap;font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--arena-dim);margin-top:12px}
+.map-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.map-ext{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ext-chip{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--arena);background:var(--noche-2);border:1px solid var(--linea);border-radius:99px;padding:6px 13px}
+.ext-chip b{font-weight:700}
+@media(max-width:640px){.map-card{grid-template-columns:1fr}}
 
 /* ---------- compartir ---------- */
 .share-card{margin-top:14px;background:var(--noche-2);border:1px solid var(--linea);border-radius:18px;padding:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -263,6 +284,7 @@ footer b{color:var(--cactus)}
     <nav class="sr-nav" id="srNav">
       <a href="#marcador" class="on">Marcador</a>
       <a href="#cruce">La curva</a>
+      <a href="#mapa">El mapa</a>
       <a href="#pendientes">Lo que falta</a>
       <a href="#modelo">El modelo</a>
       <a href="#compartir">Compartir</a>
@@ -341,6 +363,29 @@ footer b{color:var(--cactus)}
       </div>
       <svg id="gapChart" viewBox="0 0 840 430" role="img" aria-label="Evolución de la brecha de votos entre Keiko Fujimori y Roberto Sánchez"></svg>
       <div class="tooltip-note">eje x: % de actas contabilizadas · eje y: miles de votos · mueve el zoom para separar los puntos</div>
+    </div>
+  </section>
+
+  <!-- MAPA -->
+  <section id="mapa" hidden>
+    <h2>El mapa <span class="tag">quién lidera por departamento · con lupa 🔍</span></h2>
+    <p class="note">Cada departamento se pinta según quién va adelante en lo ya contado (<b style="color:var(--keiko)">naranja Keiko</b>, <b style="color:var(--sanchez)">rojo Sánchez</b>); más intenso = mayor ventaja. <b>Toca o haz clic en un departamento para acercarte con la lupa</b> y ver su detalle; vuelve a tocar para alejarte.</p>
+    <div class="map-card">
+      <div class="map-stage">
+        <svg id="peruMap" viewBox="0 0 520 700" role="img" aria-label="Mapa del Perú: quién lidera por departamento"></svg>
+        <button id="mapReset" class="refresh" hidden>⤺ Ver todo</button>
+      </div>
+      <div>
+        <div class="map-panel" id="mapPanel">
+          <p class="map-hint">🔍 Pasa el mouse o toca un departamento para ver su detalle aquí.</p>
+        </div>
+        <div class="map-legend">
+          <span><i style="background:var(--keiko)"></i>Keiko adelante</span>
+          <span><i style="background:var(--sanchez)"></i>Sánchez adelante</span>
+          <span><i style="background:var(--surface-3)"></i>sin dato</span>
+        </div>
+        <div class="map-ext" id="mapExt"></div>
+      </div>
     </div>
   </section>
 
@@ -461,7 +506,7 @@ footer b{color:var(--cactus)}
   </section>
 
   <footer>
-    Fuente: API interna de ONPE (resultadosegundavuelta.onpe.gob.pe) vía extracción mesa-a-mesa de datos abiertos + prensa para la serie histórica. Modelo propio: simulación Monte Carlo sobre la composición geográfica de las mesas pendientes, con concurrencia diferenciada exterior/nacional y dispersión escalada por tamaño de muestra. Supuestos editables; documento informativo, no oficial.<br>
+    Fuente: API interna de ONPE (resultadosegundavuelta.onpe.gob.pe) vía extracción mesa-a-mesa de datos abiertos + prensa para la serie histórica. Modelo propio: simulación Monte Carlo sobre la composición geográfica de las mesas pendientes, con concurrencia diferenciada exterior/nacional y dispersión escalada por tamaño de muestra. Supuestos editables; documento informativo, no oficial. Geometría del mapa: peru-geojson (límites departamentales públicos simplificados).<br>
     Análisis y visualización: <b>🌵 Cactus Comunidad CreatIVA</b> · cactuscomunidadcreativa.com
   </footer>
 </div>
@@ -1047,7 +1092,7 @@ function updateSticky(pS, pK, gap, actasPct){
   $("srBarS").style.width = pS + "%"; $("srBarK").style.width = pK + "%";
 }
 
-const SECCIONES = ["marcador","cruce","pendientes","modelo","compartir"];
+const SECCIONES = ["marcador","cruce","mapa","pendientes","modelo","compartir"];
 let spyTick = false;
 window.addEventListener("scroll", () => {
   if(spyTick) return; spyTick = true;
@@ -1109,6 +1154,155 @@ async function contarVista(){
   }catch(e){ $("viewsChip").style.display = "none"; }
 }
 contarVista();
+
+/* ============ mapa por departamento + lupa ============ */
+// Geometría: peru-geojson (límites departamentales públicos, simplificados).
+// Datos: resumen_departamentos + cobertura del mismo scraper. El cruce es por
+// NOMBRE normalizado: los ubigeos de ONPE no coinciden con los del GeoJSON.
+const FEED_DEPS = "https://raw.githubusercontent.com/oscarzamora/onpe-scraper-2026-2/main/resumen/resumen_departamentos.txt";
+const FEED_COB  = "https://raw.githubusercontent.com/oscarzamora/onpe-scraper-2026-2/main/resumen/resumen_cobertura_departamentos.txt";
+const GEO_URL   = "https://raw.githubusercontent.com/juaneladio/peru-geojson/master/peru_departamental_simple.geojson";
+const EXT_NOMBRES = { "910000":"África", "920000":"América", "930000":"Asia", "940000":"Europa", "950000":"Oceanía" };
+
+const normName = s => (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toUpperCase();
+let depDatos = {};   // nombre normalizado -> {k, s, pctK2, actas, nombre}
+let extDatos = [];   // exterior por continente
+let mapPaths = {};   // nombre normalizado -> elemento <path>
+let mapVB = [0,0,520,700], mapZoomed = null;
+
+function parseTSV(txt){
+  const rows = txt.trim().split("\n").map(r => r.split("\t"));
+  const head = rows[0];
+  return { rows: rows.slice(1), col: n => head.indexOf(n) };
+}
+
+async function cargarDatosDeps(){
+  const [tDeps, tCob] = await Promise.all([
+    fetch(FEED_DEPS + "?t=" + Date.now(), {cache:"no-store"}).then(r => r.text()),
+    fetch(FEED_COB  + "?t=" + Date.now(), {cache:"no-store"}).then(r => r.text())
+  ]);
+  const cob = parseTSV(tCob), deps = parseTSV(tDeps);
+  const nombrePorUbigeo = {}, actasPorUbigeo = {};
+  cob.rows.forEach(r => {
+    const u = r[cob.col("ubigeo")];
+    nombrePorUbigeo[u] = r[cob.col("nombre_departamento")] || EXT_NOMBRES[u] || "";
+    actasPorUbigeo[u] = +r[cob.col("pct_actas_contabilizadas")];
+  });
+  const acc = {};
+  deps.rows.forEach(r => {
+    const u = r[deps.col("ubigeo")];
+    const ag = r[deps.col("nombre_agrupacion_politica")] || "";
+    const v = +r[deps.col("votos_validos")];
+    if(!acc[u]) acc[u] = { k:0, s:0 };
+    if(ag.includes("FUERZA")) acc[u].k = v;
+    else if(ag.includes("JUNTOS")) acc[u].s = v;
+  });
+  depDatos = {}; extDatos = [];
+  Object.entries(acc).forEach(([u, d]) => {
+    const nombre = nombrePorUbigeo[u]; if(!nombre || d.k + d.s === 0) return;
+    const o = { ...d, pctK2: d.k/(d.k+d.s), actas: actasPorUbigeo[u], nombre };
+    if(u.startsWith("9")) extDatos.push(o);
+    else depDatos[normName(nombre)] = o;
+  });
+}
+
+function colorDep(d){
+  if(!d) return "var(--surface-3)";
+  const k2 = d.pctK2, gana = k2 >= 0.5;
+  const intensidad = Math.min(1, Math.abs(k2 - 0.5) / 0.25); // tope: ±25 pts
+  const alfa = 0.28 + 0.62 * intensidad;
+  return (gana ? "rgba(242,135,58," : "rgba(226,59,78,") + alfa.toFixed(2) + ")";
+}
+
+function pintarMapa(){
+  Object.entries(mapPaths).forEach(([nm, p]) => p.setAttribute("fill", colorDep(depDatos[nm])));
+  const box = $("mapExt"); box.innerHTML = "";
+  extDatos.sort((a,b) => (b.k+b.s) - (a.k+a.s)).forEach(d => {
+    const gana = d.pctK2 >= 0.5;
+    const chip = document.createElement("span");
+    chip.className = "ext-chip";
+    chip.innerHTML = `${d.nombre} · <b style="color:${gana ? "var(--keiko)" : "var(--sanchez)"}">` +
+      `${gana ? "K" : "S"} ${(Math.max(d.pctK2, 1-d.pctK2)*100).toFixed(1)}%</b> · ${ (d.actas||0).toFixed(1) }% actas`;
+    box.appendChild(chip);
+  });
+}
+
+function panelDep(nm){
+  const d = depDatos[nm]; if(!d) return;
+  const k2 = d.pctK2 * 100, s2 = 100 - k2;
+  $("mapPanel").innerHTML = `
+    <div class="mp-name">${d.nombre}</div>
+    <div class="mp-row"><span>Keiko (a dos)</span><b class="k">${k2.toFixed(1)}%</b></div>
+    <div class="mp-row"><span>Sánchez (a dos)</span><b class="s">${s2.toFixed(1)}%</b></div>
+    <div class="g-bar" style="margin-top:10px"><div class="gk" style="width:${k2}%"></div><div class="gs" style="width:${s2}%"></div></div>
+    <div class="mp-row" style="margin-top:10px"><span>votos K</span><b class="k">${fmt(d.k)}</b></div>
+    <div class="mp-row"><span>votos S</span><b class="s">${fmt(d.s)}</b></div>
+    <div class="mp-sub">actas contabilizadas en la zona: <b>${(d.actas||0).toFixed(2)}%</b> · % sobre el voto a dos en lo ya contado</div>`;
+}
+
+function tweenViewBox(svg, a, b, ms){
+  const t0 = performance.now();
+  const paso = now => {
+    const t = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - t, 3);
+    svg.setAttribute("viewBox", a.map((v,i) => v + (b[i]-v)*e).join(" "));
+    if(t < 1) requestAnimationFrame(paso);
+  };
+  requestAnimationFrame(paso);
+}
+
+function lupa(nm){
+  const svg = $("peruMap");
+  const cur = svg.getAttribute("viewBox").split(" ").map(Number);
+  if(mapZoomed === nm){ // alejar
+    mapZoomed = null; svg.classList.remove("zoomed"); $("mapReset").hidden = true;
+    tweenViewBox(svg, cur, mapVB, 320); return;
+  }
+  const bb = mapPaths[nm].getBBox();
+  const pad = Math.max(bb.width, bb.height) * 0.25;
+  mapZoomed = nm; svg.classList.add("zoomed"); $("mapReset").hidden = false;
+  tweenViewBox(svg, cur, [bb.x - pad, bb.y - pad, bb.width + pad*2, bb.height + pad*2], 320);
+  panelDep(nm);
+}
+
+async function iniciarMapa(){
+  try{
+    const [geo] = await Promise.all([ fetch(GEO_URL).then(r => r.json()), cargarDatosDeps() ]);
+    const W = 520, H = 700, M = 8;
+    let minX=1e9, minY=1e9, maxX=-1e9, maxY=-1e9;
+    const cada = (f, cb) => {
+      const g = f.geometry;
+      (g.type === "Polygon" ? [g.coordinates] : g.coordinates).forEach(poly => poly.forEach(anillo => cb(anillo)));
+    };
+    geo.features.forEach(f => cada(f, an => an.forEach(([x,y]) => {
+      if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y;
+    })));
+    const esc = Math.min((W-2*M)/(maxX-minX), (H-2*M)/(maxY-minY));
+    const ox = (W - (maxX-minX)*esc)/2, oy = (H - (maxY-minY)*esc)/2;
+    const PX = x => ox + (x-minX)*esc, PY = y => oy + (maxY-y)*esc;
+
+    const svg = $("peruMap"), NS = "http://www.w3.org/2000/svg";
+    geo.features.forEach(f => {
+      const nm = normName(f.properties.NOMBDEP);
+      let d = "";
+      cada(f, an => { d += an.map(([x,y],i) => (i?"L":"M") + PX(x).toFixed(1) + "," + PY(y).toFixed(1)).join("") + "Z"; });
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("d", d);
+      p.setAttribute("fill", "var(--surface-3)");
+      const t = document.createElementNS(NS, "title");
+      t.textContent = f.properties.NOMBDEP; p.appendChild(t);
+      p.addEventListener("mouseenter", () => panelDep(nm));
+      p.addEventListener("click", () => lupa(nm));
+      svg.appendChild(p);
+      mapPaths[nm] = p;
+    });
+    $("mapReset").addEventListener("click", () => { if(mapZoomed) lupa(mapZoomed); });
+    pintarMapa();
+    document.getElementById("mapa").hidden = false;
+  }catch(e){ /* sin mapa no se rompe nada: la sección queda oculta */ }
+}
+iniciarMapa();
+// refresco de datos del mapa cada 10 min, junto con los estados de actas
+setInterval(() => { cargarDatosDeps().then(pintarMapa).catch(()=>{}); }, POLL_MESAS_MS);
 </script>
 </body>
 </html>
