@@ -8,9 +8,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@500;700;900&family=Archivo:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script>
-// tema antes del primer pintado (sin parpadeo): claro por defecto
-try{ document.documentElement.dataset.tema = localStorage.getItem("labrecha_tema") || "claro"; }
-catch(e){ document.documentElement.dataset.tema = "claro"; }
+// tema antes del primer pintado (sin parpadeo).
+// Sin elección manual guardada: tono día (blanco) de 6:00 a 18:59 hora local
+// del visitante, tono noche el resto. El botón de la página manda siempre.
+try{
+  var t = localStorage.getItem("labrecha_tema");
+  if(t !== "claro" && t !== "oscuro"){
+    var h = new Date().getHours();
+    t = (h >= 6 && h < 19) ? "claro" : "oscuro";
+  }
+  document.documentElement.dataset.tema = t;
+}catch(e){ document.documentElement.dataset.tema = "claro"; }
 </script>
 <style>
 :root{
@@ -335,7 +343,7 @@ footer b{color:var(--cactus)}
   <div class="stampline">
     <span class="stamp"><span class="dot" id="liveDot"></span>Datos: <b id="stampTime">cargando…</b> · <span id="stampActas">—</span> de actas</span>
     <button class="refresh" id="btnRefresh">↻ Actualizar ahora</button>
-    <button class="refresh" id="btnTema">🌙 Modo oscuro</button>
+    <button class="refresh" id="btnTema">🌙 Tono noche</button>
     <span class="stamp-status" id="liveStatus">auto-actualiza cada 60 s desde el feed de datos abiertos</span>
     <span class="stamp-status" id="nextUpd"></span>
     <span class="stamp" id="viewsChip">👁 <b id="viewCount">—</b> vistas</span>
@@ -1200,12 +1208,12 @@ contarVista();
 function setTema(t){
   document.documentElement.dataset.tema = t;
   try{ localStorage.setItem("labrecha_tema", t); }catch(e){}
-  $("btnTema").textContent = t === "claro" ? "🌙 Modo oscuro" : "☀️ Modo claro";
+  $("btnTema").textContent = t === "claro" ? "🌙 Tono noche" : "☀️ Tono día";
   refreshCOL();
   renderChart();
   renderModel(); // re-dibuja distribución y aguja con la paleta nueva
 }
-$("btnTema").textContent = esTemaClaro() ? "🌙 Modo oscuro" : "☀️ Modo claro";
+$("btnTema").textContent = esTemaClaro() ? "🌙 Tono noche" : "☀️ Tono día";
 $("btnTema").addEventListener("click", () => setTema(esTemaClaro() ? "oscuro" : "claro"));
 
 /* ============ mapa por departamento + lupa ============ */
