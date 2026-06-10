@@ -201,6 +201,39 @@ footer b{color:var(--cactus)}
 .chart-zoomrow input[type=range]{flex:1;accent-color:var(--cactus);height:4px;min-width:120px}
 .chart-zoomrow .zinfo{white-space:nowrap;color:var(--cactus-2)}
 
+/* ---------- barra fija: marcador compacto + navegación de vistas ---------- */
+.sticky-race{position:fixed;top:0;left:0;right:0;z-index:60;background:rgba(10,19,14,.93);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--linea);transform:translateY(-105%);transition:transform .25s ease}
+.sticky-race.show{transform:translateY(0)}
+.sr-in{max-width:880px;margin:0 auto;padding:9px clamp(14px,3vw,40px) 0}
+.sr-row{display:flex;align-items:center;gap:12px;font-family:'Spline Sans Mono',monospace;font-size:12px;flex-wrap:wrap}
+.sr-row .sr-s{color:var(--sanchez);font-weight:700}
+.sr-row .sr-k{color:var(--keiko);font-weight:700}
+.sr-row .sr-gap{font-weight:700}
+.sr-row .sr-pct{color:var(--arena-dim);margin-left:auto;font-size:11px}
+.sr-bar{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-top:6px;background:var(--surface-3)}
+.sr-bar .s{background:var(--sanchez)} .sr-bar .k{background:var(--keiko)} .sr-bar .mid{width:2px;background:var(--arena)}
+.sr-nav{display:flex;gap:6px;overflow-x:auto;padding:7px 0 9px;scrollbar-width:none}
+.sr-nav::-webkit-scrollbar{display:none}
+.sr-nav a{font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:var(--arena-dim);text-decoration:none;border:1px solid var(--linea);border-radius:99px;padding:3px 11px;white-space:nowrap}
+.sr-nav a.on{color:var(--noche);background:var(--cactus);border-color:var(--cactus);font-weight:700}
+#marcador,#cruce,#pendientes,#modelo,#compartir{scroll-margin-top:100px}
+
+/* ---------- compartir ---------- */
+.share-card{margin-top:14px;background:var(--noche-2);border:1px solid var(--linea);border-radius:18px;padding:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.share-card .share-lead{font-size:13.5px;color:var(--arena-dim);flex:1 1 220px;min-width:200px}
+.share-btn{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--arena);background:var(--surface-3);border:1px solid var(--linea);border-radius:99px;padding:8px 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+.share-btn:hover{border-color:var(--cactus)}
+.share-btn.wa:hover{border-color:#25D366;color:#7ae2a4}
+
+/* ---------- CTA final ---------- */
+.cta-final{margin-top:30px;border-radius:18px;padding:30px 24px;text-align:center;background:linear-gradient(135deg,#15301F 0%,#0E2519 80%);border:1px solid rgba(63,190,130,.35)}
+.cta-final h3{font-family:'Archivo Expanded',sans-serif;font-weight:900;font-size:clamp(19px,3.4vw,26px)}
+.cta-final p{color:var(--arena-dim);font-size:13.5px;max-width:54ch;margin:10px auto 20px}
+.cta-btn{display:inline-block;font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:700;color:var(--noche);background:var(--cactus);border-radius:99px;padding:11px 22px;text-decoration:none;margin:4px}
+.cta-btn:hover{background:var(--cactus-2)}
+.cta-btn.sec{background:transparent;color:var(--cactus-2);border:1px solid rgba(63,190,130,.5)}
+.cta-btn.sec:hover{background:rgba(63,190,130,.12)}
+
 @media(max-width:640px){
   .score-row{grid-template-columns:1fr}
   .cand.k{text-align:left}
@@ -216,6 +249,27 @@ footer b{color:var(--cactus)}
 </style>
 </head>
 <body>
+
+<!-- BARRA FIJA: marcador compacto + navegación de vistas -->
+<div class="sticky-race" id="stickyRace">
+  <div class="sr-in">
+    <div class="sr-row">
+      <span class="sr-s" id="srS">Sánchez 50.07%</span>
+      <span class="sr-gap" id="srGap" style="color:var(--sanchez)">+26 161</span>
+      <span class="sr-k" id="srK">49.93% Keiko</span>
+      <span class="sr-pct" id="srPct">97.0% de actas</span>
+    </div>
+    <div class="sr-bar"><div class="s" id="srBarS" style="width:50.073%"></div><div class="mid"></div><div class="k" id="srBarK" style="width:49.927%"></div></div>
+    <nav class="sr-nav" id="srNav">
+      <a href="#marcador" class="on">Marcador</a>
+      <a href="#cruce">La curva</a>
+      <a href="#pendientes">Lo que falta</a>
+      <a href="#modelo">El modelo</a>
+      <a href="#compartir">Compartir</a>
+    </nav>
+  </div>
+</div>
+
 <div class="wrap">
 
   <div class="brandbar">🌵 <b>Cactus</b> Comunidad CreatIVA · análisis de datos</div>
@@ -228,10 +282,11 @@ footer b{color:var(--cactus)}
     <button class="refresh" id="btnRefresh">↻ Actualizar ahora</button>
     <span class="stamp-status" id="liveStatus">auto-actualiza cada 60 s desde el feed de datos abiertos</span>
     <span class="stamp-status" id="nextUpd"></span>
+    <span class="stamp" id="viewsChip">👁 <b id="viewCount">—</b> vistas</span>
   </div>
 
   <!-- MARCADOR -->
-  <div class="score">
+  <div class="score" id="marcador">
     <div class="score-row">
       <div class="cand s">
         <div class="party">Juntos por el Perú</div>
@@ -265,7 +320,7 @@ footer b{color:var(--cactus)}
   </div>
 
   <!-- GRÁFICA -->
-  <section>
+  <section id="cruce">
     <h2>El cruce <span class="tag">evolución de la brecha · histórico acumulado</span></h2>
     <p class="note">Diferencia de votos (Keiko − Sánchez) según avanza el conteo. Keiko llegó a estar <b style="color:var(--keiko)">+535 mil arriba</b> al 80% (las actas urbanas entran primero); el voto rural y amazónico la volteó. Ahora el final del conteo —Lima rezagada y el exterior— vuelve a empujar hacia el cero. Cada lectura nueva se guarda en este navegador, así la curva se va engrosando sola.</p>
     <div class="chart-card">
@@ -290,7 +345,7 @@ footer b{color:var(--cactus)}
   </section>
 
   <!-- LO QUE FALTA -->
-  <section>
+  <section id="pendientes">
     <h2>Lo que falta <span class="tag">actas y votos pendientes</span></h2>
     <div class="grid3">
       <div class="stat"><div class="big" id="actasPend">2&thinsp;767</div><div class="lbl" id="actasPendLbl">actas aún no contabilizadas (incluye las enviadas al JEE)</div></div>
@@ -298,13 +353,18 @@ footer b{color:var(--cactus)}
       <div class="stat"><div class="big" id="votosRest">~453 mil</div><div class="lbl">votos válidos estimados aún por entrar, <b>ya descontado</b> el ausentismo del exterior</div></div>
     </div>
     <div class="geo">
+      <div class="chart-toggle" id="geoTabs" style="margin:0 0 12px">
+        <button data-g="todos" class="on">Todos</button>
+        <button data-g="nac">Perú</button>
+        <button data-g="ext">Exterior</button>
+      </div>
       <p class="note" style="margin-bottom:12px">Dónde están las mesas pendientes y cómo viene votando esa misma zona en lo ya contado (% de Keiko sobre el voto a dos). El sello <span class="flag-ext">EXT</span> marca voto exterior, donde el % proviene de muestras pequeñas y la concurrencia real suele ser menor:</p>
       <div id="geoRows"></div>
     </div>
   </section>
 
   <!-- MODELO -->
-  <section>
+  <section id="modelo">
     <h2>El modelo <span class="tag">simulación Monte Carlo · ¿quién gana?</span></h2>
     <p class="note">En vez de multiplicar <i>mesas pendientes × promedio de votos por mesa</i> (que asume que las mesas que faltan son iguales a las ya contadas), corremos <b id="nSims">6&thinsp;000</b> simulaciones. En cada una sorteamos, por zona, el % de cada candidato alrededor de lo observado —con más dispersión donde hay poca muestra o es exterior— y la <b>concurrencia efectiva</b> de las mesas del exterior. El resultado no es un número: es una distribución, y de ahí sale la probabilidad de cada quien.</p>
 
@@ -380,6 +440,26 @@ footer b{color:var(--cactus)}
     </div>
   </section>
 
+  <!-- COMPARTIR + CTA -->
+  <section id="compartir">
+    <h2>Compártelo <span class="tag">para que más gente lo siga en vivo</span></h2>
+    <div class="share-card">
+      <div class="share-lead" id="shareLead">Comparte la brecha en tiempo real — el enlace siempre muestra el dato más fresco.</div>
+      <button class="share-btn wa" id="shWa">🟢 WhatsApp</button>
+      <button class="share-btn" id="shX">𝕏 / Twitter</button>
+      <button class="share-btn" id="shFb">f Facebook</button>
+      <button class="share-btn" id="shCopy">🔗 Copiar enlace</button>
+      <button class="share-btn" id="shNative" hidden>↗ Compartir…</button>
+    </div>
+
+    <div class="cta-final">
+      <h3>¿Quieres un tablero así para tu proyecto?</h3>
+      <p>Este tracker es 100% Cactus: datos en vivo, modelo estadístico propio y visualización clara. Hacemos lo mismo con los datos de tu negocio, medio u organización — dashboards, automatizaciones e IA.</p>
+      <a class="cta-btn" href="https://www.cactuscomunidadcreativa.com/#contacto">Hablemos →</a>
+      <a class="cta-btn sec" href="https://wa.me/17863954654?text=Hola%20Cactus%20%F0%9F%8C%B5%20vi%20el%20tracker%20de%20la%20segunda%20vuelta%20y%20quiero%20algo%20as%C3%AD%20para%20mi%20proyecto" target="_blank" rel="noopener noreferrer">WhatsApp directo</a>
+    </div>
+  </section>
+
   <footer>
     Fuente: API interna de ONPE (resultadosegundavuelta.onpe.gob.pe) vía extracción mesa-a-mesa de datos abiertos + prensa para la serie histórica. Modelo propio: simulación Monte Carlo sobre la composición geográfica de las mesas pendientes, con concurrencia diferenciada exterior/nacional y dispersión escalada por tamaño de muestra. Supuestos editables; documento informativo, no oficial.<br>
     Análisis y visualización: <b>🌵 Cactus Comunidad CreatIVA</b> · cactuscomunidadcreativa.com
@@ -452,11 +532,14 @@ function saveHist(){
   serie = [...map.values()].sort((a,b)=>a[0]-b[0]);
 })();
 
-/* ============ filas geográficas ============ */
+/* ============ filas geográficas (con vistas Perú / Exterior) ============ */
 const geoRows = document.getElementById("geoRows");
+let geoFilter = "todos";
 function renderGeo(){
   geoRows.innerHTML = "";
-  geos.forEach(([n, mesas, cont, k, ext]) => {
+  geos
+    .filter(g => geoFilter === "todos" || (geoFilter === "ext") === !!g[4])
+    .forEach(([n, mesas, cont, k, ext]) => {
     const pk = (k*100);
     const row = document.createElement("div");
     row.className = "geo-row";
@@ -468,6 +551,11 @@ function renderGeo(){
   });
 }
 renderGeo();
+document.querySelectorAll("#geoTabs button").forEach(b => b.addEventListener("click", () => {
+  geoFilter = b.dataset.g;
+  document.querySelectorAll("#geoTabs button").forEach(x => x.classList.toggle("on", x === b));
+  renderGeo();
+}));
 
 /* ============ utilidades estadísticas ============ */
 function gauss(){ // Box-Muller
@@ -880,6 +968,7 @@ async function actualizar(manual){
     $("gapNum").style.color = gap >= 0 ? "var(--keiko)" : "var(--sanchez)";
     $("gapSub").innerHTML = "votos a favor<br>de " + (gap >= 0 ? "Keiko" : "Sánchez");
     $("barS").style.width = pS + "%"; $("barK").style.width = pK + "%";
+    updateSticky(pS, pK, gap, actasPct);
 
     // pendientes
     const pend = tot - cont;
@@ -947,6 +1036,79 @@ setInterval(()=>{
   const s = Math.max(0, Math.ceil((nextAt - Date.now())/1000));
   $("nextUpd").textContent = "· próxima en " + s + " s";
 }, 1000);
+
+/* ============ barra fija: marcador compacto + scrollspy ============ */
+function updateSticky(pS, pK, gap, actasPct){
+  $("srS").textContent = "Sánchez " + pS.toFixed(2) + "%";
+  $("srK").textContent = pK.toFixed(2) + "% Keiko";
+  $("srGap").textContent = "+" + fmt(Math.round(Math.abs(gap))) + (gap >= 0 ? " K" : " S");
+  $("srGap").style.color = gap >= 0 ? "var(--keiko)" : "var(--sanchez)";
+  $("srPct").textContent = actasPct.toFixed(2) + "% de actas";
+  $("srBarS").style.width = pS + "%"; $("srBarK").style.width = pK + "%";
+}
+
+const SECCIONES = ["marcador","cruce","pendientes","modelo","compartir"];
+let spyTick = false;
+window.addEventListener("scroll", () => {
+  if(spyTick) return; spyTick = true;
+  requestAnimationFrame(() => {
+    spyTick = false;
+    $("stickyRace").classList.toggle("show", $("marcador").getBoundingClientRect().bottom < 0);
+    let cur = "marcador";
+    SECCIONES.forEach(id => {
+      const el = document.getElementById(id);
+      if(el && el.getBoundingClientRect().top < 150) cur = id;
+    });
+    document.querySelectorAll("#srNav a").forEach(a =>
+      a.classList.toggle("on", a.getAttribute("href") === "#" + cur));
+  });
+}, { passive:true });
+
+/* ============ compartir ============ */
+const SHARE_URL = "https://www.cactuscomunidadcreativa.com/tracker-segunda-vuelta";
+function shareText(){
+  const last = serie[serie.length - 1];
+  const lider = last[1] >= 0 ? "Keiko" : "Sánchez";
+  return "🌵 La Brecha en vivo · Segunda vuelta Perú 2026: " + lider + " adelante por " +
+    Math.round(Math.abs(last[1])).toLocaleString("es-PE") + " votos al " +
+    last[0].toFixed(2) + "% de actas. Síguelo aquí:";
+}
+$("shWa").addEventListener("click", () =>
+  window.open("https://wa.me/?text=" + encodeURIComponent(shareText() + " " + SHARE_URL), "_blank", "noopener"));
+$("shX").addEventListener("click", () =>
+  window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText()) + "&url=" + encodeURIComponent(SHARE_URL), "_blank", "noopener"));
+$("shFb").addEventListener("click", () =>
+  window.open("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(SHARE_URL), "_blank", "noopener"));
+$("shCopy").addEventListener("click", async () => {
+  try{
+    await navigator.clipboard.writeText(SHARE_URL);
+    $("shCopy").textContent = "✓ ¡Copiado!";
+    setTimeout(() => { $("shCopy").textContent = "🔗 Copiar enlace"; }, 1600);
+  }catch(e){}
+});
+if(navigator.share){
+  $("shNative").hidden = false;
+  $("shNative").addEventListener("click", () =>
+    navigator.share({ title: document.title, text: shareText(), url: SHARE_URL }).catch(() => {}));
+}
+
+/* ============ contador de vistas ============ */
+// Contador anónimo (sin cookies ni datos personales): suma 1 por sesión de
+// navegador. Si el servicio no responde, el chip simplemente se oculta.
+async function contarVista(){
+  try{
+    let primera = true;
+    try{ primera = !sessionStorage.getItem("labrecha_vista"); }catch(e){}
+    const res = await fetch("https://abacus.jasoncameron.dev/" + (primera ? "hit" : "get") + "/cactus-labrecha2026/tracker");
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const j = await res.json();
+    if(primera){ try{ sessionStorage.setItem("labrecha_vista","1"); }catch(e){} }
+    if(j && typeof j.value === "number"){
+      $("viewCount").textContent = j.value.toLocaleString("es-PE");
+    } else { throw new Error("sin valor"); }
+  }catch(e){ $("viewsChip").style.display = "none"; }
+}
+contarVista();
 </script>
 </body>
 </html>
