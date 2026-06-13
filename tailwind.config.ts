@@ -126,10 +126,26 @@ const config: Config = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        'pulse-soft': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.4' },
+        },
+        'orbit-drift': {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '33%': { transform: 'translate(40px, -30px) scale(1.08)' },
+          '66%': { transform: 'translate(-30px, 25px) scale(0.95)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        marquee: 'marquee 36s linear infinite',
+        'pulse-soft': 'pulse-soft 2.4s ease-in-out infinite',
+        'orbit-drift': 'orbit-drift 18s ease-in-out infinite',
       },
     },
   },

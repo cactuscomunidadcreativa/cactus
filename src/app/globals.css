@@ -1836,3 +1836,51 @@
     background: linear-gradient(135deg, hsl(var(--eq-cream)) 0%, hsl(45 50% 95%) 50%, hsl(var(--eq-cream)) 100%);
   }
 }
+
+/* ============================================
+   AGENCY SHOWCASE — utilidades del sitio marketing
+   ============================================ */
+@layer utilities {
+  /* Fondo "tinta" profundo con tinte verde cactus */
+  .bg-ink {
+    background-color: #07120c;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(62, 142, 64, 0.18), transparent),
+      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(121, 187, 116, 0.10), transparent);
+  }
+
+  /* Grano sutil para textura premium */
+  .grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Cuadrícula técnica tenue */
+  .grid-lines {
+    background-image:
+      linear-gradient(rgba(121, 187, 116, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(121, 187, 116, 0.06) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  /* Texto degradado verde */
+  .text-gradient-cactus {
+    background: linear-gradient(100deg, #79bb74 0%, #3e8e40 45%, #c7e8c0 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Borde con brillo al hover (cards de portafolio) */
+  .card-glow {
+    transition: box-shadow 0.4s ease, transform 0.4s ease, border-color 0.4s ease;
+  }
+  .card-glow:hover {
+    transform: translateY(-4px);
+  }
+}

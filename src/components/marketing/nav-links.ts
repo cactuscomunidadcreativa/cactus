@@ -2,6 +2,8 @@
 
 export const MARKETING_NAV = [
   { href: '/', label: 'Inicio' },
+  { href: '/proyectos', label: 'Proyectos' },
+  { href: '/servicios', label: 'Servicios' },
   { href: '/apps', label: 'Apps' },
   { href: '/blog', label: 'Blog' },
   { href: '/#contacto', label: 'Contacto' },
@@ -77,6 +79,14 @@ export const APP_INFO = {
 } as const;
 
 export const FOOTER_LINKS = {
+  proyectos: [
+    { href: '/proyectos#rowi', label: 'ROWI · IA Emocional' },
+    { href: '/proyectos#madcat', label: 'MADCAT · UFC' },
+    { href: '/proyectos#ego', label: 'EGO Intelligence Cloud' },
+    { href: '/proyectos#sca', label: 'SCA · Control Arbitral' },
+    { href: '/proyectos#coach', label: 'eduardogonzalez.coach' },
+    { href: '/proyectos', label: 'Ver todos →' },
+  ],
   apps: [
     { href: '/landing/ramona', label: 'RAMONA' },
     { href: '/landing/tuna', label: 'TUNA' },
@@ -85,9 +95,11 @@ export const FOOTER_LINKS = {
     { href: '/landing/pita', label: 'PITA' },
     { href: '/landing/cereus', label: 'CEREUS' },
   ],
-  community: [
+  estudio: [
+    { href: '/servicios', label: 'Servicios' },
     { href: '/blog', label: 'Blog' },
     { href: '/#contacto', label: 'Contacto' },
+    { href: '/login', label: 'Iniciar Sesión' },
   ],
   legal: [
     { href: '/privacidad', label: 'Privacidad' },

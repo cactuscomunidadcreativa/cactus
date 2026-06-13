@@ -100,10 +100,13 @@ async function handleSupabaseAuth(
 
   // Protected routes check
   const protectedRoutes = ['/dashboard', '/marketplace', '/settings', '/apps', '/cereus'];
+  // Rutas públicas de marketing dentro de /apps: el catálogo y los demos
+  const isPublicAppsRoute =
+    pathname === '/apps' || /^\/apps\/[^/]+\/demo(\/|$)/.test(pathname);
   const isMaisonRoute = pathname.startsWith('/maison/');
   const isMaisonAuth = isMaisonRoute && (pathname.includes('/login') || pathname.includes('/register'));
   const isMaisonLanding = isMaisonRoute && pathname.split('/').length <= 3; // /maison/[id]
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+  const isProtectedRoute = (protectedRoutes.some(route => pathname.startsWith(route)) && !isPublicAppsRoute)
     || (isMaisonRoute && !isMaisonAuth && !isMaisonLanding && !pathname.includes('/lookbook/'));
 
   const isAuthRoute = pathname.includes('/login') || pathname.includes('/register');
