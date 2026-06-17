@@ -23,19 +23,25 @@ interface SidebarProps {
   isAdmin?: boolean;
 }
 
+interface NavItem { href: string; label: string; icon: typeof Layers }
+
 export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
   const t = useTranslations('platform.sidebar');
   const pathname = usePathname();
 
-  const navItems = [
+  const plataforma: NavItem[] = [
     { href: '/ecosystem', label: 'Ecosistema', icon: Layers },
     { href: '/orchestrator', label: 'Ramona', icon: Bot },
     { href: '/brain', label: 'Cerebro', icon: Brain },
-    { href: '/campaign', label: 'Campaign Studio', icon: Sparkles },
-    { href: '/studio', label: 'Diseño (Cardón)', icon: Palette },
-    { href: '/packs', label: 'Packs', icon: DollarSign },
+  ];
+  const crear: NavItem[] = [
+    { href: '/campaign', label: 'Campañas', icon: Sparkles },
+    { href: '/studio', label: 'Diseño', icon: Palette },
+  ];
+  const cuenta: NavItem[] = [
     { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { href: '/marketplace', label: t('marketplace'), icon: Store },
+    { href: '/packs', label: 'Packs', icon: DollarSign },
     { href: '/settings', label: t('settings'), icon: Settings },
   ];
 
@@ -43,59 +49,56 @@ export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
     (s) => s.status === 'active' || s.status === 'trialing'
   );
 
+  const renderLink = (item: NavItem) => {
+    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={cn(
+          'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+          isActive
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+            : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+        )}
+      >
+        <item.icon className="h-4 w-4" />
+        {item.label}
+      </Link>
+    );
+  };
+
+  const SectionLabel = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <p className={cn('px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1', className)}>
+      {children}
+    </p>
+  );
+
   return (
     <aside className="w-64 border-r border-sidebar-border bg-sidebar h-screen flex flex-col">
       {/* Logo */}
       <div className="p-4 border-b border-sidebar-border">
-        <Link href="/ecosystem" className="flex items-center gap-2">
-          <Image src="/cactus-ia-logo.png" alt="Cactus IA" width={32} height={32} className="rounded-full" />
-          <span className="font-display font-bold text-lg text-cactus-green">Cactus</span>
+        <Link href="/ecosystem" className="flex items-center gap-2.5">
+          <Image src="/cactus-ia-logo.png" alt="Cactus IA" width={34} height={34} className="rounded-full" />
+          <div className="leading-tight">
+            <div className="font-display font-bold text-base text-cactus-green">Cactus</div>
+            <div className="text-[10px] text-muted-foreground">Comunidad Creativa</div>
+          </div>
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
-                isActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        <SectionLabel>Plataforma</SectionLabel>
+        {plataforma.map(renderLink)}
 
-        {/* Admin link */}
-        {isAdmin && (
-          <Link
-            href="/admin"
-            className={cn(
-              'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
-              pathname.startsWith('/admin')
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-            )}
-          >
-            <Shield className="h-4 w-4" />
-            {t('admin')}
-          </Link>
-        )}
+        <SectionLabel className="mt-4">Crear</SectionLabel>
+        {crear.map(renderLink)}
 
-        {/* Subscribed Apps */}
+        {/* Mis apps */}
         {activeSubscriptions.length > 0 && (
-          <div className="pt-4">
-            <p className="px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-              {t('myApps')}
-            </p>
+          <>
+            <SectionLabel className="mt-4">{t('myApps')}</SectionLabel>
             {activeSubscriptions.map((sub) => {
               const href = `/apps/${sub.app_id}`;
               const isActive = pathname.startsWith(href);
@@ -159,8 +162,13 @@ export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
                 </div>
               );
             })}
-          </div>
+          </>
         )}
+
+        {/* Cuenta */}
+        <SectionLabel className="mt-4">Cuenta</SectionLabel>
+        {cuenta.map(renderLink)}
+        {isAdmin && renderLink({ href: '/admin', label: t('admin'), icon: Shield })}
       </nav>
     </aside>
   );
