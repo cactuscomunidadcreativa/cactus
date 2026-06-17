@@ -107,11 +107,32 @@ export function AgentGrid() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {visible.map((agent) => (
-          <AgentCard key={agent.slug} agent={agent} />
-        ))}
-      </div>
+      {filter === 'all' ? (
+        <div className="space-y-8">
+          {DIVISION_ORDER.map((key) => {
+            const items = AGENTS.filter((a) => a.division === key);
+            if (!items.length) return null;
+            const d = DIVISIONS[key];
+            return (
+              <section key={key}>
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="h-4 w-1 rounded-full" style={{ backgroundColor: d.color }} />
+                  <h3 className="font-display font-semibold">{d.label}</h3>
+                  <span className="hidden text-xs text-muted-foreground sm:inline">· {d.tagline}</span>
+                  <span className="ml-auto text-xs text-muted-foreground">{items.length}</span>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {items.map((a) => <AgentCard key={a.slug} agent={a} />)}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {visible.map((agent) => <AgentCard key={agent.slug} agent={agent} />)}
+        </div>
+      )}
     </div>
   );
 }

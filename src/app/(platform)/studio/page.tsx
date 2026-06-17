@@ -1,4 +1,5 @@
 import { DesignStudio } from '@/components/cactus/design-studio';
+import { PageHeader } from '@/components/cactus/page-header';
 
 export const metadata = { title: 'Estudio visual · Cactus' };
 
@@ -15,10 +16,7 @@ export default function StudioPage({ searchParams }: { searchParams?: { agent?: 
 
   return (
     <div className="mx-auto max-w-7xl">
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold">{cfg.title}</h1>
-        <p className="text-sm text-muted-foreground">{cfg.sub}</p>
-      </header>
+      <PageHeader emoji={cfg.emoji} title={cfg.title.replace(/^[^\s]+\s/, '')} subtitle={cfg.sub} />
       <DesignStudio agentName={cfg.name} emoji={cfg.emoji} mode={cfg.mode} tagline={cfg.tagline} />
     </div>
   );

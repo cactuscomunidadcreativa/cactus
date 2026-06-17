@@ -3,6 +3,7 @@ import { Check } from 'lucide-react';
 import { PACKS } from '@/lib/cactus/packs';
 import { getAgent, AGENTS } from '@/lib/cactus/agents-catalog';
 import { PackActivateButton } from '@/components/cactus/pack-activate-button';
+import { PageHeader } from '@/components/cactus/page-header';
 
 export const metadata = { title: 'Packs · Cactus Comunidad Creativa' };
 
@@ -13,12 +14,11 @@ function fmtCredits(c: number) {
 export default function PacksPage() {
   return (
     <div className="mx-auto max-w-6xl">
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold">Packs</h1>
-        <p className="text-sm text-muted-foreground">
-          Contrata por pack o agente individual. Cada pack trae sus cactus y un cupo de créditos al mes.
-        </p>
-      </header>
+      <PageHeader
+        emoji="🎟️"
+        title="Packs"
+        subtitle="Contrata por pack o agente individual. Cada pack trae sus cactus y un cupo de créditos al mes."
+      />
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {PACKS.map((pack) => {
