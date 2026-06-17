@@ -2,10 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Store, Settings, ChevronRight, Shield,
-  Users, Layers, DollarSign, Factory, Ruler, Shirt, Brain, Eye, BarChart3, Palette,
+  Users, Layers, DollarSign, Factory, Ruler, Shirt, Brain, Eye, BarChart3, Palette, Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +28,8 @@ export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
   const pathname = usePathname();
 
   const navItems = [
+    { href: '/ecosystem', label: 'Ecosistema', icon: Layers },
+    { href: '/campaign', label: 'Campaign Studio', icon: Sparkles },
     { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { href: '/marketplace', label: t('marketplace'), icon: Store },
     { href: '/settings', label: t('settings'), icon: Settings },
@@ -40,8 +43,8 @@ export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
     <aside className="w-64 border-r border-sidebar-border bg-sidebar h-screen flex flex-col">
       {/* Logo */}
       <div className="p-4 border-b border-sidebar-border">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="text-2xl">🌵</span>
+        <Link href="/ecosystem" className="flex items-center gap-2">
+          <Image src="/cactus-ia-logo.png" alt="Cactus IA" width={32} height={32} className="rounded-full" />
           <span className="font-display font-bold text-lg text-cactus-green">Cactus</span>
         </Link>
       </div>

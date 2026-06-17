@@ -22,6 +22,11 @@ const WA_KEY_CONFIGS = [
   { key: 'wa_verify_token', labelKey: 'waVerifyToken', notSecret: true },
 ];
 
+const DB_KEY_CONFIGS = [
+  { key: 'supabase_db_password', label: 'Database password (Postgres)' },
+  { key: 'supabase_db_url', label: 'Connection string (opcional)' },
+];
+
 const SETTING_CONFIGS = [
   { key: 'ai_default_provider', labelKey: 'defaultProvider', type: 'select', options: ['claude', 'openai'] },
   { key: 'ai_fallback_enabled', labelKey: 'fallbackEnabled', type: 'toggle' },
@@ -93,14 +98,14 @@ export function ConfigPanel({ configs, onSave }: ConfigPanelProps) {
     return !!currentVal;
   }
 
-  function renderKeyInput(key: string, labelKey: string, isSecret = true) {
+  function renderKeyInput(key: string, labelKey: string, isSecret = true, labelText?: string) {
     const hasSavedValue = maskedKeys.has(key);
     const isDirty = dirtyKeys.has(key);
     const configured = isKeyConfigured(key);
 
     return (
       <div key={key} className="space-y-2">
-        <label className="text-sm font-medium">{t(labelKey)}</label>
+        <label className="text-sm font-medium">{labelText || t(labelKey)}</label>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <input
@@ -210,6 +215,18 @@ export function ConfigPanel({ configs, onSave }: ConfigPanelProps) {
           {WA_KEY_CONFIGS.map(({ key, labelKey, notSecret }) =>
             renderKeyInput(key, labelKey, !notSecret)
           )}
+        </div>
+      </div>
+
+      {/* Base de datos */}
+      <div>
+        <h3 className="text-sm font-medium mb-1">Base de datos</h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Contraseña / connection string de Postgres del proyecto Supabase. Se guarda cifrada y permite
+          aplicar migraciones y conexiones directas.
+        </p>
+        <div className="space-y-4">
+          {DB_KEY_CONFIGS.map(({ key, label }) => renderKeyInput(key, '', true, label))}
         </div>
       </div>
     </div>

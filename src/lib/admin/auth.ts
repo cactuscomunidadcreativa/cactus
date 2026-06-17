@@ -9,6 +9,23 @@ interface AdminAuthResult {
 }
 
 /**
+ * Emails that are always treated as super-admin, regardless of the DB role.
+ * Belt-and-suspenders so the founder never gets locked out of his own platform.
+ * Configure with SUPER_ADMIN_EMAILS="a@x.com,b@y.com".
+ */
+const ENV_SUPER_ADMINS = (process.env.SUPER_ADMIN_EMAILS || 'eduardo@cactuscomunidadcreativa.com')
+  .split(',')
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+/** True if the user is a super-admin by DB role OR by the ENV allowlist. */
+export function isSuperAdmin(email?: string | null, role?: string | null): boolean {
+  if (role === 'super_admin') return true;
+  if (email && ENV_SUPER_ADMINS.includes(email.toLowerCase())) return true;
+  return false;
+}
+
+/**
  * Verifies the current request is from an authenticated super_admin user.
  * Returns the Supabase client and user, or throws a NextResponse error.
  *
@@ -36,7 +53,7 @@ export async function requireAdmin(): Promise<AdminAuthResult | NextResponse> {
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'super_admin') {
+  if (!isSuperAdmin(user.email, profile?.role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

@@ -3,6 +3,14 @@ import { requireAdmin } from '@/lib/admin/auth';
 import { clearConfigCache } from '@/lib/ai/config';
 
 export const dynamic = 'force-dynamic';
+
+// Llaves que deben guardarse cifradas (se enmascaran al leer).
+const SECRET_KEYS = new Set([
+  'anthropic_api_key', 'openai_api_key',
+  'twilio_account_sid', 'twilio_auth_token',
+  'supabase_db_password', 'supabase_db_url',
+]);
+
 export async function GET() {
   const result = await requireAdmin();
   if (result instanceof NextResponse) return result;
@@ -49,6 +57,7 @@ export async function POST(req: NextRequest) {
     .upsert({
       key,
       value: value || '',
+      encrypted: SECRET_KEYS.has(key),
       updated_by: user.id,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'key' });

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { Settings, Users, BarChart3, ScrollText, MessageCircle, AppWindow, FileText } from 'lucide-react';
+import { Settings, Users, BarChart3, ScrollText, MessageCircle, AppWindow, FileText, Layers, Coins } from 'lucide-react';
 import { useAdmin } from '../hooks/use-admin';
 import { ConfigPanel } from './config-panel';
 import { UsersPanel } from './users-panel';
@@ -12,8 +13,10 @@ import { WhatsAppTester } from './whatsapp-tester';
 import { AppsAdmin } from './apps-admin';
 import { CMSAdmin } from './cms-admin';
 import { UserManager } from './user-manager';
+import { AgentsAdmin } from './agents-admin';
+import { CreditsAdmin } from './credits-admin';
 
-type TabId = 'config' | 'users' | 'apps' | 'cms' | 'analytics' | 'audit' | 'whatsapp';
+type TabId = 'agents' | 'config' | 'users' | 'apps' | 'cms' | 'credits' | 'analytics' | 'audit' | 'whatsapp';
 
 export function AdminApp() {
   const t = useTranslations('admin');
@@ -28,13 +31,15 @@ export function AdminApp() {
     saveBudget,
   } = useAdmin();
 
-  const [activeTab, setActiveTab] = useState<TabId>('config');
+  const [activeTab, setActiveTab] = useState<TabId>('agents');
 
   const tabs: { id: TabId; icon: typeof Settings; label: string }[] = [
+    { id: 'agents', icon: Layers, label: 'Agentes' },
     { id: 'config', icon: Settings, label: t('tabs.config') },
     { id: 'users', icon: Users, label: t('tabs.users') },
     { id: 'apps', icon: AppWindow, label: 'Apps' },
     { id: 'cms', icon: FileText, label: 'CMS' },
+    { id: 'credits', icon: Coins, label: 'Créditos' },
     { id: 'analytics', icon: BarChart3, label: t('tabs.analytics') },
     { id: 'audit', icon: ScrollText, label: t('tabs.audit') },
     { id: 'whatsapp', icon: MessageCircle, label: tw('tester.title') },
@@ -52,8 +57,11 @@ export function AdminApp() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <span className="text-2xl">⚙️</span>
-        <h1 className="text-xl font-display font-bold">{t('title')}</h1>
+        <Image src="/cactus-ia-logo.png" alt="Cactus IA" width={40} height={40} className="rounded-full" />
+        <div>
+          <h1 className="text-xl font-display font-bold leading-tight">Centro de Control</h1>
+          <p className="text-xs text-muted-foreground">Cactus Comunidad Creativa · super-admin</p>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -78,6 +86,12 @@ export function AdminApp() {
       </div>
 
       {/* Tab content */}
+      {activeTab === 'agents' && (
+        <AgentsAdmin />
+      )}
+      {activeTab === 'credits' && (
+        <CreditsAdmin />
+      )}
       {activeTab === 'config' && (
         <ConfigPanel configs={configs} onSave={saveConfig} />
       )}

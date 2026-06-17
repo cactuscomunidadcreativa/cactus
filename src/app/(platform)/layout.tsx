@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PlatformShell } from '@/components/layout/platform-shell';
+import { isSuperAdmin } from '@/lib/admin/auth';
 
 export default async function PlatformLayout({
   children,
@@ -55,7 +56,7 @@ export default async function PlatformLayout({
     status: sub.status,
   }));
 
-  const isAdmin = profile?.role === 'super_admin';
+  const isAdmin = isSuperAdmin(user.email, profile?.role);
 
   return (
     <PlatformShell
