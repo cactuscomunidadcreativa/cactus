@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Send, Loader2 } from 'lucide-react';
+import { agentQuickActions } from '@/lib/cactus/agent-prompts';
 
 interface AgentMeta {
   slug: string; name: string; role: string; emoji: string; color: string; image: string;
@@ -21,8 +22,10 @@ export function AgentConsole({ agent }: { agent: AgentMeta }) {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
-  async function send() {
-    const text = input.trim();
+  const quickActions = agentQuickActions(agent.slug);
+
+  async function send(override?: string) {
+    const text = (override ?? input).trim();
     if (!text || loading) return;
     setError(null);
     const next = [...messages, { role: 'user' as const, content: text }];
@@ -72,6 +75,15 @@ export function AgentConsole({ agent }: { agent: AgentMeta }) {
             </div>
           </div>
         ))}
+        {messages.length === 1 && quickActions.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {quickActions.map((a) => (
+              <button key={a} onClick={() => send(a)} className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-cactus-green hover:text-cactus-green">
+                {a}
+              </button>
+            ))}
+          </div>
+        )}
         {loading && (
           <div className="flex justify-start">
             <div className="rounded-2xl bg-muted px-4 py-2.5 text-sm"><Loader2 className="h-4 w-4 animate-spin" /></div>

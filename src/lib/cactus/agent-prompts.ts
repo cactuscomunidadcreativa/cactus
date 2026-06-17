@@ -47,3 +47,27 @@ ${brandContext ? `\nCONTEXTO DE MARCA (úsalo siempre):\n${brandContext}` : ''}`
 export function agentGreeting(agent: CactusAgent): string {
   return `Hola, soy ${agent.name} ${agent.emoji} — ${agent.role}. ¿En qué te ayudo?`;
 }
+
+/** Acciones rápidas por agente — chips para arrancar sin pensar el prompt. */
+const QUICK_ACTIONS: Record<string, string[]> = {
+  biznaga: ['Benchmark de mi competencia', 'Tendencias de mi industria', '3 oportunidades de mercado'],
+  ferocactus: ['Hazme una cotización', 'Borrador de contrato de servicio', 'Términos y condiciones'],
+  maguey: ['Dame un script de venta', 'Maneja la objeción de precio', 'Secuencia de seguimiento'],
+  echinocereus: ['Keywords para mi negocio', 'Estructura SEO de una landing', 'Plan de contenidos'],
+  ocotillo: ['Perfil de puesto', 'Preguntas de entrevista', 'Criterios de evaluación'],
+  yuca: ['Plan de hábitos semanal', 'Rutina de foco', 'Metas del trimestre'],
+  huernia: ['Política de privacidad base', 'Riesgos de mi operación', 'Checklist de compliance'],
+  aloe: ['Responde un reclamo', 'FAQ de mi producto', 'Mensaje de bienvenida'],
+  candelabro: ['Storyboard de un reel', 'Guion de comercial de 30s', 'Ideas de video viral'],
+  sanpedro: ['Concepto de intro animada', 'Estilo de motion para mi marca'],
+  pereskia: ['Brief musical para un reel', 'Jingle para mi marca'],
+  ariocarpus: ['Ficha de embajador virtual', 'Define la personalidad de mi avatar'],
+  opuntia: ['Estructura de una landing', 'Copy por sección de mi web'],
+};
+
+export function agentQuickActions(slug: string): string[] {
+  if (QUICK_ACTIONS[slug]) return QUICK_ACTIONS[slug];
+  const a = getAgent(slug);
+  if (!a) return [];
+  return [`Ayúdame con ${a.role.toLowerCase()}`, `¿Qué puedes hacer por mi marca?`];
+}

@@ -81,7 +81,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Procesos, SOPs, tareas, checklists, aprobaciones y recordatorios. El tablero operativo del negocio.',
     tools: ['Calendar', 'Slack', 'Teams', 'Make', 'n8n'],
     models: ['Claude', 'Gemini Flash', 'GPT'],
-    emoji: '✅', color: '#3E8E40', image: img('saguaro'), status: 'soon',
+    emoji: '✅', color: '#3E8E40', image: img('saguaro'), status: 'beta', reuses: 'weekflow', href: '/apps/saguaro',
   },
   {
     slug: 'agave', name: 'Agave', role: 'Business Intelligence', division: 'business',
