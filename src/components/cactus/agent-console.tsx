@@ -104,7 +104,7 @@ export function AgentConsole({ agent }: { agent: AgentMeta }) {
             placeholder={`Escríbele a ${agent.name}…`}
             className="flex-1 resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:border-cactus-green focus:outline-none"
           />
-          <button onClick={send} disabled={loading || !input.trim()} className="flex h-9 w-9 items-center justify-center rounded-md bg-cactus-green text-white hover:bg-cactus-green/90 disabled:opacity-50">
+          <button onClick={() => send()} disabled={loading || !input.trim()} className="flex h-9 w-9 items-center justify-center rounded-md bg-cactus-green text-white hover:bg-cactus-green/90 disabled:opacity-50">
             <Send className="h-4 w-4" />
           </button>
         </div>
