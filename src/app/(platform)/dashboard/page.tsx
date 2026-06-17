@@ -1,92 +1,81 @@
 import { createClient } from '@/lib/supabase/server';
-import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Store, ArrowRight } from 'lucide-react';
 
-// Map app IDs to logo files in /public
 const APP_LOGOS: Record<string, string> = {
-  ramona: '/ramona.png',
-  tuna: '/tuna.png',
-  agave: '/agave.png',
-  saguaro: '/saguaro.png',
-  pita: '/pita.png',
-  cereus: '/cereus.png',
+  ramona: '/ramona.png', tuna: '/tuna.png', agave: '/agave.png',
+  saguaro: '/saguaro.png', pita: '/pita.png', cereus: '/cereus.png',
 };
-import { StatsCards } from '@/components/dashboard/stats-cards';
-import { ActivityFeed } from '@/components/dashboard/activity-feed';
-import { MoodChart } from '@/components/dashboard/mood-chart';
 
-export const metadata = { title: 'Dashboard' };
+const QUICK_ACCESS = [
+  { href: '/ecosystem', emoji: '🌵', title: 'Ecosistema', desc: 'Tus 27 agentes' },
+  { href: '/orchestrator', emoji: '🧭', title: 'Ramona', desc: 'Dile un objetivo' },
+  { href: '/campaign', emoji: '💡', title: 'Campañas', desc: 'Click emocional' },
+  { href: '/brain', emoji: '🧠', title: 'Cerebro', desc: 'Tu marca' },
+  { href: '/studio', emoji: '🎨', title: 'Diseño', desc: 'Genera piezas' },
+  { href: '/voice', emoji: '🎙️', title: 'Voz', desc: 'Locución IA' },
+];
+
+export const metadata = { title: 'Inicio · Cactus' };
 
 export default async function DashboardPage() {
-  const t = await getTranslations('platform.dashboard');
   const supabase = await createClient();
-
   let profileName: string | null = null;
   let activeSubs: any[] = [];
 
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
-
     if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('id', user.id)
-        .single();
-
+      const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
       profileName = profile?.full_name || null;
-
       const { data: subscriptions } = await supabase
         .from('subscriptions')
-        .select(`
-          app_id,
-          status,
-          current_period_end,
-          apps (name, icon, color, description)
-        `)
+        .select('app_id, status, apps (name, icon, color, description)')
         .eq('user_id', user.id)
         .in('status', ['active', 'trialing']);
-
       activeSubs = subscriptions || [];
     }
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Welcome */}
+    <div className="mx-auto max-w-5xl">
+      {/* Bienvenida */}
       <div className="mb-8">
-        <h1 className="text-2xl font-display font-bold">
-          {profileName
-            ? t('welcome', { name: profileName })
-            : t('welcomeDefault')}
+        <h1 className="font-display text-2xl font-bold">
+          Hola{profileName ? `, ${profileName.split(' ')[0]}` : ''} 🌵
         </h1>
-        <p className="text-muted-foreground mt-1">{t('subtitle')}</p>
+        <p className="mt-1 text-muted-foreground">Tu comunidad creativa de IA, lista para trabajar.</p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="mb-8">
-        <StatsCards />
-      </div>
-
-      {/* Active Apps */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4">{t('activeApps')}</h2>
-
-        {activeSubs.length === 0 ? (
-          <div className="bg-card border border-border rounded-lg p-8 text-center">
-            <Store className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-medium mb-2">{t('noApps')}</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('noAppsDescription')}
-            </p>
+      {/* Accesos rápidos */}
+      <div className="mb-10">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">Empezar</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {QUICK_ACCESS.map((q) => (
             <Link
-              href="/marketplace"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-cactus-green text-white rounded-md text-sm font-medium hover:bg-cactus-green/90 transition-colors"
+              key={q.href}
+              href={q.href}
+              className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-card p-4 text-center transition-all hover:-translate-y-0.5 hover:border-cactus-green/50 hover:shadow-sm"
             >
-              {t('exploreMarketplace')}
-              <ArrowRight className="h-4 w-4" />
+              <span className="text-2xl">{q.emoji}</span>
+              <span className="text-sm font-medium leading-tight">{q.title}</span>
+              <span className="text-[11px] text-muted-foreground">{q.desc}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Mis apps */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">Mis apps</h2>
+        {activeSubs.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <Store className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 font-medium">Aún no activas ninguna app</h3>
+            <p className="mb-4 text-sm text-muted-foreground">Explora el marketplace o el ecosistema de agentes.</p>
+            <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-md bg-cactus-green px-4 py-2 text-sm font-medium text-white hover:bg-cactus-green/90">
+              Ir al marketplace <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         ) : (
@@ -95,58 +84,26 @@ export default async function DashboardPage() {
               <Link
                 key={sub.app_id}
                 href={`/apps/${sub.app_id}`}
-                className="bg-card border border-border rounded-lg p-5 hover:border-cactus-green/50 transition-colors group"
+                className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-cactus-green/50"
               >
                 <div className="flex items-start gap-3">
                   {APP_LOGOS[sub.app_id] ? (
-                    <Image
-                      src={APP_LOGOS[sub.app_id]}
-                      alt={sub.apps?.name || sub.app_id}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded-lg object-contain"
-                    />
+                    <Image src={APP_LOGOS[sub.app_id]} alt={sub.apps?.name || sub.app_id} width={40} height={40} className="h-10 w-10 rounded-lg object-contain" />
                   ) : (
-                    <span
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
-                      style={{
-                        backgroundColor: (sub.apps?.color || '#888') + '15',
-                      }}
-                    >
-                      {sub.apps?.icon || '\uD83D\uDCE6'}
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg text-xl" style={{ backgroundColor: (sub.apps?.color || '#888') + '15' }}>
+                      {sub.apps?.icon || '📦'}
                     </span>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium group-hover:text-cactus-green transition-colors">
-                      {sub.apps?.name || sub.app_id}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-1">
-                      {sub.apps?.description || ''}
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium transition-colors group-hover:text-cactus-green">{sub.apps?.name || sub.app_id}</h3>
+                    <p className="line-clamp-1 text-sm text-muted-foreground">{sub.apps?.description || ''}</p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-cactus-green transition-colors mt-1" />
+                  <ArrowRight className="mt-1 h-4 w-4 text-muted-foreground transition-colors group-hover:text-cactus-green" />
                 </div>
-                {sub.status === 'trialing' && (
-                  <span className="inline-block mt-3 text-xs bg-accent/10 text-accent px-2 py-0.5 rounded">
-                    Trial
-                  </span>
-                )}
               </Link>
             ))}
           </div>
         )}
-      </div>
-
-      {/* Activity Feed + Mood Chart */}
-      <div className="grid gap-6 lg:grid-cols-3 mb-8">
-        <div className="lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-4">{t('recentActivity')}</h2>
-          <ActivityFeed />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold mb-4">{t('moodTrend')}</h2>
-          <MoodChart />
-        </div>
       </div>
     </div>
   );
