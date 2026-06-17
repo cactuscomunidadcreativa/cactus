@@ -53,12 +53,12 @@ export default function EcosystemPage() {
             </div>
           </Reveal>
 
-          <Reveal delay={0.15} className="relative hidden aspect-[16/10] overflow-hidden rounded-2xl ring-1 ring-white/15 md:block">
+          <Reveal delay={0.15} className="relative mx-auto hidden aspect-square w-full max-w-sm overflow-hidden rounded-2xl bg-white/95 p-3 ring-1 ring-white/15 md:block">
             <Image
-              src="/agents/ecosystem-poster.png"
-              alt="Mapa del ecosistema Cactus"
+              src="/cactus-logo.png"
+              alt="Cactus Comunidad Creativa"
               fill
-              className="object-cover object-top transition-transform duration-700 hover:scale-105"
+              className="object-contain transition-transform duration-700 hover:scale-105"
               sizes="(max-width: 768px) 100vw, 40vw"
               priority
             />
