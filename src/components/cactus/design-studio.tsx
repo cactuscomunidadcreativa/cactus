@@ -10,7 +10,14 @@ const FORMATS = [
   { key: 'wide', label: 'Horizontal (banner)' },
 ];
 
-export function DesignStudio() {
+interface DesignStudioProps {
+  agentName?: string;
+  emoji?: string;
+  mode?: 'design' | 'photo' | 'character';
+  tagline?: string;
+}
+
+export function DesignStudio({ agentName = 'Cardón', emoji = '🎨', mode = 'design', tagline = 'Describe la pieza, yo la diseño.' }: DesignStudioProps = {}) {
   const [brief, setBrief] = useState('');
   const [brandName, setBrandName] = useState('');
   const [format, setFormat] = useState('square');
@@ -27,7 +34,7 @@ export function DesignStudio() {
     try {
       const res = await fetch('/api/cactus/design', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brief, brandName, format, style }),
+        body: JSON.stringify({ brief, brandName, format, style, mode }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
@@ -40,10 +47,10 @@ export function DesignStudio() {
     <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
       <div className="space-y-4 rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-2">
-          <span className="text-xl">🎨</span>
+          <span className="text-xl">{emoji}</span>
           <div>
-            <h2 className="font-display font-semibold leading-tight">Cardón · Diseño</h2>
-            <p className="text-xs text-muted-foreground">Describe la pieza, yo la diseño.</p>
+            <h2 className="font-display font-semibold leading-tight">{agentName}</h2>
+            <p className="text-xs text-muted-foreground">{tagline}</p>
           </div>
         </div>
 

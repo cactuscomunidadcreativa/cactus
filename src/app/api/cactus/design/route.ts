@@ -31,7 +31,14 @@ export async function POST(req: Request) {
   const style = body.style === 'natural' ? 'natural' : 'vivid';
   const brand = body.brandName ? `para la marca "${body.brandName}"` : '';
 
-  const prompt = `Diseño gráfico profesional ${brand}: ${body.brief}. ${STYLE_HINT[style]}. Composición limpia y equilibrada, calidad publicitaria, lista para redes sociales. Evita texto ilegible o deformado.`;
+  const MODE_PREFIX: Record<string, string> = {
+    design: 'Diseño gráfico profesional',
+    photo: 'Fotografía profesional, editorial y de producto, iluminación cuidada',
+    character: 'Ilustración de personaje/mascota de marca, estilo consistente',
+  };
+  const prefix = MODE_PREFIX[body.mode as string] || MODE_PREFIX.design;
+
+  const prompt = `${prefix} ${brand}: ${body.brief}. ${STYLE_HINT[style]}. Composición limpia y equilibrada, alta calidad, lista para usar. Evita texto ilegible o deformado.`;
 
   try {
     const img = await generateImage({ prompt, size: SIZE[format] || SIZE.square, quality: 'standard', style });

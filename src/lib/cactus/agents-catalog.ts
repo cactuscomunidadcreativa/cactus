@@ -146,7 +146,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Dirección fotográfica, shotlists, moodboards, producto y e-commerce con avatares o modelos.',
     tools: ['Avatares', 'Producto', 'E-commerce'],
     models: ['GPT Image', 'Midjourney', 'Gemini'],
-    emoji: '📷', color: '#BE185D', image: img('lente'), status: 'beta', reuses: 'cereus',
+    emoji: '📷', color: '#BE185D', image: img('lente'), status: 'live', reuses: 'cereus', href: '/studio?agent=lente',
   },
   {
     slug: 'peyote', name: 'Peyote', role: 'Estratega Creativo · EQ', division: 'agency',
@@ -176,7 +176,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Locución, podcast, voice-over, doblaje, audiolibros y sonic identity de marca.',
     tools: ['Avatares', 'Podcasts', 'Capacitaciones'],
     models: ['OpenAI TTS', 'Gemini TTS', 'ElevenLabs'],
-    emoji: '🎙️', color: '#6D28D9', image: img('garambullo'), status: 'soon',
+    emoji: '🎙️', color: '#6D28D9', image: img('garambullo'), status: 'live', href: '/voice',
   },
   {
     slug: 'pereskia', name: 'Pereskia', role: 'Music Producer', division: 'media',
@@ -199,7 +199,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Mascotas, personajes, universos de marca, avatares estilizados y story bibles consistentes.',
     tools: ['San Pedro', 'Cardón'],
     models: ['GPT Image', 'Gemini', 'Midjourney'],
-    emoji: '⭐', color: '#0D9488', image: img('astrophytum'), status: 'soon',
+    emoji: '⭐', color: '#0D9488', image: img('astrophytum'), status: 'live', href: '/studio?agent=astrophytum',
   },
 
   // ─── WEB ──────────────────────────────────────────────────────────────────
