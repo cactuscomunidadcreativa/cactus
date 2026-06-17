@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Send, Loader2 } from 'lucide-react';
 import { agentQuickActions } from '@/lib/cactus/agent-prompts';
@@ -12,8 +13,11 @@ interface AgentMeta {
 interface Msg { role: 'user' | 'assistant'; content: string; credits?: number }
 
 export function AgentConsole({ agent }: { agent: AgentMeta }) {
+  const t = useTranslations('ecosystem');
+  const role = t(`agents.${agent.slug}.role`);
+  const description = t(`agents.${agent.slug}.description`);
   const [messages, setMessages] = useState<Msg[]>([
-    { role: 'assistant', content: `Hola, soy ${agent.name} ${agent.emoji} — ${agent.role}. ${agent.description} ¿En qué te ayudo?` },
+    { role: 'assistant', content: t('console.greeting', { name: agent.name, emoji: agent.emoji, role, description }) },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,11 +52,11 @@ export function AgentConsole({ agent }: { agent: AgentMeta }) {
   return (
     <div className="flex h-[calc(100vh-13rem)] flex-col rounded-xl border border-border bg-card">
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-border p-4" style={{ borderTopWidth: 3, borderTopColor: agent.color }}>
-        <Image src={agent.image} alt={agent.name} width={40} height={40} className="rounded-lg" />
+      <div className="group flex items-center gap-3 border-b border-border p-4" style={{ borderTopWidth: 3, borderTopColor: agent.color }}>
+        <Image src={agent.image} alt={agent.name} width={40} height={40} className="rounded-lg motion-safe:animate-cactus-float motion-safe:group-hover:animate-cactus-wiggle" />
         <div>
           <h2 className="font-display font-semibold leading-tight">{agent.name}</h2>
-          <p className="text-xs" style={{ color: agent.color }}>{agent.role}</p>
+          <p className="text-xs" style={{ color: agent.color }}>{role}</p>
         </div>
         <div className="ml-auto flex flex-wrap gap-1">
           {agent.tools.slice(0, 3).map((t) => (
@@ -71,7 +75,7 @@ export function AgentConsole({ agent }: { agent: AgentMeta }) {
               }`}
             >
               {m.content}
-              {m.credits != null && <div className="mt-1 text-[10px] opacity-60">{m.credits} créditos</div>}
+              {m.credits != null && <div className="mt-1 text-[10px] opacity-60">{t('console.credits', { n: m.credits })}</div>}
             </div>
           </div>
         ))}
@@ -101,7 +105,7 @@ export function AgentConsole({ agent }: { agent: AgentMeta }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
             rows={1}
-            placeholder={`Escríbele a ${agent.name}…`}
+            placeholder={t('console.placeholder', { name: agent.name })}
             className="flex-1 resize-none rounded-md border border-border bg-background px-3 py-2 text-sm focus:border-cactus-green focus:outline-none"
           />
           <button onClick={() => send()} disabled={loading || !input.trim()} className="flex h-9 w-9 items-center justify-center rounded-md bg-cactus-green text-white hover:bg-cactus-green/90 disabled:opacity-50">

@@ -9,6 +9,45 @@ import {
   Users, Layers, DollarSign, Factory, Ruler, Shirt, Brain, Eye, BarChart3, Palette, Sparkles, Bot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getAgent, type CactusAgent } from '@/lib/cactus/agents-catalog';
+
+// Tarjeta del agente activo: avatar animado + nombre + rol + estado en línea
+export function ActiveAgentBadge({ agent }: { agent: CactusAgent }) {
+  return (
+    <Link
+      href={`/agent/${agent.slug}`}
+      className="group flex items-center gap-3 rounded-xl border p-3 transition-shadow hover:shadow-md"
+      style={{
+        borderColor: agent.color + '33',
+        background: `linear-gradient(135deg, ${agent.color}1f, ${agent.color}08)`,
+        ['--tw-shadow-color' as string]: agent.color + '40',
+      }}
+    >
+      <span className="relative shrink-0">
+        <Image
+          src={agent.image}
+          alt={agent.name}
+          width={46}
+          height={46}
+          className="rounded-full ring-2 motion-safe:animate-cactus-float motion-safe:group-hover:animate-cactus-wiggle"
+          style={{ ['--tw-ring-color' as string]: agent.color }}
+        />
+        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-sidebar bg-emerald-500" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-display text-sm font-bold leading-tight text-foreground">
+          {agent.name}
+        </span>
+        <span className="block truncate text-xs font-medium" style={{ color: agent.color }}>
+          {agent.role}
+        </span>
+        <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> En línea
+        </span>
+      </span>
+    </Link>
+  );
+}
 
 interface AppSubscription {
   app_id: string;
@@ -28,6 +67,10 @@ interface NavItem { href: string; label: string; icon: typeof Layers }
 export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
   const t = useTranslations('platform.sidebar');
   const pathname = usePathname();
+
+  // Agente activo: cuando estás dentro de /agent/[slug] lo destacamos arriba
+  const agentSlug = pathname.match(/^\/agent\/([^/]+)/)?.[1];
+  const activeAgent = agentSlug ? getAgent(agentSlug) : undefined;
 
   const plataforma: NavItem[] = [
     { href: '/ecosystem', label: 'Ecosistema', icon: Layers },
@@ -86,6 +129,13 @@ export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
           </div>
         </Link>
       </div>
+
+      {/* Agente activo destacado */}
+      {activeAgent && (
+        <div className="px-3 pt-3">
+          <ActiveAgentBadge agent={activeAgent} />
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">

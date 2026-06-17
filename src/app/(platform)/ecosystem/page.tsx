@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 import { AgentGrid } from '@/components/cactus/agent-grid';
 import { Reveal, Counter } from '@/components/marketing/motion';
 import { AGENTS, DIVISION_ORDER } from '@/lib/cactus/agents-catalog';
@@ -9,7 +10,9 @@ export const metadata = {
 
 const liveCount = AGENTS.filter((a) => a.status !== 'soon').length;
 
-export default function EcosystemPage() {
+export default async function EcosystemPage() {
+  const t = await getTranslations('ecosystem');
+
   return (
     <div className="mx-auto max-w-7xl space-y-10">
       {/* Hero */}
@@ -28,22 +31,24 @@ export default function EcosystemPage() {
               className="mb-4 rounded-full bg-white/95 ring-1 ring-white/30"
             />
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-300">
-              Comunidad Creativa Inteligente
+              {t('hero.eyebrow')}
             </p>
             <h1 className="font-display text-3xl font-bold leading-[1.1] tracking-tight md:text-5xl">
-              Tu ecosistema.{' '}
-              <span className="font-editorial font-medium italic text-emerald-300">una sola misión.</span>
+              {t('hero.titleLead')}{' '}
+              <span className="font-editorial font-medium italic text-emerald-300">{t('hero.titleAccent')}</span>
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-emerald-50/85 md:text-base">
-              Un equipo de {AGENTS.length} agentes de IA que trabajan juntos — y <em className="font-editorial">sienten</em> —
-              para hacer crecer tu negocio, tu marca y tus ideas.
+              {t.rich('hero.intro', {
+                count: AGENTS.length,
+                feel: (chunks) => <em className="font-editorial">{chunks}</em>,
+              })}
             </p>
             <div className="mt-7 flex flex-wrap gap-x-8 gap-y-4">
               {[
-                { v: AGENTS.length, suffix: '', l: 'Agentes' },
-                { v: DIVISION_ORDER.length, suffix: '', l: 'Divisiones' },
-                { v: liveCount, suffix: '', l: 'Operables hoy' },
-                { v: 50, suffix: '+', l: 'IAs integradas' },
+                { v: AGENTS.length, suffix: '', l: t('stats.agents') },
+                { v: DIVISION_ORDER.length, suffix: '', l: t('stats.divisions') },
+                { v: liveCount, suffix: '', l: t('stats.liveToday') },
+                { v: 50, suffix: '+', l: t('stats.aisIntegrated') },
               ].map((s) => (
                 <div key={s.l}>
                   <Counter value={s.v} suffix={s.suffix} className="font-display text-3xl font-bold" />
@@ -69,12 +74,12 @@ export default function EcosystemPage() {
       {/* Grid de agentes */}
       <section>
         <Reveal>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-cactus-green">El equipo</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-cactus-green">{t('team.eyebrow')}</p>
           <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
-            Los cactus, por división
+            {t('team.title')}
           </h2>
           <p className="mb-7 mt-2 max-w-2xl text-sm text-muted-foreground">
-            Cada agente se contrata por separado, en pack o como suscripción completa. Toca uno para abrirlo.
+            {t('team.subtitle')}
           </p>
         </Reveal>
         <AgentGrid />

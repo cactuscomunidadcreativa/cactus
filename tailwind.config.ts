@@ -139,6 +139,24 @@ const config: Config = {
           '33%': { transform: 'translate(40px, -30px) scale(1.08)' },
           '66%': { transform: 'translate(-30px, 25px) scale(0.95)' },
         },
+        // ── Cactus: vida propia de cada agente ──
+        'cactus-float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
+        'cactus-wiggle': {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '20%': { transform: 'rotate(-4deg)' },
+          '40%': { transform: 'rotate(3deg)' },
+          '60%': { transform: 'rotate(-2deg)' },
+          '80%': { transform: 'rotate(2deg)' },
+        },
+        'cactus-bounce': {
+          '0%, 100%': { transform: 'translateY(0) scale(1)' },
+          '30%': { transform: 'translateY(-10px) scale(1.04)' },
+          '55%': { transform: 'translateY(0) scale(0.98)' },
+          '75%': { transform: 'translateY(-4px) scale(1.01)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -146,6 +164,9 @@ const config: Config = {
         marquee: 'marquee 36s linear infinite',
         'pulse-soft': 'pulse-soft 2.4s ease-in-out infinite',
         'orbit-drift': 'orbit-drift 18s ease-in-out infinite',
+        'cactus-float': 'cactus-float 4s ease-in-out infinite',
+        'cactus-wiggle': 'cactus-wiggle 0.7s ease-in-out',
+        'cactus-bounce': 'cactus-bounce 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) infinite',
       },
     },
   },

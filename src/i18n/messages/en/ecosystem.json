@@ -1,0 +1,159 @@
+{
+  "ecosystem": {
+    "hero": {
+      "eyebrow": "Intelligent Creative Community",
+      "titleLead": "Your ecosystem.",
+      "titleAccent": "one single mission.",
+      "intro": "A team of {count} AI agents that work together — and <feel>feel</feel> — to grow your business, your brand and your ideas."
+    },
+    "stats": {
+      "agents": "Agents",
+      "divisions": "Divisions",
+      "liveToday": "Live today",
+      "aisIntegrated": "AIs integrated"
+    },
+    "team": {
+      "eyebrow": "The team",
+      "title": "The cacti, by division",
+      "subtitle": "Each agent is hired separately, in a pack, or as a full subscription. Tap one to open it."
+    },
+    "grid": {
+      "all": "All",
+      "open": "Open",
+      "soon": "Coming soon"
+    },
+    "status": {
+      "core": "Core",
+      "live": "Available",
+      "beta": "In service",
+      "soon": "Coming soon"
+    },
+    "console": {
+      "greeting": "Hi, this is {name} {emoji} — {role}. {description} How can I help?",
+      "placeholder": "Write to {name}…",
+      "credits": "{n} credits"
+    },
+    "divisions": {
+      "nucleo": { "label": "Core", "tagline": "Brain and orchestration" },
+      "business": { "label": "Cactus Business", "tagline": "BI, CRM, finance and operations" },
+      "agency": { "label": "Cactus Agency", "tagline": "Strategy, copy, design and social" },
+      "media": { "label": "Cactus Media", "tagline": "Video, animation, voice and music" },
+      "avatar": { "label": "Cactus Avatar Studio", "tagline": "Digital humans and characters" },
+      "web": { "label": "Cactus Web", "tagline": "Sites, funnels and SEO" },
+      "sales": { "label": "Cactus Sales", "tagline": "Prospecting, proposals and closing" },
+      "support": { "label": "Cactus Support", "tagline": "Customer care and community" },
+      "people": { "label": "Cactus People", "tagline": "Talent, habits and compliance" },
+      "moda": { "label": "Cactus Fashion", "tagline": "Product, collections and e-commerce" }
+    },
+    "agents": {
+      "cactus-ia": {
+        "role": "Central Brain",
+        "description": "The knowledge base, memory, brand kit, RAG and integrations that power every agent."
+      },
+      "ramona": {
+        "role": "General Coordinator",
+        "description": "Your executive assistant. Takes the request, builds the brief, delegates to the agents and makes sure everything ships."
+      },
+      "saguaro": {
+        "role": "Workflow & Tasks",
+        "description": "Processes, SOPs, tasks, checklists, approvals and reminders. The operational board of the business."
+      },
+      "agave": {
+        "role": "Business Intelligence",
+        "description": "KPIs, forecast, pricing, margins, cashflow, dashboards and financial decisions."
+      },
+      "tuna": {
+        "role": "CRM & Revenue",
+        "description": "Leads, pipeline, funnels, follow-up, closing and sales reports."
+      },
+      "pita": {
+        "role": "Presentations & Feedback",
+        "description": "Decks, visual proposals, meeting notes and a per-client feedback vault."
+      },
+      "biznaga": {
+        "role": "Market Intelligence",
+        "description": "Market research, competitors, trends, benchmarking and external pricing."
+      },
+      "ferocactus": {
+        "role": "Contracts & Documents",
+        "description": "Quotes, base contracts, terms, agreements and service orders."
+      },
+      "nopal": {
+        "role": "Social Media Manager",
+        "description": "Grids, captions, calendars, community management, viral formats and publishing."
+      },
+      "pitaya": {
+        "role": "Creative Copywriter",
+        "description": "Storytelling, ads, scripts, emails, landing pages, slogans and campaign concepts."
+      },
+      "cardon": {
+        "role": "Graphic Designer",
+        "description": "Branding, layouts, carousels, banners, flyers, packaging and ad creatives."
+      },
+      "lente": {
+        "role": "AI Photographer",
+        "description": "Photo direction, shotlists, moodboards, product and e-commerce with avatars or models."
+      },
+      "peyote": {
+        "role": "Creative Strategist · EQ",
+        "description": "The core idea. Defines the emotional angle of every campaign, audits the pieces and leads the creative team."
+      },
+      "candelabro": {
+        "role": "Video Maker",
+        "description": "Reels, commercials, TikToks, corporate videos and storyboards. Uses scripts from Pitaya and photos from Lente."
+      },
+      "sanpedro": {
+        "role": "Animator",
+        "description": "Motion graphics, animated logos, transitions, characters, intros and micro-animations."
+      },
+      "garambullo": {
+        "role": "Voice & Audio Studio",
+        "description": "Voiceover, podcasts, dubbing, audiobooks and brand sonic identity."
+      },
+      "pereskia": {
+        "role": "Music Producer",
+        "description": "Jingles, music, sound design, ambiance and audio branding. Delivers tracks to Candelabro."
+      },
+      "ariocarpus": {
+        "role": "Avatar & Digital Human",
+        "description": "Creates avatars, virtual influencers, sellers, presenters and brand ambassadors with a consistent face, voice and story."
+      },
+      "astrophytum": {
+        "role": "Character Designer",
+        "description": "Mascots, characters, brand universes, stylized avatars and consistent story bibles."
+      },
+      "opuntia": {
+        "role": "Website Builder",
+        "description": "Web builder: landings, sites, funnels, microsites, forms, blogs and e-commerce."
+      },
+      "echinocereus": {
+        "role": "SEO & Growth",
+        "description": "Technical SEO, keywords, content, metadata, web architecture, interlinking and organic traffic."
+      },
+      "maguey": {
+        "role": "Sales & Proposals",
+        "description": "Scripts, follow-up, objections, prospecting, proposals, quotes and closing deals."
+      },
+      "cereus": {
+        "role": "Fashion & Product Studio",
+        "description": "Fashion, drops, collections, catalog, product, e-commerce and merchandising. The emotional atelier."
+      },
+      "aloe": {
+        "role": "Customer Care",
+        "description": "WhatsApp, email, DMs, comments, tickets, FAQs, complaints and after-sales support."
+      },
+      "ocotillo": {
+        "role": "Talent & Recruiting",
+        "description": "Profiles, interviews, screening, evaluations, shortlists and candidate tracking."
+      },
+      "yuca": {
+        "role": "Productivity & Habits",
+        "description": "Goals, focus, wellbeing, training, routines and personal and team tracking."
+      },
+      "huernia": {
+        "role": "Legal & Compliance",
+        "description": "Policies, risks, terms, compliance, regulatory alerts and preliminary document review."
+      }
+    }
+  }
+}

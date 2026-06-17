@@ -24,6 +24,7 @@ export default getRequestConfig(async () => {
       ...(await import(`./messages/${locale}/whatsapp.json`)).default,
       ...(await import(`./messages/${locale}/home.json`)).default,
       ...(await import(`./messages/${locale}/landing.json`)).default,
+      ...(await import(`./messages/${locale}/ecosystem.json`)).default,
     },
   };
 });

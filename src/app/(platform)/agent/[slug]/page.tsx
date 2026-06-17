@@ -24,13 +24,13 @@ export default function AgentPage({ params }: { params: { slug: string } }) {
       <div className={hasCard ? 'grid gap-6 lg:grid-cols-[300px_1fr]' : 'mx-auto max-w-3xl'}>
         {hasCard && (
           <aside className="hidden lg:block">
-            <div className="sticky top-4 overflow-hidden rounded-2xl border border-border shadow-sm">
+            <div className="group sticky top-4 overflow-hidden rounded-2xl border border-border shadow-sm">
               <Image
                 src={`/agents/${agent.slug}-card.png`}
                 alt={agent.name}
                 width={530}
                 height={760}
-                className="w-full"
+                className="w-full motion-safe:animate-cactus-float motion-safe:group-hover:animate-cactus-wiggle"
               />
             </div>
           </aside>

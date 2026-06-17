@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Lock } from 'lucide-react';
 import {
-  AGENTS, DIVISIONS, DIVISION_ORDER, STATUS_LABEL, AGENTS_WITH_CARD,
+  AGENTS, DIVISIONS, DIVISION_ORDER, AGENTS_WITH_CARD,
   type CactusAgent, type DivisionKey,
 } from '@/lib/cactus/agents-catalog';
-import { CARD_META } from '@/lib/cactus/card-meta';
+import { Stagger, StaggerItem } from '@/components/marketing/motion';
+
+// Cada cactus flota con una fase distinta para que la grilla se vea viva
+const floatClass = 'motion-safe:animate-cactus-float motion-safe:group-hover:animate-cactus-wiggle';
 
 const STATUS_STYLE: Record<string, string> = {
   core: 'bg-emerald-500 text-white',
@@ -17,47 +21,51 @@ const STATUS_STYLE: Record<string, string> = {
   soon: 'bg-black/55 text-white',
 };
 
-function AgentCard({ agent }: { agent: CactusAgent }) {
+function AgentCard({ agent, index = 0 }: { agent: CactusAgent; index?: number }) {
+  const t = useTranslations('ecosystem');
   const operable = agent.status !== 'soon';
   const hasCard = AGENTS_WITH_CARD.has(agent.slug);
+  // Desfase de la flotación: cada cactus arranca en un momento distinto
+  const floatStyle = { animationDelay: `${(index % 6) * 0.45}s` };
 
   const inner = (
     <div
-      className="group relative overflow-hidden rounded-2xl border border-border bg-white card-glow transition-all duration-300 hover:-translate-y-1 hover:border-transparent"
+      className="group relative aspect-[3/4] overflow-hidden rounded-2xl border border-border bg-white card-glow transition-all duration-300 hover:-translate-y-1 hover:border-transparent"
       style={{ ['--tw-shadow-color' as string]: agent.color + '40' }}
     >
       {hasCard ? (
-        // Tarjeta completa, sin recortes (dimensiones reales → reserva espacio)
+        // Tarjeta completa, tamaño uniforme y sin recortar (object-contain)
         <Image
           src={`/agents/${agent.slug}-card.png`}
           alt={agent.name}
-          width={CARD_META[agent.slug]?.w || 1050}
-          height={CARD_META[agent.slug]?.h || 1500}
-          className="block h-auto w-full"
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className={`object-contain ${floatClass}`}
+          style={floatStyle}
         />
       ) : (
         <div
-          className="flex aspect-[3/4] flex-col items-center justify-center gap-3 p-6 text-center"
+          className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
           style={{ background: `linear-gradient(160deg, ${agent.color}14, ${agent.color}05)` }}
         >
-          <Image src={agent.image} alt={agent.name} width={88} height={88} className="rounded-2xl" />
+          <Image src={agent.image} alt={agent.name} width={88} height={88} className={`rounded-2xl ${floatClass}`} style={floatStyle} />
           <div>
             <h3 className="font-display text-lg font-bold">{agent.name}</h3>
-            <p className="text-sm font-medium" style={{ color: agent.color }}>{agent.role}</p>
+            <p className="text-sm font-medium" style={{ color: agent.color }}>{t(`agents.${agent.slug}.role`)}</p>
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-3">{agent.description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-3">{t(`agents.${agent.slug}.description`)}</p>
         </div>
       )}
 
       {/* Badge de estado */}
       <span className={`absolute right-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide shadow ${STATUS_STYLE[agent.status]}`}>
-        {STATUS_LABEL[agent.status]}
+        {t(`status.${agent.status}`)}
       </span>
 
       {/* Hint al hover */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center bg-gradient-to-t from-black/55 to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
         <span className="inline-flex items-center gap-1 text-sm font-semibold text-white">
-          {operable ? 'Abrir →' : <><Lock className="h-3.5 w-3.5" /> Próximamente</>}
+          {operable ? `${t('grid.open')} →` : <><Lock className="h-3.5 w-3.5" /> {t('grid.soon')}</>}
         </span>
       </div>
     </div>
@@ -66,19 +74,20 @@ function AgentCard({ agent }: { agent: CactusAgent }) {
   return agent.href ? <Link href={agent.href} className="block">{inner}</Link> : <div>{inner}</div>;
 }
 
-function Masonry({ items }: { items: CactusAgent[] }) {
+function Grid({ items }: { items: CactusAgent[] }) {
   return (
-    <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
-      {items.map((a) => (
-        <div key={a.slug} className="mb-4 break-inside-avoid">
-          <AgentCard agent={a} />
-        </div>
+    <Stagger className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      {items.map((a, i) => (
+        <StaggerItem key={a.slug}>
+          <AgentCard agent={a} index={i} />
+        </StaggerItem>
       ))}
-    </div>
+    </Stagger>
   );
 }
 
 export function AgentGrid() {
+  const t = useTranslations('ecosystem');
   const [filter, setFilter] = useState<DivisionKey | 'all'>('all');
 
   return (
@@ -91,7 +100,7 @@ export function AgentGrid() {
             filter === 'all' ? 'bg-cactus-green text-white' : 'bg-muted text-muted-foreground hover:bg-muted/70'
           }`}
         >
-          Todos · {AGENTS.length}
+          {t('grid.all')} · {AGENTS.length}
         </button>
         {DIVISION_ORDER.map((key) => {
           const d = DIVISIONS[key];
@@ -103,7 +112,7 @@ export function AgentGrid() {
               className="rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
               style={active ? { backgroundColor: d.color, color: 'white' } : { backgroundColor: d.color + '14', color: d.color }}
             >
-              {d.label}
+              {t(`divisions.${key}.label`)}
             </button>
           );
         })}
@@ -119,17 +128,17 @@ export function AgentGrid() {
               <section key={key}>
                 <div className="mb-4 flex items-center gap-2">
                   <span className="h-4 w-1 rounded-full" style={{ backgroundColor: d.color }} />
-                  <h3 className="font-display font-semibold">{d.label}</h3>
-                  <span className="hidden text-xs text-muted-foreground sm:inline">· {d.tagline}</span>
+                  <h3 className="font-display font-semibold">{t(`divisions.${key}.label`)}</h3>
+                  <span className="hidden text-xs text-muted-foreground sm:inline">· {t(`divisions.${key}.tagline`)}</span>
                   <span className="ml-auto text-xs text-muted-foreground">{items.length}</span>
                 </div>
-                <Masonry items={items} />
+                <Grid items={items} />
               </section>
             );
           })}
         </div>
       ) : (
-        <Masonry items={AGENTS.filter((a) => a.division === filter)} />
+        <Grid items={AGENTS.filter((a) => a.division === filter)} />
       )}
     </div>
   );
