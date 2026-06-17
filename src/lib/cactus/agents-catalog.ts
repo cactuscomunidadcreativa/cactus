@@ -102,7 +102,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Decks, propuestas visuales, minutas y vault de feedback por cliente.',
     tools: ['Drive', 'Slides', 'PowerPoint', 'Notion'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '🪧', color: '#0891B2', image: '/cactus-ia-logo.png', status: 'beta', reuses: 'pita', href: '/apps/pita',
+    emoji: '🪧', color: '#7BB343', image: '/pita.png', status: 'beta', reuses: 'pita', href: '/apps/pita',
   },
   {
     slug: 'biznaga', name: 'Biznaga', role: 'Market Intelligence', division: 'business',

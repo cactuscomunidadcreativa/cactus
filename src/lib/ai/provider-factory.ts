@@ -1,11 +1,13 @@
 import type { AIProvider, AIProviderAdapter } from './types';
 import { claudeAdapter } from './claude';
 import { openaiAdapter } from './openai';
+import { geminiAdapter } from './gemini';
 import { getAIConfig } from './config';
 
 const adapters: Record<AIProvider, AIProviderAdapter> = {
   claude: claudeAdapter,
   openai: openaiAdapter,
+  gemini: geminiAdapter,
 };
 
 export async function getDefaultProvider(): Promise<AIProvider> {
@@ -35,7 +37,11 @@ export async function isFallbackEnabled(): Promise<boolean> {
 export async function getFallbackProvider(primary: AIProvider): Promise<AIProvider | null> {
   const enabled = await isFallbackEnabled();
   if (!enabled) return null;
-  const fallback: AIProvider = primary === 'claude' ? 'openai' : 'claude';
-  const configured = await adapters[fallback].isConfigured();
-  return configured ? fallback : null;
+  // Primer proveedor configurado que NO sea el primario (orden: claude, openai, gemini)
+  const order: AIProvider[] = ['claude', 'openai', 'gemini'];
+  for (const id of order) {
+    if (id === primary) continue;
+    if (await adapters[id].isConfigured()) return id;
+  }
+  return null;
 }

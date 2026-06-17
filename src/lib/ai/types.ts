@@ -1,4 +1,4 @@
-export type AIProvider = 'claude' | 'openai';
+export type AIProvider = 'claude' | 'openai' | 'gemini';
 
 export interface AIChatMessage {
   role: 'user' | 'assistant';

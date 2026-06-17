@@ -59,6 +59,7 @@ export async function getAIStatus(): Promise<AIStatus> {
     providers: [
       { id: 'claude', name: 'Claude (Anthropic)', configured: configured.includes('claude') },
       { id: 'openai', name: 'OpenAI', configured: configured.includes('openai') },
+      { id: 'gemini', name: 'Google AI (Gemini)', configured: configured.includes('gemini') },
     ],
     defaultProvider,
   };

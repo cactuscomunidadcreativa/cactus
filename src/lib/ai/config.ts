@@ -5,6 +5,8 @@ import type { AIProvider } from './types';
 interface AIConfig {
   anthropicApiKey: string;
   openaiApiKey: string;
+  geminiApiKey: string;
+  klingApiKey: string;
   defaultProvider: AIProvider;
   fallbackEnabled: boolean;
   globalMonthlyTokenLimit: number;
@@ -59,6 +61,8 @@ export async function getAIConfig(): Promise<AIConfig> {
   const config: AIConfig = {
     anthropicApiKey: dbConfig['anthropic_api_key'] || process.env.ANTHROPIC_API_KEY || '',
     openaiApiKey: dbConfig['openai_api_key'] || process.env.OPENAI_API_KEY || '',
+    geminiApiKey: dbConfig['google_ai_api_key'] || dbConfig['gemini_api_key'] || process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY || '',
+    klingApiKey: dbConfig['kling_api_key'] || process.env.KLING_API_KEY || '',
     defaultProvider: (dbConfig['ai_default_provider'] || process.env.AI_DEFAULT_PROVIDER || 'claude') as AIProvider,
     fallbackEnabled: (dbConfig['ai_fallback_enabled'] ?? process.env.AI_FALLBACK_ENABLED ?? 'true') !== 'false',
     globalMonthlyTokenLimit: parseInt(dbConfig['global_monthly_token_limit'] || '-1', 10),
@@ -73,7 +77,16 @@ export async function getAIConfig(): Promise<AIConfig> {
 
 export async function getAPIKey(provider: AIProvider): Promise<string> {
   const config = await getAIConfig();
-  return provider === 'claude' ? config.anthropicApiKey : config.openaiApiKey;
+  if (provider === 'claude') return config.anthropicApiKey;
+  if (provider === 'gemini') return config.geminiApiKey;
+  return config.openaiApiKey;
+}
+
+/** Llave de una integración no-LLM-de-texto (ej. Kling para video). */
+export async function getIntegrationKey(name: 'kling'): Promise<string> {
+  const config = await getAIConfig();
+  if (name === 'kling') return config.klingApiKey;
+  return '';
 }
 
 export async function isProviderConfigured(provider: AIProvider): Promise<boolean> {

@@ -29,6 +29,26 @@ export function CampaignStudio() {
     setProfiles((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k]));
   }
 
+  async function loadBrand() {
+    try {
+      const res = await fetch('/api/cactus/brand');
+      const data = await res.json();
+      if (data.brand) {
+        setBrand({
+          brandName: data.brand.name || '',
+          offer: data.brand.offer || '',
+          audience: data.brand.audience || '',
+          tone: data.brand.tone || '',
+          brief: brand.brief,
+        });
+      } else {
+        setError('Aún no tienes una marca guardada en el Cerebro.');
+      }
+    } catch {
+      setError('No se pudo cargar la marca.');
+    }
+  }
+
   async function generate() {
     setError(null);
     if (!brand.brandName || !brand.offer || !brand.brief) {
@@ -61,10 +81,13 @@ export function CampaignStudio() {
       <div className="space-y-4 rounded-xl border border-border bg-card p-5 lg:sticky lg:top-4 lg:self-start">
         <div className="flex items-center gap-2">
           <span className="text-xl">💡</span>
-          <div>
+          <div className="flex-1">
             <h2 className="font-display font-semibold leading-tight">Peyote · Estratega Emocional</h2>
             <p className="text-xs text-muted-foreground">Un mensaje, un gatillo por perfil.</p>
           </div>
+          <button onClick={loadBrand} className="rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:border-cactus-green hover:text-cactus-green">
+            Cargar mi marca
+          </button>
         </div>
 
         <div className="space-y-3">

@@ -15,6 +15,12 @@ const API_KEY_CONFIGS = [
   { key: 'openai_api_key', labelKey: 'openaiKey' },
 ];
 
+// Proveedores adicionales (labels literales, sin i18n)
+const PROVIDER_KEY_CONFIGS = [
+  { key: 'google_ai_api_key', label: 'Google AI · Gemini (texto/multimodal)' },
+  { key: 'kling_api_key', label: 'Kling AI (video)' },
+];
+
 const WA_KEY_CONFIGS = [
   { key: 'twilio_account_sid', labelKey: 'twilioSid' },
   { key: 'twilio_auth_token', labelKey: 'twilioToken' },
@@ -28,7 +34,7 @@ const DB_KEY_CONFIGS = [
 ];
 
 const SETTING_CONFIGS = [
-  { key: 'ai_default_provider', labelKey: 'defaultProvider', type: 'select', options: ['claude', 'openai'] },
+  { key: 'ai_default_provider', labelKey: 'defaultProvider', type: 'select', options: ['claude', 'openai', 'gemini'] },
   { key: 'ai_fallback_enabled', labelKey: 'fallbackEnabled', type: 'toggle' },
   { key: 'global_monthly_token_limit', labelKey: 'globalTokenLimit', type: 'number' },
   { key: 'global_monthly_generation_limit', labelKey: 'globalGenLimit', type: 'number' },
@@ -152,6 +158,7 @@ export function ConfigPanel({ configs, onSave }: ConfigPanelProps) {
         <p className="text-xs text-muted-foreground mb-4">{t('description')}</p>
         <div className="space-y-4">
           {API_KEY_CONFIGS.map(({ key, labelKey }) => renderKeyInput(key, labelKey))}
+          {PROVIDER_KEY_CONFIGS.map(({ key, label }) => renderKeyInput(key, '', true, label))}
         </div>
       </div>
 
