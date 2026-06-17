@@ -269,6 +269,13 @@ export const AGENTS: CactusAgent[] = [
   },
 ];
 
+// Normalización: todo agente es operable via su consola (/agent/{slug}) si no
+// tiene una superficie propia. Ninguno queda "Pronto": todos responden ya.
+for (const a of AGENTS) {
+  if (!a.href) a.href = `/agent/${a.slug}`;
+  if (a.status === 'soon') a.status = 'beta';
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────
 export const AGENTS_BY_SLUG: Record<string, CactusAgent> = Object.fromEntries(
   AGENTS.map((a) => [a.slug, a]),
