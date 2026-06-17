@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { isSuperAdmin } from '@/lib/admin/auth';
 
 // GET - Get clients for an app (admin) or user's client
 export async function GET(request: NextRequest) {
@@ -21,18 +22,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'App ID is required' }, { status: 400 });
     }
 
-    // Check if super admin
+    // Check if super admin (por rol en DB o allowlist por ENV)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_super_admin')
+      .select('role')
       .eq('id', user.id)
       .single();
 
-    const isSuperAdmin = profile?.is_super_admin || false;
+    const admin = isSuperAdmin(user.email, profile?.role);
 
-    if (isSuperAdmin) {
-      // Admin: return all clients for this app
-      const { data: clients, error } = await supabase
+    if (admin) {
+      // Admin: lista de clientes para gestión + acceso directo a la app
+      const { data: clients } = await supabase
         .from('app_clients')
         .select(`
           *,
@@ -49,9 +50,18 @@ export async function GET(request: NextRequest) {
         .eq('app_id', appId)
         .order('nombre');
 
-      if (error) throw error;
+      const first = clients && clients.length > 0 ? clients[0] : null;
+      const usableClient = first
+        ? { id: first.id, nombre: first.nombre, config: first.config || {}, app_id: appId }
+        : { id: '__admin__', nombre: 'Cactus (admin)', config: {}, app_id: appId };
 
-      return NextResponse.json({ clients, isAdmin: true });
+      return NextResponse.json({
+        clients: clients || [],
+        isAdmin: true,
+        hasAccess: true,
+        client: usableClient,
+        userInfo: { rol: 'admin', nombreContacto: user.email },
+      });
     }
 
     // Regular user: return their assigned client
@@ -118,14 +128,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if super admin
+    // Check if super admin (por rol en DB o allowlist por ENV)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_super_admin')
+      .select('role')
       .eq('id', user.id)
       .single();
 
-    if (!profile?.is_super_admin) {
+    if (!isSuperAdmin(user.email, profile?.role)) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
@@ -172,14 +182,14 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if super admin
+    // Check if super admin (por rol en DB o allowlist por ENV)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_super_admin')
+      .select('role')
       .eq('id', user.id)
       .single();
 
-    if (!profile?.is_super_admin) {
+    if (!isSuperAdmin(user.email, profile?.role)) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
@@ -228,14 +238,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if super admin
+    // Check if super admin (por rol en DB o allowlist por ENV)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_super_admin')
+      .select('role')
       .eq('id', user.id)
       .single();
 
-    if (!profile?.is_super_admin) {
+    if (!isSuperAdmin(user.email, profile?.role)) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
