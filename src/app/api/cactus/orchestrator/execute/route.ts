@@ -1,0 +1,112 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { generateContent } from '@/lib/ai';
+import { buildAgentSystemPrompt } from '@/lib/cactus/agent-prompts';
+import { buildBrandContext } from '@/lib/cactus/brain';
+import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
+import { getAgent } from '@/lib/cactus/agents-catalog';
+import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
+import { isSensitive, deliverableKind, agentTaskPrompt } from '@/lib/cactus/orchestrator-exec';
+import { loadOrchestratorState, getTasks } from '@/lib/cactus/orchestrator';
+
+export const maxDuration = 60;
+
+export async function POST(req: Request) {
+  const supabase = await createClient();
+  if (!supabase) return NextResponse.json({ error: 'No disponible en local sin Supabase.' }, { status: 503 });
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Gate: no hay plan activo → no se ejecuta nada
+  const access = await getAccessStatus(supabase, user);
+  if (!access.allowed) {
+    return NextResponse.json({ blocked: true, reason: 'no_plan', reply: NO_PLAN_REPLY, upgradeHref: '/packs' });
+  }
+
+  let body: any;
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Bad request' }, { status: 400 }); }
+  const projectId: string | undefined = body?.projectId;
+  const approveTaskId: string | null = body?.taskId || null;
+  if (!projectId) return NextResponse.json({ error: 'Falta el proyecto.' }, { status: 400 });
+
+  // Verifica que el proyecto sea del usuario
+  const { data: project } = await supabase
+    .from('cactus_projects').select('id, objective').eq('id', projectId).eq('user_id', user.id).maybeSingle();
+  if (!project) return NextResponse.json({ error: 'Proyecto no encontrado.' }, { status: 404 });
+
+  const { data: brand } = await supabase
+    .from('cactus_brand_kits').select('*').eq('user_id', user.id).eq('is_active', true)
+    .order('updated_at', { ascending: false }).limit(1).maybeSingle();
+
+  const tasks = await getTasks(supabase, projectId);
+  const pending = tasks.filter((t) => t.status !== 'done').sort((a, b) => a.order_index - b.order_index);
+
+  // La siguiente tarea en la fila (o la aprobada explícitamente)
+  let task = approveTaskId ? tasks.find((t) => t.id === approveTaskId && t.status !== 'done') : pending[0];
+
+  if (!task) {
+    const state = await loadOrchestratorState(supabase, user.id);
+    return NextResponse.json({ state, hasMore: false });
+  }
+
+  // Pausa híbrida: si la siguiente es sensible y no la estás aprobando, marca review y espera tu OK
+  const approvingThis = task.id === approveTaskId;
+  if (!approvingThis && isSensitive(task.agent_slug, task.action)) {
+    if (task.status !== 'review') {
+      await supabase.from('cactus_project_tasks').update({ status: 'review' }).eq('id', task.id);
+    }
+    const state = await loadOrchestratorState(supabase, user.id);
+    return NextResponse.json({ state, hasMore: true, needsApproval: { taskId: task.id } });
+  }
+
+  // ── Ejecuta la tarea ──
+  await supabase.from('cactus_project_tasks').update({ status: 'in_progress', progress: 45 }).eq('id', task.id);
+  const agent = getAgent(task.agent_slug);
+
+  try {
+    const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null));
+    const res = await generateContent({
+      prompt: agentTaskPrompt({ action: task.action, objective: project.objective }),
+      systemPrompt: system, maxTokens: 1200, temperature: 0.7,
+    });
+
+    const costUsd = estimateCostUsd({
+      model: res.provider === 'claude' ? 'claude' : res.provider === 'gemini' ? 'gemini' : 'gpt',
+      inputTokens: res.inputTokens, outputTokens: res.outputTokens,
+    });
+    const credits = usdToCredits(costUsd);
+
+    await supabase.from('cactus_deliverables').insert({
+      user_id: user.id, project_id: projectId, task_id: task.id, agent_slug: task.agent_slug,
+      title: task.action.slice(0, 80), kind: deliverableKind(task.agent_slug), status: 'ready',
+      content: res.content, meta: { credits, model: res.model },
+    });
+
+    await supabase.from('cactus_project_tasks').update({ status: 'done', progress: 100 }).eq('id', task.id);
+
+    // Cobra créditos (salvo byok/super-admin) + ledger de auditoría
+    if (!access.byok && access.credits >= 0) {
+      const { data: w } = await supabase.from('cactus_credit_wallets').select('balance').eq('user_id', user.id).maybeSingle();
+      if (w) {
+        await supabase.from('cactus_credit_wallets')
+          .update({ balance: Math.max(0, (w.balance || 0) - credits) }).eq('user_id', user.id);
+      }
+    }
+    await supabase.from('cactus_credit_ledger').insert({
+      user_id: user.id, delta: -credits, reason: 'agent_run', agent_slug: task.agent_slug, model: res.model, cost_usd: costUsd,
+    });
+  } catch (err: any) {
+    await supabase.from('cactus_project_tasks').update({ status: 'pending', progress: 0 }).eq('id', task.id);
+    return NextResponse.json({ error: err?.message || `Error ejecutando a ${agent?.name || task.agent_slug}` }, { status: 500 });
+  }
+
+  const after = await getTasks(supabase, projectId);
+  const hasMore = after.some((t) => t.status !== 'done');
+
+  // Si ya no quedan pendientes, cierra el proyecto
+  if (!hasMore) await supabase.from('cactus_projects').update({ status: 'done' }).eq('id', projectId);
+
+  const state = await loadOrchestratorState(supabase, user.id);
+  return NextResponse.json({ state, hasMore });
+}

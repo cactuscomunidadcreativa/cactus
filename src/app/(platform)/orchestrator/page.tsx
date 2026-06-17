@@ -1,17 +1,11 @@
-import { RamonaConsole } from '@/components/cactus/ramona-console';
-import { PageHeader } from '@/components/cactus/page-header';
+import { RamonaWorkspace } from '@/components/cactus/orchestrator/ramona-workspace';
 
-export const metadata = { title: 'Ramona · Orquestadora' };
+export const metadata = { title: 'Ramona · Coordinadora General' };
 
 export default function OrchestratorPage() {
   return (
-    <div className="mx-auto max-w-3xl">
-      <PageHeader
-        emoji="🌵"
-        title="Ramona · Orquestadora"
-        subtitle="Dile un objetivo y arma el equipo de agentes — y ejecuta lo que ya está vivo."
-      />
-      <RamonaConsole />
+    <div className="mx-auto max-w-[1400px]">
+      <RamonaWorkspace />
     </div>
   );
 }
