@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Check } from 'lucide-react';
 import { PACKS } from '@/lib/cactus/packs';
 import { getAgent, AGENTS } from '@/lib/cactus/agents-catalog';
+import { PackActivateButton } from '@/components/cactus/pack-activate-button';
 
 export const metadata = { title: 'Packs · Cactus Comunidad Creativa' };
 
@@ -50,12 +51,7 @@ export default function PacksPage() {
                 )}
               </div>
 
-              <a
-                href={`mailto:eduardo@cactuscomunidadcreativa.com?subject=Activar%20${encodeURIComponent(pack.name)}`}
-                className={`mt-5 w-full rounded-md py-2.5 text-center text-sm font-medium transition-colors ${pack.featured ? 'bg-cactus-green text-white hover:bg-cactus-green/90' : 'border border-border hover:border-cactus-green hover:text-cactus-green'}`}
-              >
-                Activar {pack.name.replace('Cactus ', '')}
-              </a>
+              <PackActivateButton packKey={pack.key} packName={pack.name} featured={pack.featured} />
             </div>
           );
         })}

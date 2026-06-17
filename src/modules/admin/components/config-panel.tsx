@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Eye, EyeOff, Save, CheckCircle2, XCircle } from 'lucide-react';
 import type { PlatformConfig } from '../types';
+import { PACKS } from '@/lib/cactus/packs';
 
 interface ConfigPanelProps {
   configs: PlatformConfig[];
@@ -236,6 +237,17 @@ export function ConfigPanel({ configs, onSave }: ConfigPanelProps) {
         </p>
         <div className="space-y-4">
           {DB_KEY_CONFIGS.map(({ key, label }) => renderKeyInput(key, '', true, label))}
+        </div>
+      </div>
+
+      {/* Packs y cobro (Stripe) */}
+      <div>
+        <h3 className="text-sm font-medium mb-1">Packs y cobro (Stripe)</h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Price ID de Stripe por pack. Al definirlos se activa el cobro automático del marketplace.
+        </p>
+        <div className="space-y-4">
+          {PACKS.map((p) => renderKeyInput(`pack_${p.key}_price_id`, '', false, `${p.name} — Stripe Price ID`))}
         </div>
       </div>
     </div>
