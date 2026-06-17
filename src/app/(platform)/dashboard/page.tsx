@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Store, ArrowRight } from 'lucide-react';
+import { Reveal, Stagger, StaggerItem } from '@/components/marketing/motion';
 
 const APP_LOGOS: Record<string, string> = {
   ramona: '/ramona.png', tuna: '/tuna.png', agave: '/agave.png',
@@ -41,29 +42,33 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-5xl">
       {/* Bienvenida */}
-      <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold">
+      <Reveal className="mb-8">
+        <h1 className="font-display text-3xl font-bold tracking-tight">
           Hola{profileName ? `, ${profileName.split(' ')[0]}` : ''} 🌵
         </h1>
-        <p className="mt-1 text-muted-foreground">Tu comunidad creativa de IA, lista para trabajar.</p>
-      </div>
+        <p className="mt-1 text-muted-foreground">
+          Tu comunidad creativa de IA, <em className="font-editorial">lista para trabajar.</em>
+        </p>
+      </Reveal>
 
       {/* Accesos rápidos */}
       <div className="mb-10">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">Empezar</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">Empezar</h2>
+        <Stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {QUICK_ACCESS.map((q) => (
-            <Link
-              key={q.href}
-              href={q.href}
-              className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-card p-4 text-center transition-all hover:-translate-y-0.5 hover:border-cactus-green/50 hover:shadow-sm"
-            >
-              <span className="text-2xl">{q.emoji}</span>
-              <span className="text-sm font-medium leading-tight">{q.title}</span>
-              <span className="text-[11px] text-muted-foreground">{q.desc}</span>
-            </Link>
+            <StaggerItem key={q.href}>
+              <Link
+                href={q.href}
+                className="group flex h-full flex-col items-center gap-1.5 rounded-2xl border border-border bg-card p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-cactus-green/40 card-glow"
+                style={{ ['--tw-shadow-color' as string]: 'rgba(62,142,64,0.25)' }}
+              >
+                <span className="text-2xl transition-transform duration-300 group-hover:scale-110">{q.emoji}</span>
+                <span className="text-sm font-medium leading-tight">{q.title}</span>
+                <span className="text-[11px] text-muted-foreground">{q.desc}</span>
+              </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
 
       {/* Mis apps */}
