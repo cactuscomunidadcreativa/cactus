@@ -32,6 +32,14 @@ export async function generateImage(
 
   const apiKey = await getAPIKey('openai');
 
+  // gpt-image-1 usa tamaños distintos a dall-e-3 → mapear
+  const SIZE_MAP: Record<string, string> = {
+    '1024x1024': '1024x1024',
+    '1024x1792': '1024x1536',
+    '1792x1024': '1536x1024',
+  };
+  const size = SIZE_MAP[request.size || '1024x1024'] || '1024x1024';
+
   const res = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
     headers: {
@@ -39,13 +47,10 @@ export async function generateImage(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'dall-e-3',
+      model: 'gpt-image-1',
       prompt: request.prompt,
       n: 1,
-      size: request.size || '1024x1024',
-      quality: request.quality || 'standard',
-      style: request.style || 'vivid',
-      response_format: 'url',
+      size,
     }),
   });
 
@@ -57,12 +62,16 @@ export async function generateImage(
   const data = await res.json();
   const image = data.data?.[0];
 
-  if (!image?.url) {
+  // La API puede devolver una URL temporal o base64 (según el modelo de la cuenta)
+  let url: string | undefined = image?.url;
+  if (!url && image?.b64_json) url = `data:image/png;base64,${image.b64_json}`;
+
+  if (!url) {
     throw new Error('DALL-E returned no image');
   }
 
   return {
-    url: image.url,
+    url,
     revisedPrompt: image.revised_prompt || request.prompt,
   };
 }

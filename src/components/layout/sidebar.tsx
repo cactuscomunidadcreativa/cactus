@@ -32,6 +32,7 @@ export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
     { href: '/orchestrator', label: 'Ramona', icon: Bot },
     { href: '/brain', label: 'Cerebro', icon: Brain },
     { href: '/campaign', label: 'Campaign Studio', icon: Sparkles },
+    { href: '/studio', label: 'Diseño (Cardón)', icon: Palette },
     { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { href: '/marketplace', label: t('marketplace'), icon: Store },
     { href: '/settings', label: t('settings'), icon: Settings },

@@ -139,7 +139,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Branding, layouts, carruseles, banners, flyers, packaging y piezas para pauta.',
     tools: ['Canvas', 'Plantillas', 'Export PNG/JPG/PDF'],
     models: ['GPT Image', 'Gemini', 'Adobe Firefly'],
-    emoji: '🎨', color: '#DB2777', image: '/cactus-ia-logo.png', status: 'soon',
+    emoji: '🎨', color: '#DB2777', image: '/cactus-ia-logo.png', status: 'live', href: '/studio',
   },
   {
     slug: 'lente', name: 'Lente', role: 'Fotógrafo IA', division: 'agency',
