@@ -7,6 +7,8 @@ interface AIConfig {
   openaiApiKey: string;
   geminiApiKey: string;
   klingApiKey: string;
+  klingSecretKey: string;
+  sunoApiKey: string;
   defaultProvider: AIProvider;
   fallbackEnabled: boolean;
   globalMonthlyTokenLimit: number;
@@ -63,6 +65,8 @@ export async function getAIConfig(): Promise<AIConfig> {
     openaiApiKey: dbConfig['openai_api_key'] || process.env.OPENAI_API_KEY || '',
     geminiApiKey: dbConfig['google_ai_api_key'] || dbConfig['gemini_api_key'] || process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY || '',
     klingApiKey: dbConfig['kling_api_key'] || process.env.KLING_API_KEY || '',
+    klingSecretKey: dbConfig['kling_secret_key'] || process.env.KLING_SECRET_KEY || '',
+    sunoApiKey: dbConfig['suno_api_key'] || process.env.SUNO_API_KEY || '',
     defaultProvider: (dbConfig['ai_default_provider'] || process.env.AI_DEFAULT_PROVIDER || 'claude') as AIProvider,
     fallbackEnabled: (dbConfig['ai_fallback_enabled'] ?? process.env.AI_FALLBACK_ENABLED ?? 'true') !== 'false',
     globalMonthlyTokenLimit: parseInt(dbConfig['global_monthly_token_limit'] || '-1', 10),
@@ -82,10 +86,12 @@ export async function getAPIKey(provider: AIProvider): Promise<string> {
   return config.openaiApiKey;
 }
 
-/** Llave de una integración no-LLM-de-texto (ej. Kling para video). */
-export async function getIntegrationKey(name: 'kling'): Promise<string> {
+/** Llave de una integración no-LLM-de-texto (video, música). */
+export async function getIntegrationKey(name: 'kling' | 'kling-secret' | 'suno'): Promise<string> {
   const config = await getAIConfig();
   if (name === 'kling') return config.klingApiKey;
+  if (name === 'kling-secret') return config.klingSecretKey;
+  if (name === 'suno') return config.sunoApiKey;
   return '';
 }
 

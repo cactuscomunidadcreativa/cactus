@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 // Llaves que deben guardarse cifradas (se enmascaran al leer).
 const SECRET_KEYS = new Set([
   'anthropic_api_key', 'openai_api_key',
-  'google_ai_api_key', 'gemini_api_key', 'kling_api_key', 'kling_secret_key',
+  'google_ai_api_key', 'gemini_api_key', 'kling_api_key', 'kling_secret_key', 'suno_api_key',
   'twilio_account_sid', 'twilio_auth_token',
   'supabase_db_password', 'supabase_db_url',
 ]);

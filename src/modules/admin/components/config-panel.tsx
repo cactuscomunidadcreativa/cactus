@@ -18,7 +18,9 @@ const API_KEY_CONFIGS = [
 // Proveedores adicionales (labels literales, sin i18n)
 const PROVIDER_KEY_CONFIGS = [
   { key: 'google_ai_api_key', label: 'Google AI · Gemini (texto/multimodal)' },
-  { key: 'kling_api_key', label: 'Kling AI (video)' },
+  { key: 'kling_api_key', label: 'Kling AI · Access Key (video)' },
+  { key: 'kling_secret_key', label: 'Kling AI · Secret Key (video)' },
+  { key: 'suno_api_key', label: 'Suno (música)' },
 ];
 
 const WA_KEY_CONFIGS = [
