@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { Settings, Users, BarChart3, ScrollText, MessageCircle, AppWindow, FileText, Layers, Coins } from 'lucide-react';
+import { Settings, Users, BarChart3, ScrollText, MessageCircle, AppWindow, FileText, Layers, Coins, Database } from 'lucide-react';
+import { DbSetupPanel } from './db-setup-panel';
 import { useAdmin } from '../hooks/use-admin';
 import { ConfigPanel } from './config-panel';
 import { UsersPanel } from './users-panel';
@@ -16,7 +17,7 @@ import { UserManager } from './user-manager';
 import { AgentsAdmin } from './agents-admin';
 import { CreditsAdmin } from './credits-admin';
 
-type TabId = 'agents' | 'config' | 'users' | 'apps' | 'cms' | 'credits' | 'analytics' | 'audit' | 'whatsapp';
+type TabId = 'sistema' | 'agents' | 'config' | 'users' | 'apps' | 'cms' | 'credits' | 'analytics' | 'audit' | 'whatsapp';
 
 export function AdminApp() {
   const t = useTranslations('admin');
@@ -31,9 +32,10 @@ export function AdminApp() {
     saveBudget,
   } = useAdmin();
 
-  const [activeTab, setActiveTab] = useState<TabId>('agents');
+  const [activeTab, setActiveTab] = useState<TabId>('sistema');
 
   const tabs: { id: TabId; icon: typeof Settings; label: string }[] = [
+    { id: 'sistema', icon: Database, label: 'Sistema' },
     { id: 'agents', icon: Layers, label: 'Agentes' },
     { id: 'config', icon: Settings, label: t('tabs.config') },
     { id: 'users', icon: Users, label: t('tabs.users') },
@@ -86,6 +88,9 @@ export function AdminApp() {
       </div>
 
       {/* Tab content */}
+      {activeTab === 'sistema' && (
+        <DbSetupPanel />
+      )}
       {activeTab === 'agents' && (
         <AgentsAdmin />
       )}
