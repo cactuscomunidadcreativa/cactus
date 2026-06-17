@@ -72,7 +72,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Tu asistente ejecutiva. Recibe el pedido, arma el brief, delega a los agentes y asegura que todo se entregue.',
     tools: ['Email', 'Calendar', 'WhatsApp', 'Todos los agentes'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '🌵', color: '#A855C7', image: img('ramona'), status: 'beta', reuses: 'ramona', href: '/apps/ramona',
+    emoji: '🌵', color: '#A855C7', image: img('ramona'), status: 'live', reuses: 'ramona', href: '/orchestrator',
   },
 
   // ─── BUSINESS ─────────────────────────────────────────────────────────────

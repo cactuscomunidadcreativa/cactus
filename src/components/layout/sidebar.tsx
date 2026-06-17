@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Store, Settings, ChevronRight, Shield,
-  Users, Layers, DollarSign, Factory, Ruler, Shirt, Brain, Eye, BarChart3, Palette, Sparkles,
+  Users, Layers, DollarSign, Factory, Ruler, Shirt, Brain, Eye, BarChart3, Palette, Sparkles, Bot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +29,8 @@ export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
 
   const navItems = [
     { href: '/ecosystem', label: 'Ecosistema', icon: Layers },
+    { href: '/orchestrator', label: 'Ramona', icon: Bot },
+    { href: '/brain', label: 'Cerebro', icon: Brain },
     { href: '/campaign', label: 'Campaign Studio', icon: Sparkles },
     { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { href: '/marketplace', label: t('marketplace'), icon: Store },
