@@ -1,115 +1,207 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Store, ArrowRight } from 'lucide-react';
-import { Reveal, Stagger, StaggerItem } from '@/components/marketing/motion';
-
-const APP_LOGOS: Record<string, string> = {
-  ramona: '/ramona.png', tuna: '/tuna.png', agave: '/agave.png',
-  saguaro: '/saguaro.png', pita: '/pita.png', cereus: '/cereus.png',
-};
-
-const QUICK_ACCESS = [
-  { href: '/ecosystem', emoji: '🌵', title: 'Ecosistema', desc: 'Tus 27 agentes' },
-  { href: '/orchestrator', emoji: '🧭', title: 'Ramona', desc: 'Dile un objetivo' },
-  { href: '/campaign', emoji: '💡', title: 'Campañas', desc: 'Click emocional' },
-  { href: '/brain', emoji: '🧠', title: 'Cerebro', desc: 'Tu marca' },
-  { href: '/studio', emoji: '🎨', title: 'Diseño', desc: 'Genera piezas' },
-  { href: '/voice', emoji: '🎙️', title: 'Voz', desc: 'Locución IA' },
-];
+import {
+  Compass, Brain, Palette, Sparkles, Store, Plus,
+  FolderKanban, Activity, HardDrive, ShieldCheck, CircleDot,
+} from 'lucide-react';
+import { Reveal } from '@/components/marketing/motion';
+import { AGENTS, getAgent } from '@/lib/cactus/agents-catalog';
 
 export const metadata = { title: 'Inicio · Cactus' };
 
+const QUICK = [
+  { href: '/orchestrator', label: 'Nuevo proyecto', icon: Plus },
+  { href: '/ecosystem', label: 'Ecosistema', icon: Compass },
+  { href: '/brain', label: 'Cerebro', icon: Brain },
+  { href: '/studio', label: 'Diseño', icon: Palette },
+  { href: '/campaign', label: 'Campañas', icon: Sparkles },
+  { href: '/marketplace', label: 'Marketplace', icon: Store },
+];
+
+const PROJECT_STATUS: Record<string, { label: string; cls: string }> = {
+  active: { label: 'Activo', cls: 'bg-cactus-green/15 text-cactus-green' },
+  paused: { label: 'En pausa', cls: 'bg-amber-100 text-amber-700' },
+  done: { label: 'Completado', cls: 'bg-emerald-100 text-emerald-700' },
+};
+
+const FEATURED = ['ramona', 'biznaga', 'pitaya', 'nopal', 'agave', 'lente', 'tuna', 'candelabro'];
+
 export default async function DashboardPage() {
   const supabase = await createClient();
-  let profileName: string | null = null;
-  let activeSubs: any[] = [];
+  let firstName = '';
+  let projects: any[] = [];
+  let deliverableCount = 0;
+  let activity: any[] = [];
 
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
-      profileName = profile?.full_name || null;
-      const { data: subscriptions } = await supabase
-        .from('subscriptions')
-        .select('app_id, status, apps (name, icon, color, description)')
-        .eq('user_id', user.id)
-        .in('status', ['active', 'trialing']);
-      activeSubs = subscriptions || [];
+      firstName = profile?.full_name?.split(' ')[0] || '';
+
+      const { data: pj } = await supabase
+        .from('cactus_projects').select('id, name, status, summary, updated_at')
+        .eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5);
+      projects = pj || [];
+
+      const { count } = await supabase
+        .from('cactus_deliverables').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+      deliverableCount = count || 0;
+
+      const { data: act } = await supabase
+        .from('cactus_deliverables').select('id, title, agent_slug, created_at')
+        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(5);
+      activity = act || [];
     }
   }
 
+  const agents = FEATURED.map(getAgent).filter(Boolean) as NonNullable<ReturnType<typeof getAgent>>[];
+
   return (
-    <div className="mx-auto max-w-5xl">
-      {/* Bienvenida */}
-      <Reveal className="mb-8">
-        <h1 className="font-display text-3xl font-bold tracking-tight">
-          Hola{profileName ? `, ${profileName.split(' ')[0]}` : ''} 🌵
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Tu comunidad creativa de IA, <em className="font-editorial">lista para trabajar.</em>
-        </p>
-      </Reveal>
-
-      {/* Accesos rápidos */}
-      <div className="mb-10">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">Empezar</h2>
-        <Stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {QUICK_ACCESS.map((q) => (
-            <StaggerItem key={q.href}>
-              <Link
-                href={q.href}
-                className="group flex h-full flex-col items-center gap-1.5 rounded-2xl border border-border bg-card p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-cactus-green/40 card-glow"
-                style={{ ['--tw-shadow-color' as string]: 'rgba(62,142,64,0.25)' }}
-              >
-                <span className="text-2xl transition-transform duration-300 group-hover:scale-110">{q.emoji}</span>
-                <span className="text-sm font-medium leading-tight">{q.title}</span>
-                <span className="text-[11px] text-muted-foreground">{q.desc}</span>
-              </Link>
-            </StaggerItem>
-          ))}
-        </Stagger>
-      </div>
-
-      {/* Mis apps */}
-      <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">Mis apps</h2>
-        {activeSubs.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card p-8 text-center">
-            <Store className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 font-medium">Aún no activas ninguna app</h3>
-            <p className="mb-4 text-sm text-muted-foreground">Explora el marketplace o el ecosistema de agentes.</p>
-            <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-md bg-cactus-green px-4 py-2 text-sm font-medium text-white hover:bg-cactus-green/90">
-              Ir al marketplace <ArrowRight className="h-4 w-4" />
+    <div className="mx-auto max-w-6xl space-y-6">
+      {/* Hero */}
+      <Reveal>
+        <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#0A241F] via-[#0D6E4F] to-[#0A241F] p-7 text-white md:p-9">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-emerald-400/20 blur-3xl" />
+          <div className="relative">
+            <p className="text-sm font-medium text-emerald-200/90">¡Hola{firstName ? `, ${firstName}` : ''}! 👋</p>
+            <h1 className="mt-1 font-display text-3xl font-bold leading-tight tracking-tight md:text-4xl">
+              Todo tu negocio, <span className="font-editorial italic text-emerald-300">potenciado por IA.</span>
+            </h1>
+            <p className="mt-3 max-w-xl text-sm text-emerald-50/85">
+              Dile un objetivo a Ramona y tu comunidad de agentes lo ejecuta — investigación, contenido, diseño, ventas y más.
+            </p>
+            <Link href="/orchestrator" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0A241F] hover:bg-emerald-50">
+              <Sparkles className="h-4 w-4" /> Hablar con Ramona
             </Link>
           </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {activeSubs.map((sub: any) => (
-              <Link
-                key={sub.app_id}
-                href={`/apps/${sub.app_id}`}
-                className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-cactus-green/50"
-              >
-                <div className="flex items-start gap-3">
-                  {APP_LOGOS[sub.app_id] ? (
-                    <Image src={APP_LOGOS[sub.app_id]} alt={sub.apps?.name || sub.app_id} width={40} height={40} className="h-10 w-10 rounded-lg object-contain" />
-                  ) : (
-                    <span className="flex h-10 w-10 items-center justify-center rounded-lg text-xl" style={{ backgroundColor: (sub.apps?.color || '#888') + '15' }}>
-                      {sub.apps?.icon || '📦'}
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-medium transition-colors group-hover:text-cactus-green">{sub.apps?.name || sub.app_id}</h3>
-                    <p className="line-clamp-1 text-sm text-muted-foreground">{sub.apps?.description || ''}</p>
+        </section>
+      </Reveal>
+
+      {/* Acciones rápidas */}
+      <div className="flex flex-wrap gap-2">
+        {QUICK.map((q) => (
+          <Link key={q.href} href={q.href} className="group inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm transition-colors hover:border-cactus-green/40">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cactus-green/10 text-cactus-green"><q.icon className="h-4 w-4" /></span>
+            <span className="font-medium">{q.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        {/* Columna principal */}
+        <div className="space-y-6">
+          {/* Tus agentes */}
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-display font-semibold">Tus agentes</h2>
+              <Link href="/ecosystem" className="text-xs text-muted-foreground hover:text-foreground">Ver todos →</Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {agents.map((a) => (
+                <Link key={a.slug} href={a.slug === 'ramona' ? '/orchestrator' : `/agent/${a.slug}`}
+                  className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-4 text-center transition-all hover:-translate-y-1 card-glow"
+                  style={{ ['--tw-shadow-color' as string]: a.color + '40' }}>
+                  <Image src={a.image} alt={a.name} width={52} height={52} className="rounded-xl motion-safe:group-hover:animate-cactus-wiggle" />
+                  <div className="leading-tight">
+                    <div className="text-sm font-semibold">{a.name}</div>
+                    <div className="truncate text-[11px]" style={{ color: a.color }}>{a.role}</div>
                   </div>
-                  <ArrowRight className="mt-1 h-4 w-4 text-muted-foreground transition-colors group-hover:text-cactus-green" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Proyectos recientes */}
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-display font-semibold">Proyectos recientes</h2>
+              <Link href="/orchestrator" className="text-xs text-muted-foreground hover:text-foreground">Ir a Ramona →</Link>
+            </div>
+            {projects.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border bg-card py-10 text-center text-muted-foreground">
+                <FolderKanban className="h-7 w-7 opacity-50" />
+                <p className="text-sm">Aún no tienes proyectos. Dile un objetivo a Ramona para empezar.</p>
+                <Link href="/orchestrator" className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-cactus-green px-3 py-1.5 text-xs font-semibold text-white">
+                  <Plus className="h-3.5 w-3.5" /> Crear proyecto
+                </Link>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {projects.map((p) => {
+                  const st = PROJECT_STATUS[p.status] || PROJECT_STATUS.active;
+                  return (
+                    <li key={p.id}>
+                      <Link href="/orchestrator" className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-cactus-green/40">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-cactus-green/10 text-cactus-green"><FolderKanban className="h-4 w-4" /></span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{p.name}</p>
+                          {p.summary && <p className="truncate text-xs text-muted-foreground">{p.summary}</p>}
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${st.cls}`}>{st.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        </div>
+
+        {/* Columna lateral */}
+        <div className="space-y-5">
+          {/* Estado del sistema */}
+          <section className="rounded-2xl border border-border bg-card p-4">
+            <h3 className="mb-3 font-display font-semibold">Estado del sistema</h3>
+            <ul className="space-y-2 text-sm">
+              <SystemRow ok label="Ramona y agentes" value="Operativos" />
+              <SystemRow ok label="Motor de IA" value="En línea" />
+              <SystemRow ok label={`${AGENTS.length} agentes`} value="Disponibles" />
+            </ul>
+          </section>
+
+          {/* Almacenamiento */}
+          <section className="rounded-2xl border border-border bg-card p-4">
+            <h3 className="mb-3 flex items-center gap-2 font-display font-semibold"><HardDrive className="h-4 w-4 text-muted-foreground" /> Entregables</h3>
+            <div className="font-display text-3xl font-bold">{deliverableCount}</div>
+            <p className="text-xs text-muted-foreground">generados por tus agentes</p>
+          </section>
+
+          {/* Actividad reciente */}
+          <section className="rounded-2xl border border-border bg-card p-4">
+            <h3 className="mb-3 flex items-center gap-2 font-display font-semibold"><Activity className="h-4 w-4 text-muted-foreground" /> Actividad reciente</h3>
+            {activity.length === 0 ? (
+              <p className="py-2 text-xs text-muted-foreground">Sin actividad todavía.</p>
+            ) : (
+              <ul className="space-y-2.5">
+                {activity.map((d) => {
+                  const a = getAgent(d.agent_slug || '');
+                  return (
+                    <li key={d.id} className="flex items-start gap-2.5">
+                      {a ? <Image src={a.image} alt={a.name} width={26} height={26} className="rounded-md" /> : <CircleDot className="h-5 w-5 text-muted-foreground" />}
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-medium">{d.title}</p>
+                        <p className="text-[10px] text-muted-foreground">{a?.name || 'Agente'}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        </div>
       </div>
     </div>
+  );
+}
+
+function SystemRow({ ok, label, value }: { ok?: boolean; label: string; value: string }) {
+  return (
+    <li className="flex items-center gap-2">
+      <ShieldCheck className={`h-4 w-4 ${ok ? 'text-emerald-500' : 'text-muted-foreground'}`} />
+      <span className="flex-1 text-muted-foreground">{label}</span>
+      <span className="text-xs font-medium text-emerald-600">{value}</span>
+    </li>
   );
 }
