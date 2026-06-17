@@ -289,6 +289,14 @@ export function getAgent(slug: string): CactusAgent | undefined {
   return AGENTS_BY_SLUG[slug];
 }
 
+/** Agentes con tarjeta completa (hero) en /public/agents/{slug}-card.png. */
+export const AGENTS_WITH_CARD = new Set<string>([
+  'agave', 'ariocarpus', 'aloe', 'astrophytum', 'biznaga', 'candelabro', 'cereus',
+  'echinocereus', 'ferocactus', 'garambullo', 'huernia', 'lente', 'maguey', 'nopal',
+  'ocotillo', 'opuntia', 'pereskia', 'peyote', 'pitaya', 'ramona', 'saguaro',
+  'sanpedro', 'tuna', 'yuca',
+]);
+
 export const STATUS_LABEL: Record<AgentStatus, string> = {
   core: 'Núcleo',
   live: 'Disponible',

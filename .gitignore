@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Capturas de referencia (benchmark), no se despliegan
 public/bench/
+
+# Originales de tarjetas (pesados); se usan los -card.png optimizados
+public/agents/New/
