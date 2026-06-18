@@ -199,7 +199,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Crea avatares, influencers virtuales, vendedores, presentadores y embajadores de marca con rostro, voz e historia consistentes.',
     tools: ['Lente', 'Candelabro', 'San Pedro', 'Garambullo'],
     models: ['GPT Image', 'Kling', 'Google Veo'],
-    emoji: '🧑‍🚀', color: '#14B8A6', image: img('ariocarpus'), status: 'soon',
+    emoji: '🧑‍🚀', color: '#14B8A6', image: img('ariocarpus'), status: 'live', href: '/apps/ariocarpus',
   },
   {
     slug: 'astrophytum', name: 'Astrophytum', role: 'Character Designer', division: 'avatar',
