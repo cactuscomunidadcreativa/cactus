@@ -49,7 +49,7 @@ export async function listUserCompanies(db: DB, userId: string | null | undefine
 
     const roleByCompany = new Map<string, string>();
     for (const m of mems as any[]) if (m.company_id) roleByCompany.set(m.company_id, m.role);
-    const ids = [...roleByCompany.keys()];
+    const ids = Array.from(roleByCompany.keys());
 
     const { data: comps, error: e2 } = await db
       .from('companies').select('id, name, slug').in('id', ids);
