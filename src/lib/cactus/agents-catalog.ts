@@ -132,7 +132,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Lanza y optimiza la pauta pagada (Meta, Google, LinkedIn, TikTok Ads): presupuesto, ROAS, A/B y optimización continua.',
     tools: ['Meta Ads', 'Google Ads', 'LinkedIn Ads', 'TikTok Ads', 'Agave'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '🚀', color: '#F43F5E', image: '/cactus-ia-logo.png', status: 'soon',
+    emoji: '🚀', color: '#F43F5E', image: '/cactus-ia-logo.png', status: 'live', href: '/apps/cholla',
   },
   {
     slug: 'pitaya', name: 'Pitaya', role: 'Copywriter Creativo', division: 'agency',
