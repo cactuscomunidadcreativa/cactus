@@ -302,7 +302,7 @@ export const AGENTS_WITH_CARD = new Set<string>([
   'echinocereus', 'ferocactus', 'garambullo', 'huernia', 'lente', 'maguey', 'nopal',
   'ocotillo', 'opuntia', 'pereskia', 'peyote', 'pitaya', 'ramona', 'saguaro',
   'sanpedro', 'tuna', 'yuca',
-  'cactus-ia', 'cholla', 'pita',
+  'cactus-ia', 'cholla', 'pita', 'cardon',
 ]);
 
 export const STATUS_LABEL: Record<AgentStatus, string> = {
