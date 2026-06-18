@@ -29,44 +29,52 @@ function AgentCard({ agent, index = 0 }: { agent: CactusAgent; index?: number })
   const floatStyle = { animationDelay: `${(index % 6) * 0.45}s` };
 
   const inner = (
-    <div
-      className="group relative aspect-[3/4] overflow-hidden rounded-2xl border border-border bg-white card-glow transition-all duration-300 hover:-translate-y-1 hover:border-transparent"
-      style={{ ['--tw-shadow-color' as string]: agent.color + '40' }}
-    >
-      {hasCard ? (
-        // Tarjeta completa, tamaño uniforme y sin recortar (object-contain)
-        <Image
-          src={`/agents/${agent.slug}-card.png`}
-          alt={agent.name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className={`object-contain ${floatClass}`}
-          style={floatStyle}
-        />
-      ) : (
-        <div
-          className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
-          style={{ background: `linear-gradient(160deg, ${agent.color}14, ${agent.color}05)` }}
-        >
-          <Image src={agent.image} alt={agent.name} width={88} height={88} className={`rounded-2xl ${floatClass}`} style={floatStyle} />
-          <div>
+    <div className="group transition-all duration-300 hover:-translate-y-1">
+      <div
+        className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-border bg-white card-glow transition-colors duration-300 group-hover:border-transparent"
+        style={{ ['--tw-shadow-color' as string]: agent.color + '40' }}
+      >
+        {hasCard ? (
+          // Tarjeta completa, tamaño uniforme y sin recortar (object-contain)
+          <Image
+            src={`/agents/${agent.slug}-card.png`}
+            alt={agent.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className={`object-contain ${floatClass}`}
+            style={floatStyle}
+          />
+        ) : (
+          <div
+            className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
+            style={{ background: `linear-gradient(160deg, ${agent.color}14, ${agent.color}05)` }}
+          >
+            <Image src={agent.image} alt={agent.name} width={88} height={88} className={`rounded-2xl ${floatClass}`} style={floatStyle} />
             <h3 className="font-display text-lg font-bold">{agent.name}</h3>
-            <p className="text-sm font-medium" style={{ color: agent.color }}>{t(`agents.${agent.slug}.role`)}</p>
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-3">{t(`agents.${agent.slug}.description`)}</p>
-        </div>
-      )}
+        )}
 
-      {/* Badge de estado */}
-      <span className={`absolute right-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide shadow ${STATUS_STYLE[agent.status]}`}>
-        {t(`status.${agent.status}`)}
-      </span>
-
-      {/* Hint al hover */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center bg-gradient-to-t from-black/55 to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-        <span className="inline-flex items-center gap-1 text-sm font-semibold text-white">
-          {operable ? `${t('grid.open')} →` : <><Lock className="h-3.5 w-3.5" /> {t('grid.soon')}</>}
+        {/* Badge de estado */}
+        <span className={`absolute right-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide shadow ${STATUS_STYLE[agent.status]}`}>
+          {t(`status.${agent.status}`)}
         </span>
+
+        {/* Hint al hover */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center bg-gradient-to-t from-black/55 to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-white">
+            {operable ? `${t('grid.open')} →` : <><Lock className="h-3.5 w-3.5" /> {t('grid.soon')}</>}
+          </span>
+        </div>
+      </div>
+
+      {/* Para qué sirve: rol + descripción (traducido ES/EN) */}
+      <div className="mt-2.5 px-1 text-center">
+        <p className="font-display text-sm font-semibold leading-tight" style={{ color: agent.color }}>
+          {t(`agents.${agent.slug}.role`)}
+        </p>
+        <p className="mt-0.5 text-xs leading-snug text-muted-foreground line-clamp-2">
+          {t(`agents.${agent.slug}.description`)}
+        </p>
       </div>
     </div>
   );
