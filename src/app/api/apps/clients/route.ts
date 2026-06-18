@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { isSuperAdmin } from '@/lib/admin/auth';
+import { createServiceClient } from '@/lib/supabase/service';
+
+/** Cliente activo del usuario para una app; si no tiene, le crea uno por defecto
+ *  (service-role) para que entre de inmediato. Cualquier usuario logueado entra. */
+async function ensureAppClient(supabase: any, user: any, appId: string): Promise<{ client: any; userInfo: any } | null> {
+  const admin = createServiceClient();
+  if (!admin) return null;
+  const { data: prof } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
+  const name = prof?.full_name || user.email?.split('@')[0] || 'Mi empresa';
+  const { data: nc, error } = await admin.from('app_clients').insert({ app_id: appId, nombre: name }).select('id,nombre,config,activo,app_id').single();
+  if (error || !nc) return null;
+  await admin.from('app_client_users').insert({ client_id: nc.id, user_id: user.id, nombre_contacto: name, rol: 'admin', activo: true });
+  return { client: { id: nc.id, nombre: nc.nombre, config: nc.config || {}, app_id: appId }, userInfo: { rol: 'admin', nombreContacto: name } };
+}
 
 // GET - Get clients for an app (admin) or user's client
 export async function GET(request: NextRequest) {
@@ -83,18 +97,16 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (!userClient || !userClient.client) {
-      return NextResponse.json({
-        hasAccess: false,
-        client: null,
-      });
+      const ensured = await ensureAppClient(supabase, user, appId);
+      if (ensured) return NextResponse.json({ hasAccess: true, client: ensured.client, userInfo: ensured.userInfo });
+      return NextResponse.json({ hasAccess: false, client: null });
     }
 
     const clientData = userClient.client as any;
-    if (clientData.app_id !== appId) {
-      return NextResponse.json({
-        hasAccess: false,
-        client: null,
-      });
+    if (clientData.app_id && clientData.app_id !== appId) {
+      const ensured = await ensureAppClient(supabase, user, appId);
+      if (ensured) return NextResponse.json({ hasAccess: true, client: ensured.client, userInfo: ensured.userInfo });
+      return NextResponse.json({ hasAccess: false, client: null });
     }
 
     return NextResponse.json({

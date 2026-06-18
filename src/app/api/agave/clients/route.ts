@@ -1,5 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
+
+const AGAVE_CLIENT_COLS = 'id,nombre,mensajes,idioma_default,margen_objetivo,tipo_costo_default,moneda,rangos_margen,activo';
+
+/** Devuelve el cliente AGAVE activo del usuario; si no tiene, le crea uno por defecto
+ *  (service-role) para que pueda usar la app de inmediato. Cualquier usuario logueado entra. */
+async function ensureAgaveClient(supabase: any, user: any): Promise<{ client: any; userInfo: any } | null> {
+  const { data: cu } = await supabase
+    .from('agave_client_users')
+    .select(`nombre_contacto, rol, client:agave_clients(${AGAVE_CLIENT_COLS})`)
+    .eq('user_id', user.id).eq('activo', true);
+  const found = (cu || []).find((c: any) => (c.client as any)?.activo);
+  if (found) return { client: found.client, userInfo: { nombreContacto: found.nombre_contacto, rol: found.rol } };
+
+  const admin = createServiceClient();
+  if (!admin) return null; // sin service-role no podemos aprovisionar
+  const { data: prof } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
+  const name = prof?.full_name || user.email?.split('@')[0] || 'Mi empresa';
+  const { data: nc, error } = await admin.from('agave_clients').insert({ nombre: name }).select(AGAVE_CLIENT_COLS).single();
+  if (error || !nc) return null;
+  await admin.from('agave_client_users').insert({ client_id: nc.id, user_id: user.id, nombre_contacto: name, rol: 'admin', activo: true });
+  return { client: nc, userInfo: { nombreContacto: name, rol: 'admin' } };
+}
 
 // GET - List clients (admin) or get user's client
 export async function GET(request: NextRequest) {
@@ -41,7 +64,12 @@ export async function GET(request: NextRequest) {
 
       if (error) throw error;
 
-      return NextResponse.json({ clients, isAdmin: true });
+      const ensured = await ensureAgaveClient(supabase, user);
+      return NextResponse.json({
+        clients, isAdmin: true,
+        hasAccess: !!ensured, client: ensured?.client || null,
+        userInfo: ensured?.userInfo || { rol: 'admin', nombreContacto: user.email },
+      });
     } else {
       // Regular user: get their client(s)
       const { data: clientUsers, error: cuError } = await supabase
@@ -69,7 +97,11 @@ export async function GET(request: NextRequest) {
       if (cuError) throw cuError;
 
       if (!clientUsers || clientUsers.length === 0) {
-        return NextResponse.json({ client: null, hasAccess: false });
+        {
+          const ensured = await ensureAgaveClient(supabase, user);
+          if (ensured) return NextResponse.json({ client: ensured.client, userInfo: ensured.userInfo, hasAccess: true });
+          return NextResponse.json({ client: null, hasAccess: false });
+        }
       }
 
       // Return the first active client (users typically have one)
@@ -79,7 +111,11 @@ export async function GET(request: NextRequest) {
         return clientData?.activo === true;
       });
       if (!activeClient) {
-        return NextResponse.json({ client: null, hasAccess: false });
+        {
+          const ensured = await ensureAgaveClient(supabase, user);
+          if (ensured) return NextResponse.json({ client: ensured.client, userInfo: ensured.userInfo, hasAccess: true });
+          return NextResponse.json({ client: null, hasAccess: false });
+        }
       }
 
       return NextResponse.json({
