@@ -1,24 +1,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { APP_INFO } from '@/components/marketing';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { getEffectiveAgentImages } from '@/lib/cactus/agent-images';
-
-const APP_ORDER = ['ramona', 'tuna', 'agave', 'saguaro', 'pita', 'cereus'] as const;
-
-const GRADIENTS: Record<string, string> = {
-  ramona: 'from-purple-500/20 to-pink-500/20',
-  tuna: 'from-cyan-500/20 to-blue-500/20',
-  agave: 'from-green-500/20 to-emerald-500/20',
-  saguaro: 'from-teal-500/20 to-green-500/20',
-  pita: 'from-lime-500/20 to-yellow-500/20',
-  cereus: 'from-amber-500/20 to-yellow-900/20',
-};
+import { AGENTS, DIVISIONS, DIVISION_ORDER, AGENTS_WITH_CARD } from '@/lib/cactus/agents-catalog';
 
 export default async function AppsMarketplacePage() {
   const t = await getTranslations('home.appsPage');
+  const te = await getTranslations('ecosystem');
 
   // Fotos efectivas de nivel global "Cactus" (página pública → sin empresa)
   const supabase = await createClient();
@@ -42,79 +32,51 @@ export default async function AppsMarketplacePage() {
         </div>
       </section>
 
-      {/* Apps Grid */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {APP_ORDER.map((appId) => {
-              const app = APP_INFO[appId];
-              const gradient = GRADIENTS[appId] || 'from-gray-500/20 to-gray-400/20';
-
-              return (
-                <div
-                  key={app.id}
-                  className={`relative rounded-2xl border overflow-hidden bg-gradient-to-br ${gradient} hover:shadow-lg transition-shadow`}
-                >
-                  <div className="p-8">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <Image
-                          src={images[appId] || app.logo}
-                          alt={app.name}
-                          width={48}
-                          height={48}
-                          className="rounded-lg object-cover"
-                        />
-                        <div>
-                          <h2 className="text-2xl font-display font-bold">{app.name}</h2>
-                          <p className="text-sm text-muted-foreground">
-                            {t(`apps.${appId}.tagline`)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-muted-foreground mb-6">
-                      {t(`apps.${appId}.description`)}
-                    </p>
-
-                    {/* Features */}
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {[0, 1, 2, 3].map((i) => (
-                        <span
-                          key={i}
-                          className="px-3 py-1 text-xs rounded-full bg-background/80"
-                          style={{ borderColor: app.color, borderWidth: 1 }}
-                        >
-                          {t(`apps.${appId}.features.${i}`)}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-3">
-                      <Link
-                        href={app.demo}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
-                        style={{ backgroundColor: app.color }}
-                      >
-                        {t('tryDemo')}
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                      <Link
-                        href={app.landing}
-                        className="px-4 py-2 rounded-lg text-sm font-medium border hover:bg-muted transition-colors"
-                      >
-                        {t('moreInfo')}
-                      </Link>
-                    </div>
-                  </div>
+      {/* Tarjetas de agentes — automático desde el catálogo, agrupadas por división */}
+      <section className="py-12">
+        <div className="container mx-auto max-w-7xl space-y-12 px-4">
+          {DIVISION_ORDER.map((key) => {
+            const items = AGENTS.filter((a) => a.division === key);
+            if (!items.length) return null;
+            const d = DIVISIONS[key];
+            return (
+              <div key={key}>
+                <div className="mb-5 flex items-center gap-2">
+                  <span className="h-4 w-1 rounded-full" style={{ backgroundColor: d.color }} />
+                  <h2 className="font-display text-xl font-bold">{te(`divisions.${key}.label`)}</h2>
+                  <span className="hidden text-sm text-muted-foreground sm:inline">· {te(`divisions.${key}.tagline`)}</span>
                 </div>
-              );
-            })}
-          </div>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {items.map((a) => {
+                    const operable = a.status !== 'soon';
+                    const cardImg = images[a.slug] || (AGENTS_WITH_CARD.has(a.slug) ? `/agents/${a.slug}-card.png` : a.image);
+                    const demo = a.href || `/agent/${a.slug}`;
+                    const body = (
+                      <>
+                        <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-border bg-white">
+                          <Image src={cardImg} alt={a.name} fill sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" className="object-contain" />
+                        </div>
+                        <div className="mt-2.5 text-center">
+                          <p className="font-display text-sm font-bold leading-tight">{a.name}</p>
+                          <p className="text-[11px] font-medium" style={{ color: a.color }}>{te(`agents.${a.slug}.role`)}</p>
+                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{te(`agents.${a.slug}.description`)}</p>
+                          <span
+                            className={`mt-2 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${operable ? 'text-white' : 'bg-muted text-muted-foreground'}`}
+                            style={operable ? { backgroundColor: a.color } : undefined}
+                          >
+                            {operable ? <>{t('tryDemo')} <ArrowRight className="h-3.5 w-3.5" /></> : 'Próximamente'}
+                          </span>
+                        </div>
+                      </>
+                    );
+                    return operable
+                      ? <Link key={a.slug} href={demo} className="block transition-transform duration-200 hover:-translate-y-0.5">{body}</Link>
+                      : <div key={a.slug} className="opacity-90">{body}</div>;
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
