@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Reorder, useDragControls } from 'framer-motion';
 import {
   LayoutDashboard, Blocks, Plug, Wand2, Loader2, Monitor, Tablet, Smartphone, Eye, Pencil,
   Download, Trash2, Copy, GripVertical, Plus, PanelTop, LayoutTemplate, Type, Image as ImageIcon,
   Sparkles, MessageSquareQuote, CreditCard, HelpCircle, Mail, AlignLeft, TrendingUp, Rocket,
-  ShoppingBag, Package, Files, FileText, Check,
+  ShoppingBag, Package, Files, FileText, Check, Upload,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
@@ -88,8 +88,8 @@ const BLOCKS: Record<BlockType, BlockDef> = {
   },
   contact: {
     label: 'Contacto', icon: Mail,
-    make: () => ({ heading: 'Hablemos', subtitle: 'Déjanos tus datos y te escribimos.', buttonText: 'Enviar' }),
-    fields: [{ k: 'heading', l: 'Encabezado', t: 'text' }, { k: 'subtitle', l: 'Subtítulo', t: 'text' }, { k: 'buttonText', l: 'Botón', t: 'text' }],
+    make: () => ({ heading: 'Hablemos', subtitle: 'Déjanos tus datos y te escribimos.', buttonText: 'Enviar', email: '' }),
+    fields: [{ k: 'heading', l: 'Encabezado', t: 'text' }, { k: 'subtitle', l: 'Subtítulo', t: 'text' }, { k: 'buttonText', l: 'Botón', t: 'text' }, { k: 'email', l: 'Correo de destino (a dónde llegan los mensajes)', t: 'text' }],
   },
   footer: {
     label: 'Footer', icon: AlignLeft,
@@ -267,7 +267,7 @@ function Productos({ site, setSite, accent }: { site: Site; setSite: (fn: (s: Si
             <FormField label="Precio"><input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="$299" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" /></FormField>
             <FormField label="Etiqueta"><input value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} placeholder="Nuevo / Top" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" /></FormField>
           </div>
-          <FormField label="Imagen (URL)"><input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://…" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" /></FormField>
+          <FormField label="Imagen"><ImageInput value={form.image} accent={accent} onChange={(v) => setForm({ ...form, image: v })} /></FormField>
           <FormField label="Descripción"><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" /></FormField>
           <div className="flex gap-2">
             <button onClick={save} disabled={!form.name.trim()} className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: accent }}>
@@ -493,8 +493,10 @@ function Inspector({ block, products, accent, onChange }: { block: Block; produc
               <option value="">{products.length ? 'Elige un producto' : 'Sube productos primero'}</option>
               {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
+          ) : f.t === 'image' ? (
+            <ImageInput value={block.props[f.k] ?? ''} accent={accent} onChange={(v) => set(f.k, v)} />
           ) : (
-            <input value={block.props[f.k] ?? ''} onChange={(e) => set(f.k, e.target.value)} placeholder={f.t === 'image' ? 'https://…' : ''} className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none" />
+            <input value={block.props[f.k] ?? ''} onChange={(e) => set(f.k, e.target.value)} className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none" />
           )}
         </div>
       ))}
@@ -507,6 +509,39 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
     <div className="mb-3">
       <label className="mb-1 block text-xs font-medium text-muted-foreground">{label}</label>
       {children}
+    </div>
+  );
+}
+
+async function uploadImage(file: File): Promise<string> {
+  const fd = new FormData(); fd.append('file', file);
+  const res = await fetch('/api/cactus/opuntia/upload', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (!res.ok || !data.ok) throw new Error(data.error || 'No se pudo subir');
+  return data.url as string;
+}
+
+// Campo de imagen: pega una URL o sube un archivo (Supabase Storage)
+function ImageInput({ value, onChange, accent }: { value: string; onChange: (v: string) => void; accent: string }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]; if (!f) return;
+    setBusy(true); setErr(null);
+    try { onChange(await uploadImage(f)); } catch (e: any) { setErr(e?.message || 'Error'); } finally { setBusy(false); if (ref.current) ref.current.value = ''; }
+  }
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <input value={value} onChange={(e) => onChange(e.target.value)} placeholder="https://… o sube" className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none" />
+        <button type="button" onClick={() => ref.current?.click()} disabled={busy} title="Subir imagen" className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-white disabled:opacity-50" style={{ backgroundColor: accent }}>
+          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+        </button>
+        <input ref={ref} type="file" accept="image/*" hidden onChange={onPick} />
+      </div>
+      {value && <img src={value} alt="" className="h-16 w-full rounded-lg border border-border object-cover" />}
+      {err && <p className="text-[10px] text-red-500">{err}</p>}
     </div>
   );
 }
@@ -528,11 +563,11 @@ function PairsEditor({ value, aL, bL, accent, onChange }: { value: { a: string; 
 
 function UrlsEditor({ value, accent, onChange }: { value: string[]; accent: string; onChange: (v: string[]) => void }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       {value.map((u, i) => (
-        <div key={i} className="flex items-center gap-1">
-          <input value={u} onChange={(e) => onChange(value.map((x, j) => (j === i ? e.target.value : x)))} placeholder="https://…" className="w-full rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none" />
-          <button onClick={() => onChange(value.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-red-500"><Trash2 className="h-3 w-3" /></button>
+        <div key={i} className="rounded-lg border border-border p-2">
+          <div className="mb-1 flex items-center justify-between"><span className="text-[10px] text-muted-foreground">Imagen #{i + 1}</span><button onClick={() => onChange(value.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-red-500"><Trash2 className="h-3 w-3" /></button></div>
+          <ImageInput value={u} accent={accent} onChange={(v) => onChange(value.map((x, j) => (j === i ? v : x)))} />
         </div>
       ))}
       <button onClick={() => onChange([...value, ''])} className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: accent }}><Plus className="h-3.5 w-3.5" /> Agregar imagen</button>
@@ -729,7 +764,18 @@ function BlockView({ block, theme, products }: { block: Block; theme: Site['them
         </section>
       );
     case 'contact':
-      return (<section className="px-6 py-12 text-center"><h2 className="text-2xl font-bold text-gray-900">{p.heading}</h2><p className="mt-2 text-gray-600">{p.subtitle}</p><div className="mx-auto mt-5 max-w-sm space-y-2"><div className="h-10 rounded-lg border border-gray-200" /><div className="h-10 rounded-lg border border-gray-200" /><span className="inline-block w-full rounded-lg py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: c }}>{p.buttonText}</span></div></section>);
+      return (
+        <section className="px-6 py-12 text-center">
+          <h2 className="text-2xl font-bold text-gray-900">{p.heading}</h2>
+          <p className="mt-2 text-gray-600">{p.subtitle}</p>
+          <div className="mx-auto mt-5 max-w-sm space-y-2">
+            <div className="flex h-10 items-center rounded-lg border border-gray-200 px-3 text-xs text-gray-400">Nombre</div>
+            <div className="flex h-10 items-center rounded-lg border border-gray-200 px-3 text-xs text-gray-400">Email</div>
+            <span className="inline-block w-full rounded-lg py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: c }}>{p.buttonText}</span>
+          </div>
+          <p className="mt-3 text-[11px] text-gray-400">{p.email ? `Los mensajes llegan a ${p.email}` : '⚠ Define el correo de destino en el panel para recibir los mensajes'}</p>
+        </section>
+      );
     case 'footer':
       return (<footer className="flex flex-col items-center gap-2 border-t border-gray-100 px-6 py-8 text-center text-sm text-gray-500"><div className="flex flex-wrap justify-center gap-4">{splitCommas(p.links).map((l, i) => <span key={i}>{l}</span>)}</div><p>{p.text}</p></footer>);
     default:
@@ -758,7 +804,11 @@ function blockToHtml(b: Block, c: string, products: Product[]): string {
     case 'testimonials': return `<section style="padding:48px 24px;max-width:900px;margin:0 auto">${p.heading ? `<h2 style="text-align:center;font-size:24px;font-weight:700;color:#111;margin-bottom:24px">${esc(p.heading)}</h2>` : ''}<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">${(p.items || []).map((it: any) => `<figure style="border:1px solid #eee;border-radius:12px;padding:20px;margin:0"><blockquote style="color:#444">“${esc(it.b)}”</blockquote><figcaption style="margin-top:8px;font-weight:600;color:${c}">${esc(it.a)}</figcaption></figure>`).join('')}</div></section>`;
     case 'pricing': return `<section style="padding:48px 24px;max-width:980px;margin:0 auto">${p.heading ? `<h2 style="text-align:center;font-size:24px;font-weight:700;color:#111;margin-bottom:24px">${esc(p.heading)}</h2>` : ''}<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">${(p.items || []).map((it: any) => `<div style="border:1px solid #eee;border-radius:12px;padding:20px;text-align:center"><h3 style="font-weight:700;color:#111">${esc(it.a)}</h3><p style="color:#555;font-size:14px;margin-top:4px">${esc(it.b)}</p><div style="margin-top:16px">${btn(c, 'Elegir')}</div></div>`).join('')}</div></section>`;
     case 'faq': return `<section style="padding:48px 24px;max-width:720px;margin:0 auto">${p.heading ? `<h2 style="text-align:center;font-size:24px;font-weight:700;color:#111;margin-bottom:24px">${esc(p.heading)}</h2>` : ''}${(p.items || []).map((it: any) => `<div style="border:1px solid #eee;border-radius:10px;padding:16px;margin-bottom:12px"><p style="font-weight:600;color:#111">${esc(it.a)}</p><p style="color:#555;font-size:14px;margin-top:4px">${esc(it.b)}</p></div>`).join('')}</section>`;
-    case 'contact': return `<section style="padding:48px 24px;text-align:center;max-width:420px;margin:0 auto"><h2 style="font-size:24px;font-weight:700;color:#111">${esc(p.heading)}</h2><p style="color:#555;margin-top:8px">${esc(p.subtitle)}</p><div style="margin-top:20px;display:flex;flex-direction:column;gap:8px"><input placeholder="Nombre" style="height:40px;border:1px solid #ddd;border-radius:10px;padding:0 12px"/><input placeholder="Email" style="height:40px;border:1px solid #ddd;border-radius:10px;padding:0 12px"/>${btn(c, p.buttonText)}</div></section>`;
+    case 'contact': {
+      const to = String(p.email || '').trim();
+      const action = to ? ` action="mailto:${esc(to)}" method="post" enctype="text/plain"` : '';
+      return `<section style="padding:48px 24px;text-align:center;max-width:420px;margin:0 auto"><h2 style="font-size:24px;font-weight:700;color:#111">${esc(p.heading)}</h2><p style="color:#555;margin-top:8px">${esc(p.subtitle)}</p><form${action} style="margin-top:20px;display:flex;flex-direction:column;gap:8px"><input name="Nombre" placeholder="Nombre" required style="height:40px;border:1px solid #ddd;border-radius:10px;padding:0 12px"/><input name="Email" type="email" placeholder="Email" required style="height:40px;border:1px solid #ddd;border-radius:10px;padding:0 12px"/><textarea name="Mensaje" placeholder="Mensaje" rows="3" style="border:1px solid #ddd;border-radius:10px;padding:8px 12px"></textarea><button type="submit" style="background:${c};color:#fff;padding:12px 22px;border:0;border-radius:10px;font-weight:600;cursor:pointer">${esc(p.buttonText)}</button></form></section>`;
+    }
     case 'footer': return `<footer style="padding:32px 24px;text-align:center;border-top:1px solid #eee;color:#888;font-size:14px"><div style="display:flex;justify-content:center;gap:16px;margin-bottom:8px">${splitCommas(p.links).map((l) => `<span>${esc(l)}</span>`).join('')}</div><p>${esc(p.text)}</p></footer>`;
     default: return '';
   }
