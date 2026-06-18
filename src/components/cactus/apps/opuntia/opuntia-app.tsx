@@ -131,6 +131,103 @@ function starterSite(): Site {
   };
 }
 
+// ═══ Plantillas / landings modelo (librería) ══════════════════════════════════
+const mk = (type: BlockType, overrides: Record<string, any> = {}): Block => ({ id: uid(), type, props: { ...BLOCKS[type].make(), ...overrides } });
+
+interface Template { key: string; name: string; desc: string; build: () => Block[] }
+const TEMPLATES: Template[] = [
+  {
+    key: 'producto', name: 'Landing de producto', desc: 'Presenta un producto: beneficios, prueba social y cierre.',
+    build: () => [
+      mk('navbar', { brand: 'Tu Producto', links: 'Inicio, Beneficios, Precio, Contacto', ctaText: 'Comprar' }),
+      mk('hero', { title: 'El producto que estabas esperando', subtitle: 'Resuelve tu problema en minutos. Pruébalo hoy sin riesgo.', ctaText: 'Lo quiero' }),
+      mk('features', { heading: 'Por qué te va a encantar', items: [{ a: 'Ahorra tiempo', b: 'Automatiza lo tedioso.' }, { a: 'Fácil de usar', b: 'Sin curva de aprendizaje.' }, { a: 'Soporte real', b: 'Te acompañamos siempre.' }] }),
+      mk('testimonials', {}),
+      mk('faq', {}),
+      mk('cta', { title: 'Empieza hoy', subtitle: 'Garantía de devolución de 30 días.' }),
+      mk('footer', {}),
+    ],
+  },
+  {
+    key: 'tienda', name: 'Tienda / eCommerce', desc: 'Catálogo de productos con envíos y garantías.',
+    build: () => [
+      mk('navbar', { brand: 'Tu Tienda', links: 'Inicio, Tienda, Ofertas, Contacto', ctaText: 'Ver carrito' }),
+      mk('hero', { title: 'Productos que vas a amar', subtitle: 'Envío a todo el país. Paga seguro.', ctaText: 'Comprar ahora' }),
+      mk('products', { heading: 'Lo más vendido' }),
+      mk('features', { heading: 'Comprar con nosotros es fácil', items: [{ a: 'Envío rápido', b: 'Recíbelo en 24-48h.' }, { a: 'Pago seguro', b: 'Checkout protegido.' }, { a: 'Devolución', b: 'Hasta 30 días.' }] }),
+      mk('cta', { title: 'Envío gratis hoy', subtitle: 'En compras mayores a $50.' }),
+      mk('footer', {}),
+    ],
+  },
+  {
+    key: 'servicios', name: 'Servicios profesionales', desc: 'Para agencias, consultorías y freelancers.',
+    build: () => [
+      mk('navbar', { brand: 'Tu Estudio', links: 'Inicio, Servicios, Casos, Contacto', ctaText: 'Cotizar' }),
+      mk('hero', { title: 'Soluciones a la medida de tu negocio', subtitle: 'Estrategia, ejecución y resultados medibles.', ctaText: 'Agenda una llamada' }),
+      mk('features', { heading: 'Nuestros servicios', items: [{ a: 'Estrategia', b: 'Plan claro y accionable.' }, { a: 'Ejecución', b: 'Hacemos que pase.' }, { a: 'Medición', b: 'Decisiones con datos.' }] }),
+      mk('pricing', {}),
+      mk('testimonials', {}),
+      mk('contact', { heading: '¿Trabajamos juntos?', subtitle: 'Cuéntanos tu reto y te respondemos en 24h.' }),
+      mk('footer', {}),
+    ],
+  },
+  {
+    key: 'restaurante', name: 'Restaurante / Café', desc: 'Carta, ambiente y reservas para hostelería.',
+    build: () => [
+      mk('navbar', { brand: 'Tu Restaurante', links: 'Inicio, Menú, Reservas, Ubicación', ctaText: 'Reservar' }),
+      mk('hero', { title: 'Sabor que se queda contigo', subtitle: 'Cocina de autor con ingredientes locales.', ctaText: 'Ver el menú' }),
+      mk('gallery', { images: ['', '', '', '', '', ''] }),
+      mk('text', { heading: 'Nuestra historia', body: 'Abrimos en 20XX con una idea simple: buena comida, buen ambiente. Aquí cada plato cuenta una historia.' }),
+      mk('testimonials', { heading: 'Lo que dicen los comensales' }),
+      mk('contact', { heading: 'Reserva tu mesa', subtitle: 'Te confirmamos por correo.' }),
+      mk('footer', {}),
+    ],
+  },
+  {
+    key: 'evento', name: 'Evento / Webinar', desc: 'Registro a un evento, curso o webinar.',
+    build: () => [
+      mk('navbar', { brand: 'Tu Evento', links: 'Agenda, Ponentes, Tickets, FAQ', ctaText: 'Registrarme' }),
+      mk('hero', { title: 'El evento del año', subtitle: 'Un día, los mejores del sector, una experiencia inolvidable.', ctaText: 'Reservar lugar' }),
+      mk('features', { heading: 'Lo que vivirás', items: [{ a: 'Charlas magistrales', b: 'Aprende de los mejores.' }, { a: 'Networking', b: 'Conecta con tu industria.' }, { a: 'Workshops', b: 'Llévate herramientas.' }] }),
+      mk('pricing', { heading: 'Tickets', items: [{ a: 'General — $49', b: 'Acceso a todas las charlas' }, { a: 'VIP — $99', b: 'Acceso + workshops + after' }, { a: 'Empresa — A medida', b: 'Pase para tu equipo' }] }),
+      mk('faq', {}),
+      mk('cta', { title: 'Cupos limitados', subtitle: 'Asegura tu lugar hoy.' }),
+      mk('footer', {}),
+    ],
+  },
+  {
+    key: 'saas', name: 'App / SaaS', desc: 'Software con planes y prueba gratis.',
+    build: () => [
+      mk('navbar', { brand: 'Tu App', links: 'Producto, Precios, Recursos, Login', ctaText: 'Prueba gratis' }),
+      mk('hero', { title: 'La herramienta que tu equipo necesita', subtitle: 'Más productividad, menos caos. Empieza gratis.', ctaText: 'Crear cuenta' }),
+      mk('features', { heading: 'Todo en un solo lugar', items: [{ a: 'Rápido', b: 'Veloz desde el día uno.' }, { a: 'Seguro', b: 'Tus datos, protegidos.' }, { a: 'Integraciones', b: 'Conecta tus herramientas.' }] }),
+      mk('pricing', { heading: 'Planes para cada etapa' }),
+      mk('faq', {}),
+      mk('cta', { title: 'Empieza gratis', subtitle: 'Sin tarjeta. Cancela cuando quieras.' }),
+      mk('footer', {}),
+    ],
+  },
+  {
+    key: 'comingsoon', name: 'Coming soon', desc: 'Página de espera con captación de correos.',
+    build: () => [
+      mk('hero', { title: 'Algo grande viene en camino', subtitle: 'Déjanos tu correo y sé el primero en enterarte.', ctaText: 'Avísame' }),
+      mk('contact', { heading: 'Únete a la lista', subtitle: 'Sin spam, solo el lanzamiento.', buttonText: 'Apuntarme' }),
+      mk('footer', {}),
+    ],
+  },
+  {
+    key: 'portafolio', name: 'Portafolio / Personal', desc: 'Muestra tu trabajo y deja que te contacten.',
+    build: () => [
+      mk('navbar', { brand: 'Tu Nombre', links: 'Inicio, Trabajo, Sobre mí, Contacto', ctaText: 'Hablemos' }),
+      mk('hero', { title: 'Hola, soy [tu nombre]', subtitle: 'Diseño / desarrollo / creo cosas que importan.', ctaText: 'Ver mi trabajo' }),
+      mk('gallery', { images: ['', '', '', '', '', ''] }),
+      mk('text', { heading: 'Sobre mí', body: 'Cuento corto sobre quién eres, qué haces y qué te apasiona. Hazlo personal.' }),
+      mk('contact', { heading: 'Trabajemos juntos', subtitle: 'Escríbeme y te respondo pronto.' }),
+      mk('footer', {}),
+    ],
+  },
+];
+
 type View = 'resumen' | 'builder' | 'productos';
 
 export function OpuntiaApp({ agent, user, credits }: { agent: OpuntiaAgent; user?: ShellUser; credits?: number }) {
@@ -321,6 +418,7 @@ function Builder({ agent, site, setSite }: { agent: OpuntiaAgent; site: Site; se
   const [device, setDevice] = useState<keyof typeof DEVICE>('desktop');
   const [preview, setPreview] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [tplOpen, setTplOpen] = useState(false);
 
   const page = site.pages.find((p) => p.id === activePageId) || site.pages[0];
   const pageId = page?.id;
@@ -336,6 +434,7 @@ function Builder({ agent, site, setSite }: { agent: OpuntiaAgent; site: Site; se
 
   const renamePage = (name: string) => setSite((s) => ({ ...s, pages: s.pages.map((p) => (p.id === pageId ? { ...p, name } : p)) }));
   const addPage = () => { const np: PageDef = { id: uid(), name: `Página ${site.pages.length + 1}`, blocks: [{ id: uid(), type: 'navbar', props: BLOCKS.navbar.make() }, { id: uid(), type: 'footer', props: BLOCKS.footer.make() }] }; setSite((s) => ({ ...s, pages: [...s.pages, np] })); setActivePageId(np.id); setSelected(null); };
+  const addTemplatePage = (name: string, blocks: Block[]) => { const np: PageDef = { id: uid(), name, blocks }; setSite((s) => ({ ...s, pages: [...s.pages, np] })); setActivePageId(np.id); setSelected(null); };
   const deletePage = () => { if (site.pages.length <= 1) return; setSite((s) => { const pages = s.pages.filter((p) => p.id !== pageId); return { ...s, pages }; }); setActivePageId(site.pages.find((p) => p.id !== pageId)?.id || ''); setSelected(null); };
 
   const sel = page?.blocks.find((b) => b.id === selected) || null;
@@ -375,6 +474,9 @@ function Builder({ agent, site, setSite }: { agent: OpuntiaAgent; site: Site; se
           {preview ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />} {preview ? 'Editar' : 'Vista previa'}
         </button>
         <div className="ml-auto flex items-center gap-2">
+          <button onClick={() => setTplOpen(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted">
+            <LayoutTemplate className="h-4 w-4" /> Plantillas
+          </button>
           <button onClick={() => setAiOpen(true)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-white" style={{ backgroundColor: agent.color }}>
             <Wand2 className="h-4 w-4" /> Generar con IA
           </button>
@@ -442,6 +544,7 @@ function Builder({ agent, site, setSite }: { agent: OpuntiaAgent; site: Site; se
       </div>
 
       {aiOpen && <AiModal agent={agent} onClose={() => setAiOpen(false)} onApply={(blocks, color) => { setBlocks(blocks); if (color) setTheme(color); setSelected(null); setAiOpen(false); }} />}
+      {tplOpen && <TemplatesModal accent={agent.color} onClose={() => setTplOpen(false)} onPick={(name, blocks) => { addTemplatePage(name, blocks); setTplOpen(false); }} />}
     </div>
   );
 }
@@ -592,6 +695,36 @@ function PageSettings({ page, theme, accent, canDelete, onName, onColor, onDelet
         </div>
       </div>
       {canDelete && <button onClick={onDelete} className="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:underline"><Trash2 className="h-3.5 w-3.5" /> Eliminar página</button>}
+    </div>
+  );
+}
+
+function TemplatesModal({ accent, onClose, onPick }: { accent: string; onClose: () => void; onPick: (name: string, blocks: Block[]) => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-border bg-card p-5 shadow-xl">
+        <div className="mb-1 flex items-center gap-2"><LayoutTemplate className="h-4 w-4" style={{ color: accent }} /><h3 className="font-display text-lg font-semibold">Plantillas</h3></div>
+        <p className="mb-4 text-sm text-muted-foreground">Empieza desde una página modelo. Se añade como una página nueva que puedes editar a tu gusto.</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {TEMPLATES.map((t) => {
+            const blocks = t.build();
+            return (
+              <div key={t.key} className="flex flex-col rounded-xl border border-border bg-background p-4">
+                <h4 className="font-display font-semibold">{t.name}</h4>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t.desc}</p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {blocks.map((b, i) => <span key={i} className="rounded bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground">{BLOCKS[b.type].label}</span>)}
+                </div>
+                <button onClick={() => onPick(t.name, t.build())} className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold text-white" style={{ backgroundColor: accent }}>
+                  <Plus className="h-4 w-4" /> Usar plantilla
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-4 text-right"><button onClick={onClose} className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted">Cerrar</button></div>
+      </div>
     </div>
   );
 }
