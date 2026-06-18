@@ -1,5 +1,6 @@
 import Image from 'next/image';
-import { BookOpen, Boxes, Plug, Database, FileText, Link2, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { BookOpen, Boxes, Plug, Database, FileText, Link2, Plus, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { BrandKitForm } from '@/components/cactus/brand-kit-form';
 import { BrainReindex } from '@/components/cactus/brain-reindex';
@@ -121,14 +122,19 @@ export default async function BrainPage() {
           </section>
 
           <section className="rounded-2xl border border-border bg-card p-4">
-            <h2 className="mb-3 font-display font-semibold">Integraciones</h2>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-display font-semibold">Integraciones</h2>
+              <Link href="/empresa/conexiones" className="inline-flex items-center gap-1 text-xs font-medium text-cactus-green hover:underline">
+                Gestionar <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               {INTEGRATIONS.map((i) => (
-                <button key={i.name} className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-2 text-left text-sm transition-colors hover:border-cactus-green/40">
+                <Link key={i.name} href="/empresa/conexiones" className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-2 text-left text-sm transition-colors hover:border-cactus-green/40">
                   <span className="text-base">{i.emoji}</span>
                   <span className="min-w-0 flex-1 truncate">{i.name}</span>
                   <span className="text-[10px] text-muted-foreground">Conectar</span>
-                </button>
+                </Link>
               ))}
             </div>
           </section>

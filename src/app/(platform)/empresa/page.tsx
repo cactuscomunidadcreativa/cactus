@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { EmpresaConsole } from '@/components/cactus/empresa-console';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
-import { Building2, LayoutGrid, Share2 } from 'lucide-react';
+import { Building2, LayoutGrid, Share2, Plug } from 'lucide-react';
 
 export const metadata = { title: 'Empresa · Cactus' };
 
@@ -29,7 +29,10 @@ export default async function EmpresaPage() {
           <h1 className="font-display text-2xl font-bold">Empresa{companyName ? ` · ${companyName}` : ''}</h1>
           <p className="text-sm text-muted-foreground">Agentes, consumo, alertas y conexiones de tu empresa activa.</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Link href="/empresa/conexiones" className="inline-flex items-center gap-2 rounded-xl border border-border px-3.5 py-2 text-sm font-medium hover:border-cactus-green/40">
+            <Plug className="h-4 w-4" /> Conexiones
+          </Link>
           <Link href="/empresa/grafo" className="inline-flex items-center gap-2 rounded-xl border border-border px-3.5 py-2 text-sm font-medium hover:border-cactus-green/40">
             <Share2 className="h-4 w-4" /> Mapa de agentes
           </Link>
