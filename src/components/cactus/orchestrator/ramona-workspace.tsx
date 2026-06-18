@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   Send, Check, MessageSquare, ListTodo, FolderKanban, CalendarDays, Activity,
-  Loader2, Plus, Sparkles, Inbox, Circle, Play, ShieldAlert,
+  Loader2, Sparkles, Inbox, Circle, Play, ShieldAlert, ThumbsUp, RefreshCw,
 } from 'lucide-react';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 import { taskProgress, type OrchestratorTask, type OrchestratorDeliverable } from '@/lib/cactus/orchestrator';
@@ -40,7 +40,7 @@ const TASK_BADGE: Record<OrchestratorTask['status'], { label: string; cls: strin
 };
 
 export function RamonaWorkspace() {
-  const { state, loading, sending, executing, error, blocked, send, approve } = useOrchestrator();
+  const { state, loading, sending, executing, error, blocked, send, approve, refresh } = useOrchestrator();
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('conversacion');
   const [input, setInput] = useState('');
 
@@ -98,7 +98,7 @@ export function RamonaWorkspace() {
 
       {/* ── Columna derecha: Entregables + Agentes activos ── */}
       <div className="space-y-5">
-        <Deliverables items={state.deliverables} />
+        <Deliverables items={state.deliverables} onRefresh={refresh} />
         <ActiveAgents tasks={state.tasks} onApprove={approve} busy={busy} />
       </div>
     </div>
@@ -349,34 +349,82 @@ function EmptyState({ icon: Icon, text }: { icon: typeof ListTodo; text: string 
 }
 
 // ── Panel derecho: Entregables ──────────────────────────────────────────────
-function Deliverables({ items }: { items: OrchestratorDeliverable[] }) {
+function Deliverables({ items, onRefresh }: { items: OrchestratorDeliverable[]; onRefresh: () => void }) {
+  // Solo la última versión de cada entregable (las correcciones crean versiones nuevas)
+  const latest = items.filter((d) => (d as any).is_latest !== false);
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-display font-semibold">Entregables</h3>
-        <button className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-          <Plus className="h-3.5 w-3.5" /> Nuevo
-        </button>
+        <span className="text-xs text-muted-foreground">{latest.length}</span>
       </div>
-      {items.length === 0 ? (
+      {latest.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
           <Inbox className="h-6 w-6 opacity-50" />
           <p className="text-xs">Aún no hay entregables. Ramona los irá generando con el equipo.</p>
         </div>
       ) : (
         <ul className="space-y-2">
-          {items.map((d) => (
-            <li key={d.id} className="flex items-center gap-2.5 rounded-lg border border-border bg-background p-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-cactus-green/10 text-xs font-semibold uppercase text-cactus-green">{d.kind.slice(0, 3)}</span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{d.title}</span>
-                <span className="block truncate text-[11px] text-muted-foreground">{getAgent(d.agent_slug || '')?.name || d.agent_slug}</span>
-              </span>
-            </li>
-          ))}
+          {latest.map((d) => <DeliverableItem key={d.id} d={d} onRefresh={onRefresh} />)}
         </ul>
       )}
     </div>
+  );
+}
+
+function DeliverableItem({ d, onRefresh }: { d: OrchestratorDeliverable; onRefresh: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [fb, setFb] = useState('');
+  const [busy, setBusy] = useState<'' | 'rate' | 'regen'>('');
+  const [note, setNote] = useState('');
+  const version = (d as any).version as number | undefined;
+
+  async function rate(rating: number) {
+    setBusy('rate'); setNote('');
+    try {
+      await fetch('/api/cactus/feedback', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deliverableId: d.id, agentSlug: d.agent_slug, rating }),
+      });
+      setNote(rating > 0 ? '¡Gracias! 👍' : 'Anotado, lo tendrá en cuenta.');
+    } finally { setBusy(''); }
+  }
+  async function regenerate() {
+    setBusy('regen'); setNote('');
+    try {
+      const r = await fetch('/api/cactus/deliverables/regenerate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deliverableId: d.id, feedback: fb.trim() || undefined }),
+      });
+      const data = await r.json();
+      if (data.ok) { setFb(''); setOpen(false); onRefresh(); }
+      else setNote(data.error || 'No se pudo regenerar.');
+    } finally { setBusy(''); }
+  }
+
+  return (
+    <li className="rounded-lg border border-border bg-background p-2.5">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-cactus-green/10 text-xs font-semibold uppercase text-cactus-green">{d.kind.slice(0, 3)}</span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium">{d.title}{version && version > 1 ? <span className="ml-1 text-[10px] text-muted-foreground">v{version}</span> : null}</span>
+          <span className="block truncate text-[11px] text-muted-foreground">{getAgent(d.agent_slug || '')?.name || d.agent_slug}</span>
+        </span>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <button onClick={() => rate(1)} disabled={busy !== ''} title="Me gusta" className="rounded p-1 hover:bg-muted disabled:opacity-50"><ThumbsUp className="h-3.5 w-3.5 text-muted-foreground" /></button>
+          <button onClick={() => setOpen((o) => !o)} disabled={busy !== ''} title="Corregir / regenerar" className="rounded p-1 hover:bg-muted disabled:opacity-50"><RefreshCw className="h-3.5 w-3.5 text-muted-foreground" /></button>
+        </div>
+      </div>
+      {open && (
+        <div className="mt-2 space-y-2">
+          <textarea value={fb} onChange={(e) => setFb(e.target.value)} rows={2} placeholder="¿Qué mejorar? (opcional — Ramona lo aprende)" className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs" />
+          <button onClick={regenerate} disabled={busy === 'regen'} className="inline-flex items-center gap-1.5 rounded-lg bg-cactus-green px-3 py-1.5 text-xs font-medium text-white disabled:opacity-60">
+            {busy === 'regen' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Regenerar versión
+          </button>
+        </div>
+      )}
+      {note && <p className="mt-1 text-[11px] text-muted-foreground">{note}</p>}
+    </li>
   );
 }
 
