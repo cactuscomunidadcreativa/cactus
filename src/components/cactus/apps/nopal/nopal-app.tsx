@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   LayoutDashboard, Sparkles, CalendarDays, Library, Plug, PenLine,
   Copy, Check, Trash2, Loader2, Wand2, FileText, Send, CalendarPlus,
+  Users, Heart, TrendingUp, Lock, BarChart3,
 } from 'lucide-react';
+import Link from 'next/link';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
@@ -120,7 +122,8 @@ export function NopalApp({
   );
 }
 
-// ── KPIs (honestos: estado real de borradores + pendiente de conexiones) ──────
+// ── KPIs (vista 16: 6 tarjetas; honestas — lo real va con número, la analítica
+//    que depende de conexiones va con "—" hasta Fase F) ──────────────────────
 function Kpis({ drafts, accent }: { drafts: Draft[]; accent: string }) {
   const scheduled = drafts.filter((d) => d.day != null).length;
   const networks = new Set(drafts.map((d) => d.network)).size;
@@ -128,42 +131,136 @@ function Kpis({ drafts, accent }: { drafts: Draft[]; accent: string }) {
     { label: 'Borradores', value: drafts.length, icon: <FileText className="h-4 w-4" />, hint: 'en este navegador' },
     { label: 'Programados', value: scheduled, icon: <CalendarDays className="h-4 w-4" /> },
     { label: 'Redes en uso', value: networks, icon: <Sparkles className="h-4 w-4" /> },
-    { label: 'Conexiones', value: '—', icon: <Plug className="h-4 w-4" />, hint: 'Conecta para publicar' },
+    { label: 'Seguidores', value: '—', icon: <Users className="h-4 w-4" />, hint: 'Al conectar tus redes' },
+    { label: 'Alcance', value: '—', icon: <TrendingUp className="h-4 w-4" />, hint: 'Al conectar tus redes' },
+    { label: 'Engagement', value: '—', icon: <Heart className="h-4 w-4" />, hint: 'Al conectar tus redes' },
   ];
   return <KpiRow items={items} accent={accent} />;
 }
 
-// ── Resumen ──────────────────────────────────────────────────────────────────
+// ── Resumen (dashboard fiel a la vista 16, con honestidad de datos) ───────────
 function Resumen({
   drafts, accent, onGo, onSchedule, onRemove,
 }: {
   drafts: Draft[]; accent: string; onGo: (v: View) => void;
   onSchedule: (id: string, day: number | null) => void; onRemove: (id: string) => void;
 }) {
-  const recent = [...drafts].sort((a, b) => b.createdAt - a.createdAt).slice(0, 4);
+  const upcoming = [...drafts].filter((d) => d.day != null).sort((a, b) => (a.day! - b.day!));
+  const byNetwork = NETWORKS.map((n) => ({ ...n, count: drafts.filter((d) => d.network === n.key).length }));
+  const maxCount = Math.max(1, ...byNetwork.map((n) => n.count));
+
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <h3 className="font-display text-lg font-semibold">Posts recientes</h3>
-        <p className="mb-4 text-sm text-muted-foreground">Lo último que generaste con Nopal.</p>
-        {recent.length === 0 ? (
-          <EmptyState
-            icon={Sparkles}
-            title="Aún no hay posts"
-            text="Dile un tema a Nopal y generará captions listos para publicar, con CTA y hashtags."
-            cta={{ label: 'Generar mi primer post', onClick: () => onGo('generador') }}
-            accent={accent}
-          />
-        ) : (
-          <div className="space-y-3">
-            {recent.map((d) => (
-              <DraftCard key={d.id} d={d} accent={accent} onSchedule={onSchedule} onRemove={onRemove} />
-            ))}
+    <div className="grid gap-5 lg:grid-cols-[1fr_330px]">
+      {/* Columna principal */}
+      <div className="space-y-5">
+        {/* Rendimiento — bloqueado hasta conectar (vista 16, sin números inventados) */}
+        <LockedPanel
+          icon={TrendingUp}
+          title="Rendimiento"
+          accent={accent}
+          message="Conecta tus redes para ver tu alcance, engagement e impresiones reales a lo largo del tiempo."
+        />
+
+        <div className="grid gap-5 md:grid-cols-2">
+          {/* Contenido por red — datos reales de tus borradores */}
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" style={{ color: accent }} />
+              <h3 className="font-display font-semibold">Tu contenido por red</h3>
+            </div>
+            {drafts.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">Aún no has generado contenido.</p>
+            ) : (
+              <div className="space-y-2.5">
+                {byNetwork.filter((n) => n.count > 0).map((n) => (
+                  <div key={n.key}>
+                    <div className="mb-1 flex items-center justify-between text-xs">
+                      <span className="font-medium" style={{ color: n.color }}>{n.label}</span>
+                      <span className="text-muted-foreground">{n.count}</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                      <div className="h-full rounded-full" style={{ width: `${(n.count / maxCount) * 100}%`, backgroundColor: n.color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Próximas publicaciones — datos reales (programadas) */}
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" style={{ color: accent }} />
+              <h3 className="font-display font-semibold">Próximas publicaciones</h3>
+            </div>
+            {upcoming.length === 0 ? (
+              <div className="py-6 text-center">
+                <p className="text-sm text-muted-foreground">Nada programado.</p>
+                <button onClick={() => onGo('calendario')} className="mt-2 text-xs font-medium" style={{ color: accent }}>Ir al calendario →</button>
+              </div>
+            ) : (
+              <ul className="space-y-2.5">
+                {upcoming.slice(0, 5).map((d) => (
+                  <li key={d.id} className="flex items-center gap-2.5">
+                    <span className="flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-lg text-[10px] font-semibold" style={{ backgroundColor: NET[d.network].color + '14', color: NET[d.network].color }}>
+                      {DAYS[d.day!]}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[11px] font-medium" style={{ color: NET[d.network].color }}>{NET[d.network].label}</span>
+                      <span className="block truncate text-xs text-muted-foreground">{d.content.split('\n')[0]}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Posts recientes */}
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <h3 className="mb-1 font-display text-lg font-semibold">Contenido reciente</h3>
+          {drafts.length === 0 ? (
+            <EmptyState
+              icon={Sparkles}
+              title="Aún no hay posts"
+              text="Dile un tema a Nopal y generará captions listos para publicar, con CTA y hashtags."
+              cta={{ label: 'Generar mi primer post', onClick: () => onGo('generador') }}
+              accent={accent}
+            />
+          ) : (
+            <div className="mt-3 space-y-3">
+              {[...drafts].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3).map((d) => (
+                <DraftCard key={d.id} d={d} accent={accent} onSchedule={onSchedule} onRemove={onRemove} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Columna lateral */}
       <aside className="space-y-5">
+        {/* Cuentas conectadas (vista 16) — honesto: ninguna conectada todavía */}
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <Plug className="h-4 w-4" style={{ color: accent }} />
+            <h3 className="font-display font-semibold">Cuentas conectadas</h3>
+          </div>
+          <ul className="space-y-2">
+            {NETWORKS.map((n) => (
+              <li key={n.key} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
+                <span className="inline-flex items-center gap-2 text-sm">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: n.color }} /> {n.label}
+                </span>
+                <Link href="/empresa" className="text-[11px] font-medium text-muted-foreground hover:text-foreground">Conectar</Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+            Al conectar (Fase F) se desbloquean publicación automática y métricas reales.
+          </p>
+        </div>
+
+        {/* Cómo trabaja Nopal */}
         <div className="rounded-2xl border border-border bg-card p-5">
           <h3 className="mb-2 font-display font-semibold">Cómo trabaja Nopal</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
@@ -172,13 +269,6 @@ function Resumen({
             <Step n={3} accent={accent}>Las guardas y programas en el calendario.</Step>
             <Step n={4} accent={accent}>Al conectar tus redes, publica por ti.</Step>
           </ul>
-        </div>
-        <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5">
-          <div className="flex items-center gap-2 text-sm font-medium"><Plug className="h-4 w-4" style={{ color: accent }} /> Publicación automática</div>
-          <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-            La publicación y la analítica real (engagement, alcance, top posts) se activan cuando conectas
-            Meta, TikTok o LinkedIn en Conexiones.
-          </p>
         </div>
       </aside>
     </div>
@@ -191,6 +281,29 @@ function Step({ n, accent, children }: { n: number; accent: string; children: Re
       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: accent }}>{n}</span>
       <span className="text-foreground/80">{children}</span>
     </li>
+  );
+}
+
+// Panel de analítica bloqueado hasta conectar (honesto: nunca números falsos)
+function LockedPanel({ icon: Icon, title, message, accent }: { icon: typeof TrendingUp; title: string; message: string; accent: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="mb-3 flex items-center gap-2">
+        <Icon className="h-4 w-4" style={{ color: accent }} />
+        <h3 className="font-display font-semibold">{title}</h3>
+      </div>
+      <div className="relative overflow-hidden rounded-xl border border-dashed border-border bg-muted/20">
+        {/* Línea base decorativa, claramente vacía (sin datos) */}
+        <svg viewBox="0 0 400 120" className="h-32 w-full opacity-30" preserveAspectRatio="none" aria-hidden>
+          <polyline fill="none" stroke={accent} strokeWidth="2" points="0,90 60,80 120,95 180,60 240,75 300,45 360,65 400,40" />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-card/40 px-6 text-center backdrop-blur-[1px]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground"><Lock className="h-4 w-4" /></span>
+          <p className="max-w-xs text-xs text-muted-foreground">{message}</p>
+          <Link href="/empresa" className="text-xs font-semibold" style={{ color: accent }}>Conectar redes →</Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
