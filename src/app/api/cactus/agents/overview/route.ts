@@ -18,7 +18,7 @@ export async function GET() {
   // Config efectiva (global, sobreescrita por empresa)
   const cfg: Record<string, any> = {};
   try {
-    const { data } = await supabase.from('agent_configs').select('slug, company_id, image_url, provider, model, prompt, display_name');
+    const { data } = await supabase.from('agent_configs').select('slug, company_id, image_url, video_url, provider, model, prompt, display_name');
     for (const r of (data || []).filter((x: any) => x.company_id === null)) cfg[r.slug] = { ...r };
     for (const r of (data || []).filter((x: any) => x.company_id === companyId)) cfg[r.slug] = { ...(cfg[r.slug] || {}), ...r };
   } catch { /* tabla ausente */ }
@@ -41,6 +41,7 @@ export async function GET() {
       role: a.role,
       color: a.color,
       image: c.image_url || a.image,
+      video: c.video_url || null,
       provider: c.provider || null,
       model: c.model || null,
       hasPrompt: !!(c.prompt && String(c.prompt).trim()),

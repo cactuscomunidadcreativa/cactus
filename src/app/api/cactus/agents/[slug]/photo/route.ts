@@ -11,7 +11,10 @@ export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 const BUCKET = 'agent-images';
-const EXT: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' };
+const EXT: Record<string, string> = {
+  'image/png': 'png', 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif',
+  'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov',
+};
 
 // POST (multipart: file) ?scope=company|global → sube la foto y la guarda en agent_configs.
 export async function POST(req: Request, { params }: { params: { slug: string } }) {
@@ -34,8 +37,10 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
   let file: File | null = null;
   try { const form = await req.formData(); file = form.get('file') as File | null; } catch { return NextResponse.json({ ok: false, error: 'Archivo inválido.' }, { status: 400 }); }
   if (!file || typeof file.arrayBuffer !== 'function') return NextResponse.json({ ok: false, error: 'Falta el archivo.' }, { status: 400 });
-  if (file.size > 6 * 1024 * 1024) return NextResponse.json({ ok: false, error: 'Máximo 6 MB.' }, { status: 400 });
-  const ext = EXT[file.type] || 'png';
+  const isVideo = (file.type || '').startsWith('video/');
+  const maxMB = isVideo ? 50 : 6;
+  if (file.size > maxMB * 1024 * 1024) return NextResponse.json({ ok: false, error: `Máximo ${maxMB} MB.` }, { status: 400 });
+  const ext = EXT[file.type] || (isVideo ? 'mp4' : 'png');
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -53,9 +58,10 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
   const pub = admin.storage.from(BUCKET).getPublicUrl(path);
   const publicUrl = pub.data.publicUrl;
 
-  // Guarda la URL en el nivel correcto (RLS del usuario aplica)
-  const saved = await saveAgentConfig(supabase, scope === 'global' ? null : companyId, params.slug, { image_url: publicUrl });
-  if (!saved) return NextResponse.json({ ok: false, error: 'La foto se subió pero no se pudo guardar en el agente (¿permisos?).', url: publicUrl }, { status: 500 });
+  // Guarda la URL en el nivel correcto (RLS del usuario aplica). Foto o video.
+  const field = isVideo ? 'video_url' : 'image_url';
+  const saved = await saveAgentConfig(supabase, scope === 'global' ? null : companyId, params.slug, { [field]: publicUrl });
+  if (!saved) return NextResponse.json({ ok: false, error: 'Se subió pero no se pudo guardar en el agente (¿permisos?).', url: publicUrl }, { status: 500 });
 
-  return NextResponse.json({ ok: true, url: publicUrl });
+  return NextResponse.json({ ok: true, url: publicUrl, kind: isVideo ? 'video' : 'image' });
 }

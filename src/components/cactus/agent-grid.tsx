@@ -21,7 +21,7 @@ const STATUS_STYLE: Record<string, string> = {
   soon: 'bg-black/55 text-white',
 };
 
-function AgentCard({ agent, index = 0, imageOverride }: { agent: CactusAgent; index?: number; imageOverride?: string }) {
+function AgentCard({ agent, index = 0, imageOverride, videoOverride }: { agent: CactusAgent; index?: number; imageOverride?: string; videoOverride?: string }) {
   const t = useTranslations('ecosystem');
   const operable = agent.status !== 'soon';
   const hasCard = AGENTS_WITH_CARD.has(agent.slug);
@@ -37,7 +37,10 @@ function AgentCard({ agent, index = 0, imageOverride }: { agent: CactusAgent; in
         className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-border bg-white card-glow transition-colors duration-300 group-hover:border-transparent"
         style={{ ['--tw-shadow-color' as string]: agent.color + '40' }}
       >
-        {useCard ? (
+        {videoOverride ? (
+          // Animación del agente (autoplay silenciado en loop)
+          <video src={videoOverride} autoPlay muted loop playsInline preload="metadata" className="absolute inset-0 h-full w-full object-contain" />
+        ) : useCard ? (
           // Tarjeta completa, tamaño uniforme y sin recortar (object-contain)
           <Image
             src={cardSrc}
@@ -85,19 +88,19 @@ function AgentCard({ agent, index = 0, imageOverride }: { agent: CactusAgent; in
   return agent.href ? <Link href={agent.href} className="block">{inner}</Link> : <div>{inner}</div>;
 }
 
-function Grid({ items, images }: { items: CactusAgent[]; images?: Record<string, string> }) {
+function Grid({ items, images, videos }: { items: CactusAgent[]; images?: Record<string, string>; videos?: Record<string, string> }) {
   return (
     <Stagger className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
       {items.map((a, i) => (
         <StaggerItem key={a.slug}>
-          <AgentCard agent={a} index={i} imageOverride={images?.[a.slug]} />
+          <AgentCard agent={a} index={i} imageOverride={images?.[a.slug]} videoOverride={videos?.[a.slug]} />
         </StaggerItem>
       ))}
     </Stagger>
   );
 }
 
-export function AgentGrid({ images = {} }: { images?: Record<string, string> }) {
+export function AgentGrid({ images = {}, videos = {} }: { images?: Record<string, string>; videos?: Record<string, string> }) {
   const t = useTranslations('ecosystem');
   const [filter, setFilter] = useState<DivisionKey | 'all'>('all');
 
@@ -143,13 +146,13 @@ export function AgentGrid({ images = {} }: { images?: Record<string, string> }) 
                   <span className="hidden text-xs text-muted-foreground sm:inline">· {t(`divisions.${key}.tagline`)}</span>
                   <span className="ml-auto text-xs text-muted-foreground">{items.length}</span>
                 </div>
-                <Grid items={items} images={images} />
+                <Grid items={items} images={images} videos={videos} />
               </section>
             );
           })}
         </div>
       ) : (
-        <Grid items={AGENTS.filter((a) => a.division === filter)} images={images} />
+        <Grid items={AGENTS.filter((a) => a.division === filter)} images={images} videos={videos} />
       )}
     </div>
   );

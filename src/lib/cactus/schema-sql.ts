@@ -782,4 +782,7 @@ CREATE POLICY agent_configs_read ON public.agent_configs FOR SELECT
 CREATE POLICY agent_configs_write ON public.agent_configs FOR ALL
   USING ((company_id IS NOT NULL AND company_id IN (SELECT public.cactus_company_ids())) OR public.is_super_admin())
   WITH CHECK ((company_id IS NOT NULL AND company_id IN (SELECT public.cactus_company_ids())) OR public.is_super_admin());
+
+-- Video de animación por agente (043)
+ALTER TABLE public.agent_configs ADD COLUMN IF NOT EXISTS video_url text;
 `;

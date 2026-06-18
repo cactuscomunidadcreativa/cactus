@@ -5,7 +5,7 @@ import { Reveal, Counter } from '@/components/marketing/motion';
 import { AGENTS, DIVISION_ORDER } from '@/lib/cactus/agents-catalog';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
-import { getEffectiveAgentImages } from '@/lib/cactus/agent-images';
+import { getEffectiveAgentMedia } from '@/lib/cactus/agent-images';
 
 export const metadata = {
   title: 'Ecosistema · Cactus Comunidad Creativa',
@@ -16,13 +16,15 @@ const liveCount = AGENTS.filter((a) => a.status !== 'soon').length;
 export default async function EcosystemPage() {
   const t = await getTranslations('ecosystem');
 
-  // Fotos efectivas (empresa sobre global) para que se reflejen los cambios del editor
+  // Foto + video efectivos (empresa sobre global) para reflejar los cambios del editor
   const supabase = await createClient();
   let images: Record<string, string> = {};
+  let videos: Record<string, string> = {};
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
     const companyId = user ? await getActiveCompanyId(supabase, user.id) : null;
-    images = await getEffectiveAgentImages(supabase, companyId);
+    const media = await getEffectiveAgentMedia(supabase, companyId);
+    images = media.images; videos = media.videos;
   }
 
   return (
@@ -94,7 +96,7 @@ export default async function EcosystemPage() {
             {t('team.subtitle')}
           </p>
         </Reveal>
-        <AgentGrid images={images} />
+        <AgentGrid images={images} videos={videos} />
       </section>
     </div>
   );

@@ -6,7 +6,7 @@ import { canManageCompany } from '@/lib/cactus/rbac';
 import { isSuperAdmin } from '@/lib/admin/auth';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 
-const EDITABLE = ['display_name', 'description', 'image_url', 'provider', 'model', 'prompt', 'custom_instructions', 'culture_prompt', 'company_tone', 'company_values', 'industry_context', 'is_active'];
+const EDITABLE = ['display_name', 'description', 'image_url', 'video_url', 'provider', 'model', 'prompt', 'custom_instructions', 'culture_prompt', 'company_tone', 'company_values', 'industry_context', 'is_active'];
 
 function defaults(agent: any) {
   return { slug: agent.slug, name: agent.name, role: agent.role, description: agent.description, image: agent.image, color: agent.color };

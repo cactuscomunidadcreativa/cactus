@@ -3,16 +3,16 @@ import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveAgentImages } from '@/lib/cactus/agent-images';
+import { getEffectiveAgentMedia } from '@/lib/cactus/agent-images';
 import { AGENTS, DIVISIONS, DIVISION_ORDER, AGENTS_WITH_CARD } from '@/lib/cactus/agents-catalog';
 
 export default async function AppsMarketplacePage() {
   const t = await getTranslations('home.appsPage');
   const te = await getTranslations('ecosystem');
 
-  // Fotos efectivas de nivel global "Cactus" (página pública → sin empresa)
+  // Foto + video efectivos de nivel global "Cactus" (página pública → sin empresa)
   const supabase = await createClient();
-  const images = supabase ? await getEffectiveAgentImages(supabase, null) : {};
+  const { images, videos } = supabase ? await getEffectiveAgentMedia(supabase, null) : { images: {}, videos: {} };
 
   return (
     <div className="bg-background">
@@ -54,7 +54,9 @@ export default async function AppsMarketplacePage() {
                     const body = (
                       <>
                         <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-border bg-white">
-                          <Image src={cardImg} alt={a.name} fill sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" className="object-contain" />
+                          {videos[a.slug]
+                            ? <video src={videos[a.slug]} autoPlay muted loop playsInline preload="metadata" className="absolute inset-0 h-full w-full object-contain" />
+                            : <Image src={cardImg} alt={a.name} fill sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" className="object-contain" />}
                         </div>
                         <div className="mt-2.5 text-center">
                           <p className="font-display text-sm font-bold leading-tight">{a.name}</p>

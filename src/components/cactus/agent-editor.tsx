@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Loader2, Save, ArrowLeft, KeyRound, Plus, Trash2, Upload } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, KeyRound, Plus, Trash2, Upload, Film } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props { slug: string }
@@ -17,7 +17,8 @@ export function AgentEditor({ slug }: Props) {
   const [defaults, setDefaults] = useState<any>(null);
   const [canManage, setCanManage] = useState(false);
   const [isSuper, setIsSuper] = useState(false);
-  const [scope, setScope] = useState<'company' | 'global'>('company');
+  // Por defecto GLOBAL: un cambio (foto/persona/video) aplica en todos lados.
+  const [scope, setScope] = useState<'company' | 'global'>('global');
   const [form, setForm] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,6 +29,8 @@ export function AgentEditor({ slug }: Props) {
     setLoading(true);
     const r = await fetch(`/api/cactus/agents/${slug}?scope=${sc}`);
     const d = await r.json();
+    // No super-admin no edita global → cae a "Mi empresa" automáticamente
+    if (sc === 'global' && !d.isSuper) { setIsSuper(false); setScope('company'); return; }
     setDefaults(d.defaults || null);
     setCanManage(!!d.canManage);
     setIsSuper(!!d.isSuper);
@@ -55,8 +58,8 @@ export function AgentEditor({ slug }: Props) {
       const fd = new FormData(); fd.append('file', file);
       const r = await fetch(`/api/cactus/agents/${slug}/photo?scope=${scope}`, { method: 'POST', body: fd });
       const d = await r.json();
-      if (d.ok && d.url) set('image_url', d.url);
-      else setMsg(d.error || 'No se pudo subir la foto.');
+      if (d.ok && d.url) set(d.kind === 'video' ? 'video_url' : 'image_url', d.url);
+      else setMsg(d.error || 'No se pudo subir el archivo.');
     } finally { setUploading(false); }
   }
 
@@ -102,6 +105,18 @@ export function AgentEditor({ slug }: Props) {
             </label>
           </div>
           <input value={form.image_url || ''} onChange={(e) => set('image_url', e.target.value)} disabled={ro} placeholder="…o pega una URL de imagen" className={`${inputCls} mt-2`} />
+        </Field>
+        <Field label="Animación (video, opcional · mp4/webm, máx 50 MB)">
+          <div className="flex items-center gap-3">
+            {form.video_url
+              ? <video src={form.video_url} autoPlay muted loop playsInline className="h-14 w-14 rounded-lg border border-border object-cover" />
+              : <span className="flex h-14 w-14 items-center justify-center rounded-lg border border-dashed border-border text-[10px] text-muted-foreground">sin video</span>}
+            <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted ${ro ? 'pointer-events-none opacity-60' : ''}`}>
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Film className="h-4 w-4" />} Subir video
+              <input type="file" accept="video/*" className="hidden" disabled={ro} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); }} />
+            </label>
+          </div>
+          <input value={form.video_url || ''} onChange={(e) => set('video_url', e.target.value)} disabled={ro} placeholder="…o pega una URL de video" className={`${inputCls} mt-2`} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Nombre">

@@ -16,8 +16,10 @@ export function OpsCenter() {
         <Link key={a.slug} href={`/empresa/agentes/${a.slug}`}
           className="group rounded-2xl border border-border bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-cactus-green/40">
           <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-white">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={a.image} alt={a.name} className="h-full w-full object-contain" />
+            {a.video
+              ? <video src={a.video} autoPlay muted loop playsInline preload="metadata" className="h-full w-full object-contain" />
+              /* eslint-disable-next-line @next/next/no-img-element */
+              : <img src={a.image} alt={a.name} className="h-full w-full object-contain" />}
             <span className={`absolute right-2 top-2 h-2.5 w-2.5 rounded-full ${a.isActive ? 'bg-cactus-green' : 'bg-muted-foreground/40'}`} title={a.isActive ? 'Encendido' : 'Apagado'} />
             <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/55 px-1.5 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
               <Pencil className="h-3 w-3" /> Editar

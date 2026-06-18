@@ -116,6 +116,7 @@ export interface AgentConfigOverride {
   display_name?: string | null;
   description?: string | null;
   image_url?: string | null;
+  video_url?: string | null;
   prompt?: string | null;
   custom_instructions?: string | null;
   culture_prompt?: string | null;
@@ -125,7 +126,7 @@ export interface AgentConfigOverride {
   is_active?: boolean;
 }
 
-const CONFIG_FIELDS = ['provider', 'model', 'display_name', 'description', 'image_url', 'prompt', 'custom_instructions', 'culture_prompt', 'company_tone', 'company_values', 'industry_context', 'is_active'] as const;
+const CONFIG_FIELDS = ['provider', 'model', 'display_name', 'description', 'image_url', 'video_url', 'prompt', 'custom_instructions', 'culture_prompt', 'company_tone', 'company_values', 'industry_context', 'is_active'] as const;
 
 /** Fila de config de un agente en un nivel: empresa (companyId) o global (companyId=null). */
 export async function getAgentConfigRow(db: DB, companyId: string | null, slug: string): Promise<AgentConfigOverride | null> {
