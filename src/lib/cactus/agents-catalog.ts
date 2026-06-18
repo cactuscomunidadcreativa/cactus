@@ -169,14 +169,14 @@ export const AGENTS: CactusAgent[] = [
     description: 'Reels, comerciales, TikToks, videos corporativos y storyboards. Usa guiones de Pitaya y fotos de Lente.',
     tools: ['Storyboards', 'Avatares'],
     models: ['Kling', 'Runway', 'Google Veo'],
-    emoji: '🎬', color: '#8B5CF6', image: img('candelabro'), status: 'soon',
+    emoji: '🎬', color: '#8B5CF6', image: img('candelabro'), status: 'live', href: '/apps/candelabro',
   },
   {
     slug: 'sanpedro', name: 'San Pedro', role: 'Animator', division: 'media',
     description: 'Motion graphics, logos animados, transiciones, personajes, intros y microanimaciones.',
     tools: ['Cardón', 'Astrophytum', 'Candelabro'],
     models: ['Runway', 'Kling', 'Luma'],
-    emoji: '✨', color: '#7C3AED', image: img('sanpedro'), status: 'soon',
+    emoji: '✨', color: '#7C3AED', image: img('sanpedro'), status: 'live', href: '/apps/sanpedro',
   },
   {
     slug: 'garambullo', name: 'Garambullo', role: 'Voice & Audio Studio', division: 'media',
@@ -190,7 +190,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Jingles, música, sound design, ambientación y audio branding. Entrega pistas a Candelabro.',
     tools: ['Sound design', 'Audio branding'],
     models: ['Google Lyria', 'Suno', 'Udio'],
-    emoji: '🎵', color: '#5B21B6', image: img('pereskia'), status: 'soon',
+    emoji: '🎵', color: '#5B21B6', image: img('pereskia'), status: 'live', href: '/apps/pereskia',
   },
 
   // ─── AVATAR STUDIO ────────────────────────────────────────────────────────
