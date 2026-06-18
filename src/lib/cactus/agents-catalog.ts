@@ -116,7 +116,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Cotizaciones, contratos base, términos, acuerdos y órdenes de servicio.',
     tools: ['Docs', 'PDF', 'Drive'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '📄', color: '#65A30D', image: img('ferocactus'), status: 'soon',
+    emoji: '📄', color: '#65A30D', image: img('ferocactus'), status: 'live', href: '/apps/ferocactus',
   },
 
   // ─── AGENCY ───────────────────────────────────────────────────────────────
