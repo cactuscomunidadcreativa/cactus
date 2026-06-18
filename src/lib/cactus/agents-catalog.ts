@@ -265,7 +265,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Metas, foco, bienestar, capacitación, rutinas y seguimiento personal y de equipos.',
     tools: ['Calendar', 'WeekFlow'],
     models: ['GPT', 'Claude', 'Gemini'],
-    emoji: '🧘', color: '#10B981', image: img('yuca'), status: 'soon', reuses: 'weekflow',
+    emoji: '🧘', color: '#10B981', image: img('yuca'), status: 'live', href: '/apps/yuca',
   },
   {
     slug: 'huernia', name: 'Huernia', role: 'Legal & Compliance', division: 'people',
