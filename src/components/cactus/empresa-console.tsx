@@ -109,7 +109,40 @@ function AgentesTab() {
   );
 }
 
-// ── Consumo (cuota + por agente) ────────────────────────────────────────────
+// ── Consumo (modo + cuota + por agente) ─────────────────────────────────────
+const MODES: { key: string; label: string; hint: string }[] = [
+  { key: 'ahorro', label: '💸 Ahorro', hint: 'modelo barato, respuestas más cortas' },
+  { key: 'equilibrio', label: '⚖️ Equilibrio', hint: 'modelo por defecto' },
+  { key: 'calidad', label: '✨ Calidad', hint: 'modelo premium, más profundo' },
+];
+
+function ModeSelector() {
+  const [mode, setMode] = useState<string | null>(null);
+  const [canManage, setCanManage] = useState(false);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { fetch('/api/cactus/company/mode').then((r) => r.json()).then((d) => { setMode(d.mode); setCanManage(!!d.canManage); }); }, []);
+  async function pick(m: string) {
+    if (!canManage || m === mode) return;
+    setBusy(true); const prev = mode; setMode(m);
+    try { const r = await fetch('/api/cactus/company/mode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: m }) }); if (!r.ok) setMode(prev); }
+    finally { setBusy(false); }
+  }
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <p className="mb-2 text-sm font-medium">Modo de IA {!canManage && <span className="text-xs font-normal text-muted-foreground">(solo owner/admin)</span>}</p>
+      <div className="flex flex-wrap gap-2">
+        {MODES.map((m) => (
+          <button key={m.key} onClick={() => pick(m.key)} disabled={busy || !canManage}
+            title={m.hint}
+            className={`rounded-lg border px-3 py-1.5 text-sm transition-colors disabled:opacity-60 ${mode === m.key ? 'border-cactus-green bg-cactus-green/10 text-cactus-green' : 'border-border hover:bg-muted'}`}>
+            {m.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ConsumoTab() {
   const [data, setData] = useState<any | null>(null);
   useEffect(() => { fetch('/api/cactus/usage').then((r) => r.json()).then(setData); }, []);
@@ -118,6 +151,7 @@ function ConsumoTab() {
   const pct = q.limit > 0 ? Math.min(100, Math.round((q.used / q.limit) * 100)) : 0;
   return (
     <div className="space-y-5">
+      <ModeSelector />
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-medium">Plan {data.plan?.name || '—'}</span>

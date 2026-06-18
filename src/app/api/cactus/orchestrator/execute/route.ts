@@ -15,6 +15,7 @@ import { raiseAlert } from '@/lib/cactus/alerts';
 import { retrieveContext } from '@/lib/cactus/rag';
 import { runWithSubAgents } from '@/lib/cactus/subagents';
 import { recordModelUsage } from '@/lib/cactus/audit';
+import { resolveMode, planForMode, hashKey, getCached, setCached } from '@/lib/cactus/resource-engine';
 
 export const maxDuration = 60;
 
@@ -121,7 +122,7 @@ export async function POST(req: Request) {
 
     // Ejecución v2 (Fase C): modo profundo = sub-agentes acotados (opt-in body.deep)
     const deep = !!body?.deep;
-    let content: string, provider: string, model: string, inTok = 0, outTok = 0, subCount = 0;
+    let content: string, provider: string, model: string, inTok = 0, outTok = 0, subCount = 0, cached = false;
     if (deep) {
       const r = await runWithSubAgents({ system, action: task.action, objective: project.objective || '', max: 3 });
       content = r.content; subCount = r.subCount;
@@ -129,12 +130,23 @@ export async function POST(req: Request) {
       const last = r.usages[r.usages.length - 1];
       provider = last?.provider || 'claude'; model = last?.model || provider;
     } else {
-      const res = await generateContent({
-        prompt: agentTaskPrompt({ action: task.action, objective: project.objective }),
-        systemPrompt: system, maxTokens: 1200, temperature: 0.7,
-      });
-      content = res.content; provider = res.provider; model = res.model;
-      inTok = res.inputTokens; outTok = res.outputTokens;
+      // Motor de recursos (Fase D): caché de respuestas + nivel por modo de la empresa
+      const mode = await resolveMode(supabase, companyId);
+      const plan = planForMode(mode);
+      const taskPrompt = agentTaskPrompt({ action: task.action, objective: project.objective });
+      const cacheKey = hashKey(`${task.agent_slug}|${mode}|${system}|${taskPrompt}`);
+      const hit = await getCached(supabase, companyId, cacheKey);
+      if (hit) {
+        content = hit.content; provider = 'cache'; model = hit.model || 'cache'; cached = true;
+      } else {
+        const res = await generateContent({
+          prompt: taskPrompt, systemPrompt: system, provider: plan.provider,
+          maxTokens: Math.round(1200 * plan.maxTokensFactor), temperature: 0.7,
+        });
+        content = res.content; provider = res.provider; model = res.model;
+        inTok = res.inputTokens; outTok = res.outputTokens;
+        await setCached(supabase, companyId, cacheKey, content, model, task.agent_slug);
+      }
     }
 
     const costUsd = estimateCostUsd({
@@ -152,14 +164,14 @@ export async function POST(req: Request) {
     const { data: deliv } = await supabase.from('cactus_deliverables').insert({
       user_id: user.id, project_id: projectId, task_id: task.id, agent_slug: task.agent_slug,
       title: task.action.slice(0, 80), kind: deliverableKind(task.agent_slug), status: 'ready',
-      content, meta: { credits, model, deep, subCount }, ...(companyId ? { company_id: companyId } : {}),
+      content, meta: { credits, model, deep, subCount, cached }, ...(companyId ? { company_id: companyId } : {}),
     }).select('id').single();
 
     // Auditoría granular (Fase C)
     await recordModelUsage(supabase, {
       companyId, userId: user.id, agentSlug: task.agent_slug, provider, model,
       kind: deep ? 'subagent' : 'agent_run', tokensIn: inTok, tokensOut: outTok, costUsd, credits,
-      projectId, taskId: task.id, deliverableId: deliv?.id || null, meta: { deep, subCount },
+      projectId, taskId: task.id, deliverableId: deliv?.id || null, meta: { deep, subCount, cached },
     });
 
     await supabase.from('cactus_project_tasks').update({ status: 'done', progress: 100 }).eq('id', task.id);
