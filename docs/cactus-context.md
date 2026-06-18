@@ -5,7 +5,7 @@
 > del final en la ventana nueva. Fuentes de verdad: `docs/cactus-master-spec.md` (spec completo,
 > Parte 4 = la vista de cada agente), `docs/cactus-os-roadmap.md` (roadmap), y la memoria del proyecto.
 
-Última actualización: 2026-06-18.
+Última actualización: 2026-06-18 (tras completar Fase G de apps + lector de documentos + imagen gen/edit + gestor de empresas).
 
 ## Qué es Cactus
 **Sistema Operativo de IA para negocios.** Cada cliente registra sus **empresas**; cada empresa tiene un
@@ -44,15 +44,22 @@ su contexto autorizado, y todo entregable queda versionado, medido en créditos 
 - **Centro de Operaciones** `/empresa/centro`: grilla de los 28 con estado actual → editar.
 - **Foto/video efectivos en TODOS lados**: `/ecosystem`, dashboard, `/agent/[slug]`, y **`/apps` público** (tarjetas de agentes automáticas + "Probar demo"; reproducen video si hay). `next.config` remotePatterns `*.supabase.co`.
 
-## LO QUE FALTA
-1. **MODO PROFUNDO (sub-agentes) — UI** *(próximo #1)*. Motor LISTO: `execute` corre `runWithSubAgents` si `body.deep===true`. Falta el toggle:
-   - `src/components/cactus/orchestrator/use-orchestrator.ts`: `step()` hace POST a `/execute` con `{projectId, taskId}`; agregar `deep` al body (estado del hook + setter expuesto).
-   - `src/components/cactus/orchestrator/ramona-workspace.tsx`: switch "Modo profundo" que setea ese estado.
-   - Opt-in (costo: ~6 llamadas LLM/tarea).
-2. **FASE F · Integraciones reales** (agentes que ACTÚAN). Estructura lista (`connections/channels/domains` + `crypto.ts`). **OAuth (Meta/Google/LinkedIn) requiere que Eduardo registre apps OAuth y dé client_id/secret/redirect** — no se puede sin eso. El path **"API key cifrada"** (WhatsApp token, SMTP, Resend) sí. Integración real = por proveedor (grande).
-3. **FASE G · 28 apps de agente + super-dashboard + marketplace** *(próximo #2, por lotes)*. Shell **`src/components/cactus/app-shell/AgentAppShell`** ya existe. Construir el cuerpo de cada agente según **`docs/cactus-master-spec.md` Parte 4** (patrón A/B/C + qué muestra). `/agent/[slug]` ya tiene consola básica. Hacer por lotes (4–5 agentes/sesión), reutilizando módulos portados de ROWI/CAARD/EGO/Privat.
+## HECHO en sesiones recientes (todo LIVE en Vercel)
+- **Modo profundo (sub-agentes)**: toggle cableado en el workspace de Ramona (`use-orchestrator` + `ramona-workspace`).
+- **FASE G — apps de agente: COMPLETA** (todos los agentes con vista propia tienen app, sobre `AgentAppShell`, fieles a su `vistaN`). Apps nuevas: **Nopal**(16), **Pitaya**(21), **Cholla**, **Biznaga**(1), **Ferocactus**(12), **Opuntia**(5/17, tienda multipágina+productos), **Yuca**(espacio personal: salud/métricas/dieta/meditar/chat), **Maguey**(15), **Aloe**(8), **Ocotillo**(18), **Huernia**(14), **Echinocereus**(11), **Candelabro**(4), **San Pedro**(23), **Pereskia**(19), **Ariocarpus**(7). Ya tenían superficie: Agave/Tuna/Pita/Cereus/Saguaro/Garambullo(/voice)/Cerebro(/brain)/Ramona(/orchestrator)/Peyote(/campaign). Patrón: KPIs reales + pipeline/estado (CRUD localStorage) + acción IA + estados "Conectar" honestos para lo que necesita Fase F.
+- **Lector de documentos (sin IA) para TODOS**: `doc-extract.ts` (PDF con pdf.js, imagen con OCR tesseract.js, **Excel multi-hoja** con xlsx) + `health-markers.ts` (rangos clínicos). En la consola universal `/agent/[slug]` (botón Adjuntar) y dentro de apps clave (Yuca/Ferocactus/Biznaga/Pitaya/Cholla/Maguey/Ocotillo/Huernia) vía `DocAttach`+`withDoc`.
+- **Imagen real (gpt-image-1)**: generar (`/api/cactus/design`) + **editar** (`/api/cactus/design/edit`). **Creative Workspace** (preview grande + chat de cambios + ajustes sin IA) para **Cardón/Lente/Astrophytum/Ariocarpus** (generas/subes tu foto → preview → pides cambios → sigues). Ajustes locales (recorte/rotar/filtros) = gratis sin IA.
+- **Gestor de empresas en `/brain`**: crear/ver/cambiar empresas + marcas por empresa (`CompaniesManager` + `/api/cactus/companies/create` service-role). Una cuenta = varias empresas.
 
-## PRÓXIMO (elegido por Eduardo): **(1) Modo profundo** y **(2) Fase G**. Empezar por modo profundo.
+## LO QUE FALTA (orden acordado con Eduardo)
+1. **CABLEO Brand Kit → empresa activa** *(próximo #1, chico)*. Hoy `cactus_brand_kits` se guarda por `user_id`; el form de `/brain` debe setear `company_id = empresa activa` al crear/editar una marca, para que el conteo/chips por empresa del gestor sea exacto. Tocar `brand-kit-form.tsx` + su API.
+2. **SUPER-DASHBOARD del grafo de agentes** *(próximo #2)*. Vista mapa: los 28 agentes, su estado (activo/apagado/plan) y las **conexiones "habla con"** (delegación/dependencia/escala a Ramona). Datos: catálogo (`agents-catalog` campo "habla con" del master-spec Parte 4) + `agent_configs`. Es el centro de control del ecosistema. (Va junto al **marketplace** de agentes.)
+3. **FASE F · Integraciones reales** *(próximo #3, grande, requiere a Eduardo)*. Conectar servicios: **pagos** (Stripe/MercadoPago → checkout de Opuntia), **dominio** (publicar sitios), **Ads** (Meta/Google/LinkedIn/TikTok → Cholla), **Search Console** (Echinocereus), **render video/audio** (Kling/Runway/Veo/Suno → Candelabro/SanPedro/Pereskia), **WhatsApp/email** (Aloe/Nopal publicar), **3D** (Meshy/Tripo → Astrophytum imprimible). Estructura `connections/channels/domains`+`crypto.ts` lista. **Necesita que Eduardo registre apps OAuth y/o dé API keys por proveedor.** El path "API key cifrada" se puede sin OAuth.
+
+## También en backlog (de la visión de Eduardo, aún NO hechos)
+- **Plantillas editables tipo Canva** (Cardón): reconocer/crear plantilla + editar texto/fuentes por capas.
+- **Composición por capas** (Lente): avatar + pose + escena/props como elementos separables (hoy es "describe el cambio").
+- Persona EQ/permanente de agentes vía editor; inbox de leads del form de contacto de Opuntia.
 
 ## Referencia rápida
 - **Migraciones**: `supabase/migrations/034`–`043` (+ espejo en `src/lib/cactus/schema-sql.ts`).
@@ -71,23 +78,35 @@ Trabajo en Cactus (Next.js + Supabase) en ~/Desktop/cactus — un "AI Business O
 28 agentes-cactus que Ramona coordina. LEE PRIMERO docs/cactus-context.md (estado completo + método)
 y docs/cactus-master-spec.md Parte 4 (la vista de cada agente) + la memoria del proyecto.
 
-Estado: Fases A–E del roadmap COMPLETAS y desplegadas (multiempresa+RBAC, Cerebro RAG/pgvector,
-ejecución v2/versionado/sub-agentes, recursos+caché+modos, aprendizaje) + editor de agentes global
-(foto/video/persona/modelo/credenciales cifradas) + Centro de Operaciones + /apps por tarjetas
-automáticas. BD aplicada (migraciones 034–043, "184/184 OK").
+Estado: Fases A–E COMPLETAS y desplegadas (multiempresa+RBAC, Cerebro RAG/pgvector, ejecución v2/
+sub-agentes, recursos+caché, aprendizaje) + editor de agentes global + Modo profundo. **FASE G de
+apps de agente: COMPLETA** (16 apps nuevas sobre AgentAppShell, fieles a sus vistas: Nopal, Pitaya,
+Cholla, Biznaga, Ferocactus, Opuntia[tienda], Yuca[espacio personal], Maguey, Aloe, Ocotillo,
+Huernia, Echinocereus, Candelabro, San Pedro, Pereskia, Ariocarpus). Extras LIVE: lector de
+documentos sin IA (PDF/OCR/Excel) en /agent/[slug] y apps clave; imagen real gen+edit (gpt-image-1)
+con Creative Workspace en Cardón/Lente/Astrophytum/Ariocarpus; gestor de empresas en /brain. BD
+"184/184 OK" (migraciones 034–043; lo nuevo de esta etapa NO necesitó migración).
 
 Stack fijo: Next.js + Supabase (Postgres + pgvector) + router de IA propio. Deploy: push a main =
 Vercel auto-deploy; la BD la aplica Eduardo con el botón "Desplegar base de datos" (corre
 src/lib/cactus/schema-sql.ts, ESPEJO de supabase/migrations/*). TODA migración nueva se espeja en
 schema-sql.ts en orden.
 
-Método: UNA acción a la vez → npm run build (verificar EXIT CODE REAL, NO con | tail; rm -rf .next
-para build limpio) → push a main → confirmar deploy con gh api .../commits/<sha>/status → confirmo yo.
-Commitea SOLO tus archivos; NO toques public/agents/New ni public/vistas.
+Método: UNA acción a la vez → npm run build (EXIT CODE REAL, NO con | tail; rm -rf .next + a veces
+node_modules/.cache porque el build de Next es FLAKY: ENOENT pages-manifest / Cannot find module /
+ECANCELED → reintentar limpio da EXIT 0; usar NODE_OPTIONS=--max-old-space-size=6144) → push a main
+→ confirmar deploy con gh api repos/cactuscomunidadcreativa/cactus/commits/<sha>/status=success →
+confirmo yo. Commitea SOLO tus archivos; NO toques public/agents/New ni public/vistas.
 
-ARRANCA con: (1) MODO PROFUNDO — toggle de sub-agentes en el workspace de Ramona. El motor ya existe
-(execute corre runWithSubAgents si body.deep===true); falta cablear el toggle en
-use-orchestrator.ts (step → body.deep) + ramona-workspace.tsx (switch "Modo profundo"). Opt-in
-(~6 llamadas LLM/tarea). Luego (2) FASE G — construir las apps de cada agente sobre AgentAppShell
-por lotes (4–5 por sesión), según docs/cactus-master-spec.md Parte 4. Confírmame entre acciones.
+Patrón de app de agente: page server en src/app/(app)/apps/<slug>/page.tsx (auth-gate + foto efectiva
++ créditos) → componente cliente sobre AgentAppShell (KPIs reales + pipeline/estado CRUD localStorage
++ acción IA vía POST /api/cactus/agent {slug,messages,maxTokens?} + DocAttach donde aplique). Lo que
+necesita servicios externos va como panel "Conectar" honesto (Fase F).
+
+ARRANCA con, EN ESTE ORDEN (acordado con Eduardo): (1) CABLEO Brand Kit → empresa activa (el form de
+/brain debe setear company_id = empresa activa al guardar marca; tocar brand-kit-form.tsx + su API).
+(2) SUPER-DASHBOARD del grafo de agentes (mapa: 28 agentes + estado + conexiones "habla con" del
+master-spec Parte 4) + marketplace. (3) FASE F integraciones reales (pagos/dominio/Ads/Search Console/
+render video-audio/WhatsApp-email/3D) — requiere que Eduardo registre apps OAuth / dé API keys por
+proveedor. Confírmame entre acciones.
 ```
