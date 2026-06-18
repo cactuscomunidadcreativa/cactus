@@ -258,7 +258,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Perfiles, entrevistas, filtros, evaluaciones, shortlists y seguimiento de candidatos.',
     tools: ['LinkedIn', 'Gmail', 'ATS', 'Calendar'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '🧑‍💼', color: '#0EA5A0', image: img('ocotillo'), status: 'soon',
+    emoji: '🧑‍💼', color: '#0EA5A0', image: img('ocotillo'), status: 'live', href: '/apps/ocotillo',
   },
   {
     slug: 'yuca', name: 'Yuca', role: 'Productividad & Hábitos', division: 'people',
@@ -272,7 +272,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Políticas, riesgos, términos, compliance, alertas regulatorias y revisión documental preliminar.',
     tools: ['Docs', 'Ferocactus'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '⚖️', color: '#059669', image: img('huernia'), status: 'soon',
+    emoji: '⚖️', color: '#059669', image: img('huernia'), status: 'live', href: '/apps/huernia',
   },
 ];
 
