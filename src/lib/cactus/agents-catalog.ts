@@ -128,6 +128,13 @@ export const AGENTS: CactusAgent[] = [
     emoji: '📣', color: '#D6336C', image: img('nopal'), status: 'beta', reuses: 'ramona', href: '/apps/ramona',
   },
   {
+    slug: 'cholla', name: 'Cholla', role: 'Campañas & Performance', division: 'agency',
+    description: 'Lanza y optimiza la pauta pagada (Meta, Google, LinkedIn, TikTok Ads): presupuesto, ROAS, A/B y optimización continua.',
+    tools: ['Meta Ads', 'Google Ads', 'LinkedIn Ads', 'TikTok Ads', 'Agave'],
+    models: ['Claude', 'GPT', 'Gemini'],
+    emoji: '🚀', color: '#F43F5E', image: '/cactus-ia-logo.png', status: 'soon',
+  },
+  {
     slug: 'pitaya', name: 'Pitaya', role: 'Copywriter Creativo', division: 'agency',
     description: 'Storytelling, anuncios, guiones, emails, landing pages, slogans y conceptos de campaña.',
     tools: ['Brand Kit', 'Motor Emocional', 'Biznaga'],
