@@ -171,6 +171,42 @@ Topología **estrella con dependencias** (no caos peer-to-peer):
 Cada corrección crea una versión nueva; Ramona puede actuar de **auditora** antes de entregar
 (claridad, coherencia de marca, riesgo legal/reputacional).
 
+### 3.7 Conexiones / Integraciones (UI de administración) — para que los agentes actúen POR el cliente
+Cada empresa tiene un **Hub de Conexiones** (vista de administración) donde el cliente conecta sus
+cuentas y deja que los agentes publiquen, agenden, respondan y pauten **por él**.
+
+**Categorías** (patrón del Integration Hub de Privat, 10 categorías):
+- **Redes:** Facebook, Instagram, LinkedIn, TikTok, X, YouTube, Pinterest, Threads → **Nopal** publica.
+- **Ads:** Meta Ads, Google Ads, LinkedIn Ads, TikTok Ads → **Cholla** lanza/optimiza pauta.
+- **Google / Productividad:** Calendar (agenda), Drive (docs), Gmail → **Yuca/Saguaro/Aloe**.
+- **Comunicación:** WhatsApp Cloud API, Telegram, Slack → **Aloe/Ramona**.
+- **Email marketing:** Mailchimp, Brevo, Resend → **Nopal/Pitaya**.
+- **Web/Ecommerce:** WordPress, Shopify, Webflow → **Opuntia/Cereus**.
+- **CRM:** HubSpot, Salesforce, Pipedrive → **Tuna/Maguey**.
+- **Pagos:** Stripe, Mercado Pago, Culqi, Niubiz → checkout/cobros.
+
+**Cómo se conecta (2 modos):**
+1. **OAuth** (preferido, y lo que exigen Meta/Google/LinkedIn para publicar): botón **"Conectar con
+   [Meta/Google/LinkedIn]"** → el cliente **autoriza en la ventana oficial** → guardamos el **token de
+   refresco cifrado**. El cliente **no pega claves**, solo aprueba. Más seguro y cumple las reglas.
+2. **API key / token** (para los que lo usan: WhatsApp Cloud token, SMTP, algunos): el cliente pega su
+   credencial en un campo seguro.
+
+**Seguridad (importante):**
+- Las credenciales se guardan **cifradas** (`connections.secret_enc`, patrón de `cactus_api_keys.key_enc`
+  que ya existe). **Nunca en texto plano**, nunca expuestas al frontend.
+- **Por empresa** y **compartidas solo por los agentes autorizados** (Ramona administra; el scoping define
+  qué agente usa qué conexión).
+- **El propio cliente conecta sus cuentas** (OAuth/clave) — el sistema solo guarda y usa los tokens.
+- **Estado** por conexión: conectado / parcial / vacío + **test** de conexión (como Privat).
+
+**Qué habilita:** con las conexiones, los agentes ejecutan **en el mundo real**: Nopal **publica** en
+IG/FB/LinkedIn (programado), Cholla **lanza pauta**, Yuca **agenda** en Calendar, Aloe **responde** por
+WhatsApp/email. Todo **paso sensible (publicar/enviar/gastar) pausa y pide tu OK** (patrón ya implementado).
+
+**Tablas:** `connections` (company_id, provider, kind=oauth|apikey, secret_enc, status, scopes, meta) +
+`channels` (comunicación). **Porte:** Integration Hub de Privat + WhatsApp/email/pagos de los 4 repos.
+
 ---
 
 ## PARTE 4 — La vista de CADA agente
@@ -249,7 +285,7 @@ una tarea con su agente; Saguaro orquesta el avance y las aprobaciones.
 | **3** | **D · Créditos vivos + motor de recursos** | UsageDaily+cuotas (**ROWI**) · control de costo + caché + reglas (**EGO**) · tracking por proveedor (**Privat**) | UI de consumo vivo · modos ahorro/calidad |
 | **4** | **C · Ejecución v2 + entregables** | PPTX (**ROWI**→Pita) · docx (**CAARD**→Ferocactus) · imagen/video/media (**Privat**→Candelabro/Lente/San Pedro/Ariocarpus) · costing (**Privat**→Cereus) | sub-agentes · versionado de entregables |
 | **5** | **E · Aprendizaje** | motor emocional/EQ (**ROWI** `src/lib/eq/`) · intent emocional (**Privat**) · recomendación (**Privat**) | feedback→preferencias 4 niveles · skills |
-| **6** | **F · Integraciones** | Integration Hub (**Privat**) · WhatsApp/email/pagos (**los 4**) · Drive/Workspace (**CAARD**) | conexiones por empresa, compartidas |
+| **6** | **F · Integraciones** | Integration Hub (**Privat**) · WhatsApp/email/pagos (**los 4**) · Drive/Workspace (**CAARD**) | **Hub de Conexiones (UI admin)**: OAuth (Meta/Google/LinkedIn) + API keys, cifrado, por empresa, compartidas por agentes |
 | **7** | **G · Apps de agente + marketplace** | UI (**CAARD/Privat**) · Ramona Studio/Canvas/Video (**Privat**) · BotWidget (**EGO**) | 28 vistas sobre el shell · **super dashboard de conexiones** · marketplace de agentes |
 
 Cada fase: **portar → adaptar a Supabase/empresa → verificar → desplegar**. Único costo real de
