@@ -72,6 +72,44 @@ export async function listUserCompanies(db: DB, userId: string | null | undefine
   }
 }
 
+/** Última marca activa del usuario que cumple el `scope` (filtro extra opcional). */
+async function latestActiveBrand(db: DB, userId: string, scope: (q: any) => any): Promise<{ data: any | null; error: any }> {
+  const base = db.from('cactus_brand_kits').select('*').eq('user_id', userId).eq('is_active', true);
+  const { data, error } = await scope(base).order('updated_at', { ascending: false }).limit(1).maybeSingle();
+  return { data: data || null, error };
+}
+
+/** Brand Kit activo scopeado por empresa (el contexto de marca que usan los agentes).
+ *  - Con empresa activa: prefiere la marca de ESA empresa; si no hay (marca legacy sin
+ *    company_id, p. ej. guardada antes de este cableado), cae a la marca activa del usuario.
+ *  - Sin empresa (multiempresa no desplegada) o si la columna company_id aún no existe:
+ *    comportamiento previo (marca activa del usuario por reciente). */
+export async function getActiveBrandKit(
+  db: DB,
+  userId: string | null | undefined,
+  companyId: string | null | undefined,
+): Promise<any | null> {
+  if (!db || !userId) return null;
+  try {
+    if (!companyId) {
+      const { data } = await latestActiveBrand(db, userId, (q) => q);
+      return data;
+    }
+    const own = await latestActiveBrand(db, userId, (q) => q.eq('company_id', companyId));
+    if (own.error) {
+      // columna company_id ausente (multiempresa no desplegada) → marca del usuario
+      const { data } = await latestActiveBrand(db, userId, (q) => q);
+      return data;
+    }
+    if (own.data) return own.data;
+    // marca legacy sin empresa asignada → úsala (se atará al re-guardar / en el backfill)
+    const legacy = await latestActiveBrand(db, userId, (q) => q.is('company_id', null));
+    return legacy.data;
+  } catch {
+    return null;
+  }
+}
+
 /** Cambia la empresa activa (valida membresía). Devuelve true si quedó aplicada. */
 export async function setActiveCompany(db: DB, userId: string | null | undefined, companyId: string): Promise<boolean> {
   if (!db || !userId || !companyId) return false;

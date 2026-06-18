@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 
 export const dynamic = 'force-dynamic';
 
-// GET: brand kit activo del usuario (o null)
+// GET: brand kit activo de la EMPRESA activa del usuario (o null)
 export async function GET() {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ brand: null });
@@ -11,20 +12,9 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data, error } = await supabase
-    .from('cactus_brand_kits')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    // Tabla aún no creada (migración 031 pendiente) → degradar elegante
-    return NextResponse.json({ brand: null, pendingSchema: true });
-  }
-  return NextResponse.json({ brand: data || null });
+  const companyId = await getActiveCompanyId(supabase, user.id);
+  const brand = await getActiveBrandKit(supabase, user.id, companyId);
+  return NextResponse.json({ brand: brand || null });
 }
 
 // POST: crea/actualiza el brand kit del usuario
@@ -39,6 +29,9 @@ export async function POST(req: Request) {
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Bad request' }, { status: 400 }); }
   if (!body?.name) return NextResponse.json({ error: 'El nombre de marca es obligatorio.' }, { status: 400 });
 
+  // Ata la marca a la empresa activa (multiempresa). null → comportamiento previo.
+  const companyId = await getActiveCompanyId(supabase, user.id);
+
   const row = {
     id: body.id || undefined,
     user_id: user.id,
@@ -50,6 +43,7 @@ export async function POST(req: Request) {
     values: Array.isArray(body.values) ? body.values : [],
     is_active: true,
     updated_at: new Date().toISOString(),
+    ...(companyId ? { company_id: companyId } : {}),
   };
 
   const { data, error } = await supabase

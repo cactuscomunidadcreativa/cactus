@@ -5,6 +5,7 @@ import { buildAgentSystemPrompt } from '@/lib/cactus/agent-prompts';
 import { buildBrandContext } from '@/lib/cactus/brain';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 import { getAgent } from '@/lib/cactus/agents-catalog';
+import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import type { AIChatMessage } from '@/lib/ai';
 
 export const maxDuration = 60;
@@ -15,11 +16,8 @@ export async function POST(req: Request) {
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const { data } = await supabase
-      .from('cactus_brand_kits')
-      .select('*').eq('user_id', user.id).eq('is_active', true)
-      .order('updated_at', { ascending: false }).limit(1).maybeSingle();
-    brand = data || null;
+    const companyId = await getActiveCompanyId(supabase, user.id);
+    brand = await getActiveBrandKit(supabase, user.id, companyId);
   }
 
   let body: any;

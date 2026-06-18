@@ -6,7 +6,7 @@ import { buildBrandContext } from '@/lib/cactus/brain';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
 import { loadOrchestratorState, getTasks, getMessages } from '@/lib/cactus/orchestrator';
-import { getActiveCompanyId } from '@/lib/cactus/companies';
+import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import { getCompanyPlan } from '@/lib/cactus/agent-access';
 import { checkQuota, registerUsage } from '@/lib/cactus/usage';
 
@@ -59,11 +59,8 @@ export async function POST(req: Request) {
     }
   }
 
-  // Marca activa para contexto
-  const { data: brand } = await supabase
-    .from('cactus_brand_kits')
-    .select('*').eq('user_id', user.id).eq('is_active', true)
-    .order('updated_at', { ascending: false }).limit(1).maybeSingle();
+  // Marca de la empresa activa para contexto
+  const brand = await getActiveBrandKit(supabase, user.id, companyId);
 
   // ── Resolver proyecto activo (o crear uno) ──
   let projectId: string | null = body?.projectId || null;

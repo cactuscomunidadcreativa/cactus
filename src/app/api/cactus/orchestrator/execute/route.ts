@@ -8,7 +8,7 @@ import { getAgent } from '@/lib/cactus/agents-catalog';
 import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
 import { isSensitive, deliverableKind, agentTaskPrompt } from '@/lib/cactus/orchestrator-exec';
 import { loadOrchestratorState, getTasks } from '@/lib/cactus/orchestrator';
-import { getActiveCompanyId } from '@/lib/cactus/companies';
+import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import { getCompanyPlan, isAgentAvailable, activateAgent, getEffectiveAgentConfig } from '@/lib/cactus/agent-access';
 import { checkQuota, registerUsage } from '@/lib/cactus/usage';
 import { raiseAlert } from '@/lib/cactus/alerts';
@@ -47,9 +47,7 @@ export async function POST(req: Request) {
     .from('cactus_projects').select('id, objective').eq('id', projectId).eq('user_id', user.id).maybeSingle();
   if (!project) return NextResponse.json({ error: 'Proyecto no encontrado.' }, { status: 404 });
 
-  const { data: brand } = await supabase
-    .from('cactus_brand_kits').select('*').eq('user_id', user.id).eq('is_active', true)
-    .order('updated_at', { ascending: false }).limit(1).maybeSingle();
+  const brand = await getActiveBrandKit(supabase, user.id, companyId);
 
   const tasks = await getTasks(supabase, projectId);
   const pending = tasks.filter((t) => t.status !== 'done').sort((a, b) => a.order_index - b.order_index);

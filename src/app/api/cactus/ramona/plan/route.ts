@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { planFromGoal } from '@/lib/cactus/ramona';
+import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 
 export const maxDuration = 60;
 
@@ -10,12 +11,9 @@ export async function POST(req: Request) {
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // intentar cargar la marca activa (si la tabla existe)
-    const { data } = await supabase
-      .from('cactus_brand_kits')
-      .select('*').eq('user_id', user.id).eq('is_active', true)
-      .order('updated_at', { ascending: false }).limit(1).maybeSingle();
-    brand = data || null;
+    // marca de la empresa activa (si la tabla/columna existe)
+    const companyId = await getActiveCompanyId(supabase, user.id);
+    brand = await getActiveBrandKit(supabase, user.id, companyId);
   }
 
   let body: any;

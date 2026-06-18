@@ -5,7 +5,7 @@ import { buildAgentSystemPrompt } from '@/lib/cactus/agent-prompts';
 import { buildBrandContext } from '@/lib/cactus/brain';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 import { deliverableKind } from '@/lib/cactus/orchestrator-exec';
-import { getActiveCompanyId } from '@/lib/cactus/companies';
+import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import { retrieveContext } from '@/lib/cactus/rag';
 import { registerUsage } from '@/lib/cactus/usage';
 import { recordModelUsage } from '@/lib/cactus/audit';
@@ -31,8 +31,7 @@ export async function POST(req: Request) {
   if (!d) return NextResponse.json({ ok: false, error: 'Entregable no encontrado.' }, { status: 404 });
 
   const { data: project } = await supabase.from('cactus_projects').select('objective').eq('id', d.project_id).maybeSingle();
-  const { data: brand } = await supabase.from('cactus_brand_kits').select('*').eq('user_id', user.id).eq('is_active', true)
-    .order('updated_at', { ascending: false }).limit(1).maybeSingle();
+  const brand = await getActiveBrandKit(supabase, user.id, companyId);
 
   const slug = d.agent_slug || 'ramona';
 
