@@ -9,6 +9,7 @@ import { getActiveCompanyId } from '@/lib/cactus/companies';
 import { retrieveContext } from '@/lib/cactus/rag';
 import { registerUsage } from '@/lib/cactus/usage';
 import { recordModelUsage } from '@/lib/cactus/audit';
+import { recordFeedback, learnFromFeedback } from '@/lib/cactus/preferences';
 
 export const maxDuration = 60;
 
@@ -34,6 +35,13 @@ export async function POST(req: Request) {
     .order('updated_at', { ascending: false }).limit(1).maybeSingle();
 
   const slug = d.agent_slug || 'ramona';
+
+  // Aprendizaje (Fase E): el feedback de la corrección se guarda y enseña al agente
+  if (feedback) {
+    await recordFeedback(supabase, { companyId, userId: user.id, deliverableId: id, agentSlug: slug, rating: 0, comment: feedback });
+    await learnFromFeedback(supabase, { companyId, agentSlug: slug, comment: feedback, rating: -1 });
+  }
+
   const ragContext = await retrieveContext(supabase, { companyId, agentSlug: slug, query: `${d.title} ${project?.objective || ''}`, limit: 5 });
   const system = buildAgentSystemPrompt(slug, buildBrandContext(brand || null), ragContext);
   const prompt = `Mejora y regenera este entregable${feedback ? ` según el feedback del cliente: "${feedback}"` : ', elevando su calidad'}.\n\nTÍTULO: ${d.title}\n\nVERSIÓN ACTUAL:\n${d.content || ''}`;

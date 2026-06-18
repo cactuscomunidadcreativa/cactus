@@ -16,6 +16,7 @@ import { retrieveContext } from '@/lib/cactus/rag';
 import { runWithSubAgents } from '@/lib/cactus/subagents';
 import { recordModelUsage } from '@/lib/cactus/audit';
 import { resolveMode, planForMode, hashKey, getCached, setCached } from '@/lib/cactus/resource-engine';
+import { getLearnedContext } from '@/lib/cactus/preferences';
 
 export const maxDuration = 60;
 
@@ -118,7 +119,9 @@ export async function POST(req: Request) {
       companyId, agentSlug: task.agent_slug,
       query: `${task.action} ${project.objective || ''}`.trim(), limit: 5,
     });
-    const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext);
+    // Aprendizaje (Fase E): preferencias aprendidas del feedback
+    const prefsContext = await getLearnedContext(supabase, { companyId, agentSlug: task.agent_slug, userId: user.id });
+    const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext, prefsContext);
 
     // Ejecución v2 (Fase C): modo profundo = sub-agentes acotados (opt-in body.deep)
     const deep = !!body?.deep;

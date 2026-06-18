@@ -26,7 +26,7 @@ const NUANCE: Record<string, string> = {
   opuntia: 'Propón estructura del sitio/landing (secciones, copy por bloque, CTA, funnel).',
 };
 
-export function buildAgentSystemPrompt(slug: string, brandContext?: string, ragContext?: string): string {
+export function buildAgentSystemPrompt(slug: string, brandContext?: string, ragContext?: string, prefsContext?: string): string {
   const agent = getAgent(slug);
   if (!agent) return 'Eres un asistente de Cactus Comunidad Creativa. Ayuda en español, cálido y concreto.';
   const division = DIVISIONS[agent.division];
@@ -41,7 +41,7 @@ Cómo trabajas:
 - Tienes inteligencia emocional: consideras qué siente y necesita la audiencia, y buscas el "click emocional".
 - Si te falta un dato clave, haces UNA pregunta breve antes de asumir.
 ${NUANCE[slug] ? `- ${NUANCE[slug]}` : ''}
-${brandContext ? `\nCONTEXTO DE MARCA (úsalo siempre):\n${brandContext}` : ''}${ragContext ? `\n\nCONOCIMIENTO RELEVANTE DEL CEREBRO (usa solo lo que aplique):\n${ragContext}` : ''}`;
+${brandContext ? `\nCONTEXTO DE MARCA (úsalo siempre):\n${brandContext}` : ''}${ragContext ? `\n\nCONOCIMIENTO RELEVANTE DEL CEREBRO (usa solo lo que aplique):\n${ragContext}` : ''}${prefsContext ? `\n\nPREFERENCIAS APRENDIDAS (respétalas, vienen del feedback del cliente):\n${prefsContext}` : ''}`;
 }
 
 export function agentGreeting(agent: CactusAgent): string {
