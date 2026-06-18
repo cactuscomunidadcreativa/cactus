@@ -9,7 +9,7 @@ import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
 import { isSensitive, deliverableKind, agentTaskPrompt } from '@/lib/cactus/orchestrator-exec';
 import { loadOrchestratorState, getTasks } from '@/lib/cactus/orchestrator';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
-import { getCompanyPlan, isAgentAvailable, activateAgent, getAgentConfig } from '@/lib/cactus/agent-access';
+import { getCompanyPlan, isAgentAvailable, activateAgent, getEffectiveAgentConfig } from '@/lib/cactus/agent-access';
 import { checkQuota, registerUsage } from '@/lib/cactus/usage';
 import { raiseAlert } from '@/lib/cactus/alerts';
 import { retrieveContext } from '@/lib/cactus/rag';
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     // Aprendizaje (Fase E): preferencias aprendidas del feedback
     const prefsContext = await getLearnedContext(supabase, { companyId, agentSlug: task.agent_slug, userId: user.id });
     // Editor de agentes: persona/modelo/foto editados por la empresa
-    const agentCfg = await getAgentConfig(supabase, companyId, task.agent_slug);
+    const agentCfg = await getEffectiveAgentConfig(supabase, companyId, task.agent_slug);
     const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext, prefsContext, agentCfg || undefined);
 
     // Ejecución v2 (Fase C): modo profundo = sub-agentes acotados (opt-in body.deep)

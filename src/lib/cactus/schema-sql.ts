@@ -767,4 +767,19 @@ DROP POLICY IF EXISTS agent_secrets_tenant ON public.agent_secrets;
 CREATE POLICY agent_secrets_tenant ON public.agent_secrets FOR ALL
   USING (company_id IN (SELECT public.cactus_company_ids()) OR public.is_super_admin())
   WITH CHECK (company_id IN (SELECT public.cactus_company_ids()) OR public.is_super_admin());
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- CENTRO DE OPERACIONES — nivel global "Cactus main" (espejo de 042). Va al final
+-- para sobreescribir la política agent_configs_tenant creada arriba.
+-- ════════════════════════════════════════════════════════════════════════════
+ALTER TABLE public.agent_configs ALTER COLUMN company_id DROP NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_agent_configs_global ON public.agent_configs(slug) WHERE company_id IS NULL;
+DROP POLICY IF EXISTS agent_configs_tenant ON public.agent_configs;
+DROP POLICY IF EXISTS agent_configs_read ON public.agent_configs;
+DROP POLICY IF EXISTS agent_configs_write ON public.agent_configs;
+CREATE POLICY agent_configs_read ON public.agent_configs FOR SELECT
+  USING (company_id IS NULL OR company_id IN (SELECT public.cactus_company_ids()) OR public.is_super_admin());
+CREATE POLICY agent_configs_write ON public.agent_configs FOR ALL
+  USING ((company_id IS NOT NULL AND company_id IN (SELECT public.cactus_company_ids())) OR public.is_super_admin())
+  WITH CHECK ((company_id IS NOT NULL AND company_id IN (SELECT public.cactus_company_ids())) OR public.is_super_admin());
 `;

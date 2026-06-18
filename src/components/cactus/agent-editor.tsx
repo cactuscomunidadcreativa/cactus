@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Loader2, Save, ArrowLeft, KeyRound, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, KeyRound, Plus, Trash2, Upload } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props { slug: string }
@@ -16,17 +16,25 @@ const PROVIDERS = [
 export function AgentEditor({ slug }: Props) {
   const [defaults, setDefaults] = useState<any>(null);
   const [canManage, setCanManage] = useState(false);
+  const [isSuper, setIsSuper] = useState(false);
+  const [scope, setScope] = useState<'company' | 'global'>('company');
   const [form, setForm] = useState<any>({});
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState('');
 
-  useEffect(() => {
-    fetch(`/api/cactus/agents/${slug}`).then((r) => r.json()).then((d) => {
-      setDefaults(d.defaults || null);
-      setCanManage(!!d.canManage);
-      setForm(d.config || {});
-    });
+  const load = useCallback(async (sc: 'company' | 'global') => {
+    setLoading(true);
+    const r = await fetch(`/api/cactus/agents/${slug}?scope=${sc}`);
+    const d = await r.json();
+    setDefaults(d.defaults || null);
+    setCanManage(!!d.canManage);
+    setIsSuper(!!d.isSuper);
+    setForm(d.config || {});
+    setLoading(false);
   }, [slug]);
+  useEffect(() => { load(scope); }, [load, scope]);
 
   function set(k: string, v: any) { setForm((f: any) => ({ ...f, [k]: v })); }
 
@@ -34,14 +42,25 @@ export function AgentEditor({ slug }: Props) {
     setSaving(true); setMsg('');
     try {
       const r = await fetch(`/api/cactus/agents/${slug}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, scope }),
       });
       const d = await r.json();
-      setMsg(d.ok ? '✅ Guardado. El agente ya piensa así para tu empresa.' : (d.error || 'No se pudo guardar.'));
+      setMsg(d.ok ? (scope === 'global' ? '✅ Guardado en Cactus (global).' : '✅ Guardado para tu empresa.') : (d.error || 'No se pudo guardar.'));
     } finally { setSaving(false); }
   }
 
-  if (!defaults) return <div className="flex justify-center py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /></div>;
+  async function uploadPhoto(file: File) {
+    setUploading(true); setMsg('');
+    try {
+      const fd = new FormData(); fd.append('file', file);
+      const r = await fetch(`/api/cactus/agents/${slug}/photo?scope=${scope}`, { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.ok && d.url) set('image_url', d.url);
+      else setMsg(d.error || 'No se pudo subir la foto.');
+    } finally { setUploading(false); }
+  }
+
+  if (!defaults || loading) return <div className="flex justify-center py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /></div>;
 
   const photo = form.image_url || defaults.image;
   const ro = !canManage;
@@ -59,12 +78,30 @@ export function AgentEditor({ slug }: Props) {
         </div>
       </div>
 
-      {ro && <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700">Solo el owner/admin de la empresa puede editar los agentes.</p>}
+      {isSuper && (
+        <div className="flex gap-2">
+          {(['company', 'global'] as const).map((s) => (
+            <button key={s} onClick={() => setScope(s)} className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${scope === s ? 'border-cactus-green bg-cactus-green/10 text-cactus-green' : 'border-border hover:bg-muted'}`}>
+              {s === 'company' ? 'Mi empresa' : 'Cactus (global)'}
+            </button>
+          ))}
+        </div>
+      )}
+      {scope === 'global' && <p className="rounded-lg border border-cactus-green/30 bg-cactus-green/5 px-3 py-2 text-xs text-muted-foreground">Editando el <strong>valor por defecto global</strong> de Cactus: aplica a toda empresa que no lo personalice.</p>}
+
+      {ro && <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700">{scope === 'global' ? 'Solo Cactus (super-admin) edita el nivel global.' : 'Solo el owner/admin de la empresa puede editar los agentes.'}</p>}
 
       <div className="space-y-4 rounded-2xl border border-border bg-card p-5">
-        <Field label="Foto (URL de imagen)">
-          <input value={form.image_url || ''} onChange={(e) => set('image_url', e.target.value)} disabled={ro}
-            placeholder={defaults.image} className={inputCls} />
+        <Field label="Foto del agente">
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photo} alt="" className="h-14 w-14 rounded-lg border border-border object-cover" />
+            <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted ${ro ? 'pointer-events-none opacity-60' : ''}`}>
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Subir imagen
+              <input type="file" accept="image/*" className="hidden" disabled={ro} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); }} />
+            </label>
+          </div>
+          <input value={form.image_url || ''} onChange={(e) => set('image_url', e.target.value)} disabled={ro} placeholder="…o pega una URL de imagen" className={`${inputCls} mt-2`} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Nombre">
@@ -115,7 +152,7 @@ export function AgentEditor({ slug }: Props) {
         )}
       </div>
 
-      <SecretsSection slug={slug} canManage={canManage} />
+      {scope === 'company' && <SecretsSection slug={slug} canManage={canManage} />}
     </div>
   );
 }

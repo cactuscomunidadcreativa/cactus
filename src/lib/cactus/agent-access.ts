@@ -110,6 +110,7 @@ export async function setAgentActive(db: DB, companyId: string, slug: string, is
 }
 
 export interface AgentConfigOverride {
+  id?: string;
   provider?: string | null;
   model?: string | null;
   display_name?: string | null;
@@ -124,24 +125,58 @@ export interface AgentConfigOverride {
   is_active?: boolean;
 }
 
-/** Configuración por empresa de un agente (persona/modelo/foto…). null si no hay. */
-export async function getAgentConfig(db: DB, companyId: string | null, slug: string): Promise<AgentConfigOverride | null> {
-  if (!db || !companyId || !slug) return null;
+const CONFIG_FIELDS = ['provider', 'model', 'display_name', 'description', 'image_url', 'prompt', 'custom_instructions', 'culture_prompt', 'company_tone', 'company_values', 'industry_context', 'is_active'] as const;
+
+/** Fila de config de un agente en un nivel: empresa (companyId) o global (companyId=null). */
+export async function getAgentConfigRow(db: DB, companyId: string | null, slug: string): Promise<AgentConfigOverride | null> {
+  if (!db || !slug) return null;
   try {
-    const { data } = await db.from('agent_configs').select('*').eq('company_id', companyId).eq('slug', slug).maybeSingle();
+    let q = db.from('agent_configs').select('*').eq('slug', slug);
+    q = companyId ? q.eq('company_id', companyId) : q.is('company_id', null);
+    const { data } = await q.maybeSingle();
     return data || null;
   } catch {
     return null;
   }
 }
 
-/** Guarda la configuración por empresa de un agente (upsert). */
-export async function saveAgentConfig(db: DB, companyId: string, slug: string, fields: AgentConfigOverride): Promise<boolean> {
-  if (!db || !companyId || !slug) return false;
+/** Config EFECTIVA: empresa sobre global (campo a campo). Para el contextualizador. */
+export async function getEffectiveAgentConfig(db: DB, companyId: string | null, slug: string): Promise<AgentConfigOverride | null> {
+  const [globalRow, companyRow] = await Promise.all([
+    getAgentConfigRow(db, null, slug),
+    companyId ? getAgentConfigRow(db, companyId, slug) : Promise.resolve(null),
+  ]);
+  if (!globalRow && !companyRow) return null;
+  const merged: any = {};
+  for (const k of CONFIG_FIELDS) {
+    const cv = (companyRow as any)?.[k];
+    const gv = (globalRow as any)?.[k];
+    merged[k] = (cv !== undefined && cv !== null && cv !== '') ? cv : gv;
+  }
+  return merged;
+}
+
+/** Guarda la config de un agente en el nivel dado (empresa o global=super-admin). */
+export async function saveAgentConfig(db: DB, companyId: string | null, slug: string, fields: AgentConfigOverride): Promise<boolean> {
+  if (!db || !slug) return false;
   try {
-    const clean: any = { company_id: companyId, slug };
-    for (const [k, v] of Object.entries(fields)) if (v !== undefined) clean[k] = v;
-    const { error } = await db.from('agent_configs').upsert(clean, { onConflict: 'company_id,slug' });
+    if (companyId) {
+      const clean: any = { company_id: companyId, slug };
+      for (const [k, v] of Object.entries(fields)) if (v !== undefined) clean[k] = v;
+      const { error } = await db.from('agent_configs').upsert(clean, { onConflict: 'company_id,slug' });
+      return !error;
+    }
+    // Global: read-then-write (el índice parcial no sirve para upsert)
+    const existing = await getAgentConfigRow(db, null, slug);
+    if (existing?.id) {
+      const upd: any = {};
+      for (const [k, v] of Object.entries(fields)) if (v !== undefined) upd[k] = v;
+      const { error } = await db.from('agent_configs').update(upd).eq('id', existing.id);
+      return !error;
+    }
+    const ins: any = { company_id: null, slug };
+    for (const [k, v] of Object.entries(fields)) if (v !== undefined) ins[k] = v;
+    const { error } = await db.from('agent_configs').insert(ins);
     return !error;
   } catch {
     return false;
