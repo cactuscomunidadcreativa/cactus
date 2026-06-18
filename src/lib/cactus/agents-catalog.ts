@@ -249,7 +249,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'WhatsApp, correo, DMs, comentarios, tickets, FAQs, reclamos y soporte postventa.',
     tools: ['WhatsApp API', 'Gmail', 'Outlook', 'Helpdesk', 'CRM'],
     models: ['GPT', 'Claude', 'Gemini'],
-    emoji: '💬', color: '#F97316', image: img('aloe'), status: 'soon', reuses: 'whatsapp',
+    emoji: '💬', color: '#F97316', image: img('aloe'), status: 'live', href: '/apps/aloe', reuses: 'whatsapp',
   },
 
   // ─── PEOPLE ───────────────────────────────────────────────────────────────
