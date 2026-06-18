@@ -5,6 +5,8 @@ import { BrandKitForm } from '@/components/cactus/brand-kit-form';
 import { BrainReindex } from '@/components/cactus/brain-reindex';
 import { KpiRow } from '@/components/cactus/app-shell/kpi-row';
 import { AGENTS } from '@/lib/cactus/agents-catalog';
+import { CompaniesManager, type CompanyRow } from '@/components/cactus/companies-manager';
+import { listUserCompanies, getActiveCompanyId } from '@/lib/cactus/companies';
 
 export const metadata = { title: 'Cerebro · Cactus IA' };
 
@@ -24,6 +26,8 @@ export default async function BrainPage() {
   let brandCount = 0;
   let items: any[] = [];
   let itemCount = 0;
+  let companies: CompanyRow[] = [];
+  let activeCompanyId: string | null = null;
 
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -35,6 +39,21 @@ export default async function BrainPage() {
         .eq('user_id', user.id).order('created_at', { ascending: false }).limit(6);
       items = ki || [];
       itemCount = ic || 0;
+
+      // Multiempresa: lista de empresas + marcas por empresa + empresa activa
+      activeCompanyId = await getActiveCompanyId(supabase, user.id);
+      const list = await listUserCompanies(supabase, user.id);
+      const byCompany = new Map<string, string[]>();
+      try {
+        const { data: bks } = await supabase.from('cactus_brand_kits').select('name, company_id').eq('user_id', user.id);
+        for (const b of (bks || []) as any[]) {
+          if (!b.company_id) continue;
+          const arr = byCompany.get(b.company_id) || [];
+          if (b.name) arr.push(b.name);
+          byCompany.set(b.company_id, arr);
+        }
+      } catch { /* tabla sin company_id → sin agrupar */ }
+      companies = list.map((c) => ({ ...c, brands: byCompany.get(c.id) || [], brandCount: (byCompany.get(c.id) || []).length }));
     }
   }
 
@@ -59,6 +78,9 @@ export default async function BrainPage() {
           { label: 'Agentes alimentados', value: AGENTS.length, icon: <Database className="h-4 w-4" /> },
         ]}
       />
+
+      {/* Multiempresa: crear / ver / cambiar empresas y sus marcas */}
+      <CompaniesManager companies={companies} activeId={activeCompanyId} />
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         {/* Brand Kit */}
