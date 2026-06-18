@@ -24,9 +24,12 @@ export async function POST(req: Request) {
 
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Bad request' }, { status: 400 }); }
-  const { slug, messages } = body || {};
+  const { slug, messages, maxTokens } = body || {};
   if (!slug || !getAgent(slug)) return NextResponse.json({ error: 'Agente desconocido' }, { status: 400 });
   if (!Array.isArray(messages) || messages.length === 0) return NextResponse.json({ error: 'Faltan mensajes' }, { status: 400 });
+
+  // Tokens de salida: 2000 por defecto; configurable hasta 4000 (p. ej. contenido largo de Pitaya).
+  const tokenCap = Math.min(4000, Math.max(256, Number(maxTokens) || 2000));
 
   const systemPrompt = buildAgentSystemPrompt(slug, buildBrandContext(brand));
 
@@ -34,7 +37,7 @@ export async function POST(req: Request) {
     const res = await generateChat({
       messages: messages as AIChatMessage[],
       systemPrompt,
-      maxTokens: 2000,
+      maxTokens: tokenCap,
       temperature: 0.7,
     });
     const costUsd = estimateCostUsd({

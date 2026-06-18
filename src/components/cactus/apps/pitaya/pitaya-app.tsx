@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   PanelsTopLeft, CheckCircle2, Plug, Send, Loader2, Sparkles, Wand2, Copy, Check,
   Trash2, Megaphone, Mail, LayoutTemplate, Quote, Eye, ThumbsUp, FileText,
+  Newspaper, BookOpen, PenLine,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
@@ -11,21 +12,29 @@ import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar
 
 interface PitayaAgent { slug: string; name: string; role: string; color: string; image: string }
 
-// ── Tipos de pieza de copy (master spec: ads / email / landing / slogan) ──────
+// ── Tipos de pieza (copy corto + contenido largo) ────────────────────────────
 const TYPES = [
-  { key: 'anuncio', label: 'Anuncio', icon: Megaphone, hint: 'Titular + cuerpo + CTA' },
-  { key: 'email', label: 'Email', icon: Mail, hint: 'Asunto + cuerpo' },
-  { key: 'landing', label: 'Landing', icon: LayoutTemplate, hint: 'Hero + beneficios + CTA' },
-  { key: 'slogan', label: 'Slogan', icon: Quote, hint: 'Frase de marca' },
+  { key: 'anuncio', label: 'Anuncio', icon: Megaphone, hint: 'Titular + cuerpo + CTA', long: false },
+  { key: 'email', label: 'Email', icon: Mail, hint: 'Asunto + cuerpo', long: false },
+  { key: 'landing', label: 'Landing', icon: LayoutTemplate, hint: 'Hero + beneficios + CTA', long: false },
+  { key: 'slogan', label: 'Slogan', icon: Quote, hint: 'Frase de marca', long: false },
+  { key: 'articulo', label: 'Artículo', icon: Newspaper, hint: 'Artículo completo', long: true },
+  { key: 'blog', label: 'Blog', icon: PenLine, hint: 'Entrada SEO', long: true },
+  { key: 'libro', label: 'Libro', icon: BookOpen, hint: 'Esquema y capítulos', long: true },
 ] as const;
 type TypeKey = (typeof TYPES)[number]['key'];
 const TYPE = Object.fromEntries(TYPES.map((t) => [t.key, t])) as Record<TypeKey, (typeof TYPES)[number]>;
+const LONG_FORM: TypeKey[] = ['articulo', 'blog', 'libro'];
+const isLong = (k: TypeKey) => LONG_FORM.includes(k);
 
 const TYPE_INSTRUCTION: Record<TypeKey, string> = {
   anuncio: 'Primera línea = titular corto y potente; 1-2 líneas de cuerpo; última línea = llamada a la acción. Sin etiquetas ni comillas.',
   email: 'Primera línea = asunto; luego el cuerpo del email listo para enviar. Sin etiquetas ni comillas.',
   landing: 'Primera línea = titular principal; segunda línea = subtítulo; luego 3 beneficios en viñetas que empiecen con "- "; última línea = texto del botón CTA. Sin etiquetas.',
   slogan: 'Devuelve solo un slogan corto y memorable (máximo 8 palabras). Sin comillas ni explicación.',
+  articulo: 'Escribe un artículo completo y bien estructurado. Primera línea = título. Luego introducción, desarrollo con subtítulos y conclusión. Tono informativo y atractivo. Sin etiquetas como "Título:".',
+  blog: 'Escribe una entrada de blog optimizada para SEO. Primera línea = título atractivo. Incluye introducción con gancho, secciones con subtítulos, viñetas cuando aporten y un cierre con llamada a la acción. Termina con una línea "Meta descripción: …" (máx 155 caracteres). Sin etiquetas.',
+  libro: 'Diseña la estructura de un libro. Primera línea = título propuesto. Luego: una sinopsis breve, el público objetivo, y un índice de capítulos numerados, cada uno con 1-2 líneas de qué cubre. Cierra sugiriendo por dónde empezar a escribir. Sin etiquetas.',
 };
 
 interface Piece {
@@ -97,7 +106,7 @@ export function PitayaApp({
       user={user}
       credits={credits}
       greeting={`Hola${firstName ? `, ${firstName}` : ''} ✍️`}
-      subtitle="Estudio de copy creativo con Pitaya"
+      subtitle="Copy y contenido creativo con Pitaya"
     >
       <Kpis pieces={pieces} accent={agent.color} />
 
@@ -247,11 +256,11 @@ function PiecesPanel({
     const b = brief.trim();
     if (!b || loading) return;
     setLoading(true); setError(null);
-    const prompt = `Crea una pieza de copy tipo "${TYPE[type].label}".\nBriefing: ${b}\nFormato: ${TYPE_INSTRUCTION[type]}`;
+    const prompt = `Crea una pieza tipo "${TYPE[type].label}".\nBriefing: ${b}\nFormato: ${TYPE_INSTRUCTION[type]}`;
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }] }),
+        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }], maxTokens: isLong(type) ? 4000 : 2000 }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
@@ -303,7 +312,7 @@ function PiecesPanel({
         {pieces.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
             <Sparkles className="h-6 w-6 opacity-50" />
-            <p className="max-w-[16rem] text-sm">Tus piezas de copy aparecerán aquí. Elige un formato y dale un briefing.</p>
+            <p className="max-w-[16rem] text-sm">Tus piezas aparecerán aquí. Elige un formato —copy o contenido largo— y dale un briefing.</p>
           </div>
         ) : (
           pieces.map((p) => (
@@ -391,6 +400,22 @@ function PiecePreview({ piece, accent }: { piece: Piece; accent: string }) {
   const lines = piece.content.split('\n').map((l) => l.trim()).filter(Boolean);
   const headline = lines[0] || piece.content;
   const rest = lines.slice(1);
+
+  // Contenido largo (artículo / blog / libro) → vista de documento (conserva párrafos)
+  if (isLong(piece.type)) {
+    const nl = piece.content.indexOf('\n');
+    const title = (nl === -1 ? piece.content : piece.content.slice(0, nl)).trim();
+    const body = nl === -1 ? '' : piece.content.slice(nl + 1).trim();
+    return (
+      <article className="rounded-xl border border-border bg-background p-5">
+        <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <BookOpen className="h-3 w-3" /> {TYPE[piece.type].label}
+        </span>
+        <h2 className="font-display text-lg font-bold leading-snug">{title}</h2>
+        <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">{body}</div>
+      </article>
+    );
+  }
 
   if (piece.type === 'slogan') {
     return (
