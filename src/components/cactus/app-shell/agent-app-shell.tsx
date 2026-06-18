@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  Bell, Search, HelpCircle, Coins, Menu, X, ChevronRight, type LucideIcon,
+  Bell, Search, HelpCircle, Coins, Menu, X, ChevronRight,
+  Layers, Bot, Brain, Building2, Plug, type LucideIcon,
 } from 'lucide-react';
 import type { CactusAgent } from '@/lib/cactus/agents-catalog';
 
@@ -13,6 +14,15 @@ export interface ShellUser { name: string; email?: string; avatar?: string }
 export interface HeaderCta { label: string; icon?: LucideIcon; href?: string; onClick?: () => void }
 
 type ShellAgent = Pick<CactusAgent, 'slug' | 'name' | 'role' | 'color' | 'image'>;
+
+// Salidas del agente hacia el resto de la plataforma (mismas en todas las apps).
+const PLATFORM_LINKS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: '/ecosystem', label: 'Todos los agentes', icon: Layers },
+  { href: '/orchestrator', label: 'Ramona', icon: Bot },
+  { href: '/brain', label: 'Cerebro', icon: Brain },
+  { href: '/empresa', label: 'Empresa', icon: Building2 },
+  { href: '/empresa/conexiones', label: 'Conexiones', icon: Plug },
+];
 
 interface Props {
   agent: ShellAgent;
@@ -89,6 +99,20 @@ function AgentSidebar({
 
       {/* Navegación */}
       <nav className="flex-1 space-y-3 overflow-y-auto p-3">
+        {/* Plataforma: salir del agente hacia el resto del ecosistema */}
+        <div className="border-b border-border pb-3">
+          <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Plataforma</p>
+          <div className="space-y-0.5">
+            {PLATFORM_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} onClick={onClose}
+                className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+                <l.icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{l.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {sections.map((sec, i) => (
           <div key={i}>
             {sec.name && <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">{sec.name}</p>}

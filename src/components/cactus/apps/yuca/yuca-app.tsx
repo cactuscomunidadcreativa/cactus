@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Markdown } from '@/components/cactus/shared/markdown';
 import { motion } from 'framer-motion';
 import {
   Sun, LineChart, HeartPulse, Wind, MessageCircle, Plus, Trash2, Check, Loader2, Sparkles,
@@ -327,7 +328,7 @@ function Analisis({ agent }: { agent: YucaAgent }) {
       )}
 
       <button onClick={explainAI} disabled={loadingAI || !text.trim()} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border py-2 text-sm font-medium hover:bg-muted disabled:opacity-50">{loadingAI ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" style={{ color: c }} />} Explicación con IA (opcional)</button>
-      {out && <div className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-background p-3 text-sm leading-relaxed text-foreground/85">{out}</div>}
+      {out && <Markdown text={out} className="mt-3 rounded-xl border border-border bg-background p-3 text-sm leading-relaxed text-foreground/85" />}
       <p className="mt-3 inline-flex items-start gap-1.5 text-[11px] leading-relaxed text-amber-700"><ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {HEALTH_NOTE}</p>
     </div>
   );
@@ -368,7 +369,7 @@ function Dieta({ agent, lastWeight }: { agent: YucaAgent; lastWeight?: number })
       <input value={restr} onChange={(e) => setRestr(e.target.value)} placeholder="Restricciones: vegetariano, sin gluten, alergias…" className="mb-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
       <button onClick={make} disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Salad className="h-4 w-4" />} Generar plan</button>
       {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
-      {out && <div className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-background p-3 text-sm leading-relaxed text-foreground/85">{out}</div>}
+      {out && <Markdown text={out} className="mt-3 rounded-xl border border-border bg-background p-3 text-sm leading-relaxed text-foreground/85" />}
     </div>
   );
 }
@@ -425,7 +426,7 @@ function Meditar({ agent }: { agent: YucaAgent }) {
         </select>
         <button onClick={guided} disabled={loading} className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wind className="h-4 w-4" />} Generar meditación</button>
         {error && <p className="rounded bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
-        {script ? <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">{script}</div> : <p className="text-sm text-muted-foreground">Elige un tema y Yuca te escribe una meditación para acompañarte.</p>}
+        {script ? <Markdown text={script} className="text-sm leading-relaxed text-foreground/85" /> : <p className="text-sm text-muted-foreground">Elige un tema y Yuca te escribe una meditación para acompañarte.</p>}
       </div>
     </div>
   );

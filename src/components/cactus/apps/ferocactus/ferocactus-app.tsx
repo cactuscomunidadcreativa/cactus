@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Markdown } from '@/components/cactus/shared/markdown';
 import Link from 'next/link';
 import {
   LayoutDashboard, FilePlus2, ScrollText, Plug, Wand2, Loader2, Copy, Check, Trash2,
@@ -335,7 +336,7 @@ function Generar({ agent, provider, onSave, onGoList }: { agent: FeroAgent; prov
         )}
         {result && (
           <div className="rounded-xl border border-border bg-background p-4">
-            <div className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-foreground/90">{result}</div>
+            <Markdown text={result} className="font-mono text-[13px] leading-relaxed text-foreground/90" />
           </div>
         )}
       </div>

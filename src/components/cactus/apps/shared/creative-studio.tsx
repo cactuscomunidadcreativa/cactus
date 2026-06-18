@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Markdown } from '@/components/cactus/shared/markdown';
 import Link from 'next/link';
 import {
   Sparkles, FolderOpen, Plus, Loader2, Wand2, Copy, Check, Trash2, ChevronDown, Lock, type LucideIcon,
@@ -127,7 +128,7 @@ function Crear({ agent, config, onSave }: { agent: StudioAgent; config: StudioCo
         </div>
         {!out && !loading && <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground"><config.createIcon className="h-7 w-7 opacity-50" /><p className="max-w-xs text-sm">Completa el brief y {agent.name} lo crea.</p></div>}
         {loading && <div className="flex h-48 items-center justify-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {agent.name} está creando…</div>}
-        {out && <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{out}</div>}
+        {out && <Markdown text={out} className="text-sm leading-relaxed text-foreground/90" />}
       </div>
     </div>
   );
@@ -159,7 +160,7 @@ function ProjectCard({ p, accent, config, onRemove }: { p: Project; accent: stri
         <button onClick={onRemove} className="rounded p-1.5 text-muted-foreground hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
         <button onClick={() => setOpen((o) => !o)} className="rounded p-1.5 text-muted-foreground hover:bg-muted"><ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} /></button>
       </div>
-      {open && <div className="mt-3 whitespace-pre-wrap border-t border-border pt-3 text-sm leading-relaxed text-foreground/90">{p.content}</div>}
+      {open && <Markdown text={p.content} className="mt-3 border-t border-border pt-3 text-sm leading-relaxed text-foreground/90" />}
     </div>
   );
 }

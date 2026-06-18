@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Markdown } from '@/components/cactus/shared/markdown';
 import {
   LayoutDashboard, FolderOpen, ScanText, Plus, Trash2, Loader2, Wand2, Copy, Check,
   ShieldAlert, FileWarning, ClipboardCheck,
@@ -187,7 +188,7 @@ function Revisar({ agent }: { agent: HuerniaAgent }) {
         <div className="mb-3 flex items-center justify-between"><h3 className="font-display text-lg font-semibold">Revisión</h3>{out && <button onClick={copy} className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs hover:bg-muted">{copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />} Copiar</button>}</div>
         {!out && !loading && <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground"><ScanText className="h-7 w-7 opacity-50" /><p className="max-w-xs text-sm">El análisis de riesgos aparecerá aquí.</p></div>}
         {loading && <div className="flex h-48 items-center justify-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Revisando…</div>}
-        {out && <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{out}</div>}
+        {out && <Markdown text={out} className="text-sm leading-relaxed text-foreground/90" />}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Markdown } from '@/components/cactus/shared/markdown';
 import {
   PanelsTopLeft, CheckCircle2, Plug, Send, Loader2, Sparkles, Wand2, Copy, Check,
   Trash2, Megaphone, Mail, LayoutTemplate, Quote, Eye, ThumbsUp, FileText,
@@ -415,7 +416,7 @@ function PiecePreview({ piece, accent }: { piece: Piece; accent: string }) {
           <BookOpen className="h-3 w-3" /> {TYPE[piece.type].label}
         </span>
         <h2 className="font-display text-lg font-bold leading-snug">{title}</h2>
-        <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">{body}</div>
+        <Markdown text={body} className="mt-2 text-sm leading-relaxed text-foreground/85" />
       </article>
     );
   }
@@ -432,7 +433,7 @@ function PiecePreview({ piece, accent }: { piece: Piece; accent: string }) {
       <div className="overflow-hidden rounded-xl border border-border">
         <div className="border-b border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">Para: tus suscriptores</div>
         <div className="border-b border-border px-3 py-2 text-sm font-semibold">{headline}</div>
-        <div className="whitespace-pre-wrap px-3 py-3 text-sm leading-relaxed text-foreground/90">{rest.join('\n')}</div>
+        <Markdown text={rest.join('\n')} className="px-3 py-3 text-sm leading-relaxed text-foreground/90" />
       </div>
     );
   }
@@ -468,7 +469,7 @@ function PiecePreview({ piece, accent }: { piece: Piece; accent: string }) {
         </div>
       </div>
       <div className="px-3 pb-2 text-sm font-semibold">{headline}</div>
-      {body && <div className="whitespace-pre-wrap px-3 pb-2 text-sm text-foreground/85">{body}</div>}
+      {body && <Markdown text={body} className="px-3 pb-2 text-sm text-foreground/85" />}
       <div className="flex aspect-video items-center justify-center bg-muted text-xs text-muted-foreground">Visual de Cardón / Lente</div>
       <div className="flex items-center justify-between gap-2 px-3 py-2.5">
         <span className="text-xs text-muted-foreground">tumarca.com</span>

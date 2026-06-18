@@ -11,7 +11,7 @@
 //               redirect URI a registrar y queda lista para conectar.
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type IntegrationCategory = 'pagos' | 'ads' | 'email' | 'whatsapp' | 'video' | 'audio' | '3d' | 'search';
+export type IntegrationCategory = 'ia' | 'pagos' | 'ads' | 'email' | 'whatsapp' | 'video' | 'audio' | '3d' | 'search';
 export type IntegrationAuth = 'api_key' | 'oauth';
 
 export interface IntegrationField {
@@ -49,6 +49,7 @@ export interface IntegrationProvider {
 }
 
 export const CATEGORY_META: Record<IntegrationCategory, { label: string; emoji: string }> = {
+  ia:       { label: 'IA & Modelos',    emoji: '🤖' },
   pagos:    { label: 'Pagos',           emoji: '💳' },
   ads:      { label: 'Publicidad',      emoji: '📣' },
   email:    { label: 'Email',           emoji: '✉️' },
@@ -59,11 +60,31 @@ export const CATEGORY_META: Record<IntegrationCategory, { label: string; emoji: 
   search:   { label: 'SEO & Search',    emoji: '📈' },
 };
 
-export const CATEGORY_ORDER: IntegrationCategory[] = ['pagos', 'email', 'whatsapp', 'ads', 'search', 'video', 'audio', '3d'];
+export const CATEGORY_ORDER: IntegrationCategory[] = ['ia', 'pagos', 'email', 'whatsapp', 'ads', 'search', 'video', 'audio', '3d'];
 
 const key = (label: string, placeholder?: string): IntegrationField => ({ key: 'api_key', label, type: 'password', placeholder });
 
 export const INTEGRATIONS: IntegrationProvider[] = [
+  // ─── IA & MODELOS (BYOK: tu propia llave de modelo) ─────────────────────────
+  {
+    slug: 'google-ai', name: 'Google AI (Gemini)', category: 'ia', auth: 'api_key',
+    description: 'Tu propia llave de Gemini para potenciar a los agentes (texto, visión, video).',
+    fields: [key('API key (AIza…)', 'AIza…')],
+    agents: ['cactus-ia'], emoji: '✨', color: '#4285F4', docsUrl: 'https://aistudio.google.com/app/apikey',
+  },
+  {
+    slug: 'openai', name: 'OpenAI (GPT + Imágenes)', category: 'ia', auth: 'api_key',
+    description: 'Tu llave de OpenAI: GPT para texto y gpt-image-1 para diseño/foto.',
+    fields: [key('API key (sk-…)', 'sk-…')],
+    agents: ['cactus-ia', 'cardon'], emoji: '🤖', color: '#10A37F', docsUrl: 'https://platform.openai.com/api-keys',
+  },
+  {
+    slug: 'anthropic', name: 'Anthropic (Claude)', category: 'ia', auth: 'api_key',
+    description: 'Tu llave de Claude para razonamiento y redacción de alta calidad.',
+    fields: [key('API key (sk-ant-…)', 'sk-ant-…')],
+    agents: ['cactus-ia', 'ramona'], emoji: '🧠', color: '#D97757', docsUrl: 'https://console.anthropic.com/settings/keys',
+  },
+
   // ─── PAGOS ────────────────────────────────────────────────────────────────
   {
     slug: 'stripe', name: 'Stripe', category: 'pagos', auth: 'api_key',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { Markdown } from '@/components/cactus/shared/markdown';
 import {
   LayoutDashboard, Sparkles, CalendarDays, Library, Plug, PenLine,
   Copy, Check, Trash2, Loader2, Wand2, FileText, Send, CalendarPlus,
@@ -480,7 +481,7 @@ function ResultCard({
           </button>
         </div>
       </div>
-      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{content}</p>
+      <Markdown text={content} className="text-sm leading-relaxed text-foreground/90" />
     </div>
   );
 }

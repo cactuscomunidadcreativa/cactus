@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Markdown } from '@/components/cactus/shared/markdown';
 import Link from 'next/link';
 import {
   LayoutDashboard, Rocket, Megaphone, Plug, Wand2, Loader2, Copy, Check, Trash2,
@@ -405,7 +406,7 @@ function Lanzar({ agent, onSave, onGoList }: { agent: ChollaAgent; onSave: (p: P
             <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Cholla está diseñando la campaña…
           </div>
         )}
-        {result && <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{result}</div>}
+        {result && <Markdown text={result} className="text-sm leading-relaxed text-foreground/90" />}
       </div>
     </div>
   );
@@ -464,7 +465,7 @@ function CampaignCard({ p, accent, onRemove }: { p: Plan; accent: string; onRemo
           <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
       </div>
-      {open && <div className="mt-3 whitespace-pre-wrap border-t border-border pt-3 text-sm leading-relaxed text-foreground/90">{p.content}</div>}
+      {open && <Markdown text={p.content} className="mt-3 border-t border-border pt-3 text-sm leading-relaxed text-foreground/90" />}
     </div>
   );
 }
