@@ -13,6 +13,8 @@ import { getCompanyPlan, isAgentAvailable, activateAgent } from '@/lib/cactus/ag
 import { checkQuota, registerUsage } from '@/lib/cactus/usage';
 import { raiseAlert } from '@/lib/cactus/alerts';
 import { retrieveContext } from '@/lib/cactus/rag';
+import { runWithSubAgents } from '@/lib/cactus/subagents';
+import { recordModelUsage } from '@/lib/cactus/audit';
 
 export const maxDuration = 60;
 
@@ -116,27 +118,48 @@ export async function POST(req: Request) {
       query: `${task.action} ${project.objective || ''}`.trim(), limit: 5,
     });
     const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext);
-    const res = await generateContent({
-      prompt: agentTaskPrompt({ action: task.action, objective: project.objective }),
-      systemPrompt: system, maxTokens: 1200, temperature: 0.7,
-    });
+
+    // Ejecución v2 (Fase C): modo profundo = sub-agentes acotados (opt-in body.deep)
+    const deep = !!body?.deep;
+    let content: string, provider: string, model: string, inTok = 0, outTok = 0, subCount = 0;
+    if (deep) {
+      const r = await runWithSubAgents({ system, action: task.action, objective: project.objective || '', max: 3 });
+      content = r.content; subCount = r.subCount;
+      for (const u of r.usages) { inTok += u.inputTokens || 0; outTok += u.outputTokens || 0; }
+      const last = r.usages[r.usages.length - 1];
+      provider = last?.provider || 'claude'; model = last?.model || provider;
+    } else {
+      const res = await generateContent({
+        prompt: agentTaskPrompt({ action: task.action, objective: project.objective }),
+        systemPrompt: system, maxTokens: 1200, temperature: 0.7,
+      });
+      content = res.content; provider = res.provider; model = res.model;
+      inTok = res.inputTokens; outTok = res.outputTokens;
+    }
 
     const costUsd = estimateCostUsd({
-      model: res.provider === 'claude' ? 'claude' : res.provider === 'gemini' ? 'gemini' : 'gpt',
-      inputTokens: res.inputTokens, outputTokens: res.outputTokens,
+      model: provider === 'claude' ? 'claude' : provider === 'gemini' ? 'gemini' : 'gpt',
+      inputTokens: inTok, outputTokens: outTok,
     });
     const credits = usdToCredits(costUsd);
 
     // Consumo (Acción 4): registro atómico por día/empresa/agente/modelo
     await registerUsage(supabase, {
-      companyId, userId: user.id, agentSlug: task.agent_slug, model: res.model,
-      tokensIn: res.inputTokens, tokensOut: res.outputTokens, costUsd, credits,
+      companyId, userId: user.id, agentSlug: task.agent_slug, model,
+      tokensIn: inTok, tokensOut: outTok, costUsd, credits,
     });
 
-    await supabase.from('cactus_deliverables').insert({
+    const { data: deliv } = await supabase.from('cactus_deliverables').insert({
       user_id: user.id, project_id: projectId, task_id: task.id, agent_slug: task.agent_slug,
       title: task.action.slice(0, 80), kind: deliverableKind(task.agent_slug), status: 'ready',
-      content: res.content, meta: { credits, model: res.model }, ...(companyId ? { company_id: companyId } : {}),
+      content, meta: { credits, model, deep, subCount }, ...(companyId ? { company_id: companyId } : {}),
+    }).select('id').single();
+
+    // Auditoría granular (Fase C)
+    await recordModelUsage(supabase, {
+      companyId, userId: user.id, agentSlug: task.agent_slug, provider, model,
+      kind: deep ? 'subagent' : 'agent_run', tokensIn: inTok, tokensOut: outTok, costUsd, credits,
+      projectId, taskId: task.id, deliverableId: deliv?.id || null, meta: { deep, subCount },
     });
 
     await supabase.from('cactus_project_tasks').update({ status: 'done', progress: 100 }).eq('id', task.id);
@@ -150,7 +173,7 @@ export async function POST(req: Request) {
       }
     }
     await supabase.from('cactus_credit_ledger').insert({
-      user_id: user.id, delta: -credits, reason: 'agent_run', agent_slug: task.agent_slug, model: res.model, cost_usd: costUsd, ...(companyId ? { company_id: companyId } : {}),
+      user_id: user.id, delta: -credits, reason: 'agent_run', agent_slug: task.agent_slug, model, cost_usd: costUsd, ...(companyId ? { company_id: companyId } : {}),
     });
   } catch (err: any) {
     await supabase.from('cactus_project_tasks').update({ status: 'pending', progress: 0 }).eq('id', task.id);
