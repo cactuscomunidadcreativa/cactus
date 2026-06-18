@@ -2,6 +2,9 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
+  "crons": [
+    { "path": "/api/cactus/observers/run", "schedule": "0 13 * * *" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

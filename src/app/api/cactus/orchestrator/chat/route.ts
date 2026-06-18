@@ -7,6 +7,8 @@ import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
 import { loadOrchestratorState, getTasks, getMessages } from '@/lib/cactus/orchestrator';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
+import { getCompanyPlan } from '@/lib/cactus/agent-access';
+import { checkQuota, registerUsage } from '@/lib/cactus/usage';
 
 export const maxDuration = 60;
 
@@ -44,6 +46,18 @@ export async function POST(req: Request) {
 
   // Empresa activa (multiempresa). null si aún no se despliega → comportamiento previo.
   const companyId = await getActiveCompanyId(supabase, user.id);
+
+  // Cuota del plan (Acción 4): si el mes excede tokens_monthly → 402
+  if (companyId && !access.byok) {
+    const plan = await getCompanyPlan(supabase, companyId);
+    const quota = await checkQuota(supabase, companyId, plan.tokens_monthly);
+    if (quota.over) {
+      return NextResponse.json({
+        blocked: true, reason: 'quota', upgradeHref: '/packs',
+        reply: 'Llegaste al tope de tokens de tu plan este mes. Sube de plan o recarga para que el equipo siga. 🌵',
+      }, { status: 402 });
+    }
+  }
 
   // Marca activa para contexto
   const { data: brand } = await supabase
@@ -119,6 +133,11 @@ export async function POST(req: Request) {
         model: res.provider === 'claude' ? 'claude' : res.provider === 'gemini' ? 'gemini' : 'gpt',
         inputTokens: res.inputTokens, outputTokens: res.outputTokens,
       }));
+
+      await registerUsage(supabase, {
+        companyId, userId: user.id, agentSlug: 'ramona', model: res.provider,
+        tokensIn: res.inputTokens, tokensOut: res.outputTokens, credits,
+      });
 
       await supabase.from('cactus_project_messages')
         .insert({ user_id: user.id, project_id: projectId, role: 'assistant', content: res.content, credits, ...(companyId ? { company_id: companyId } : {}) });

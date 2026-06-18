@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Store, Settings, ChevronRight, Shield,
-  Users, Layers, DollarSign, Factory, Ruler, Shirt, Brain, Eye, BarChart3, Palette, Sparkles, Bot,
+  Users, Layers, DollarSign, Factory, Ruler, Shirt, Brain, Eye, BarChart3, Palette, Sparkles, Bot, Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getAgent, type CactusAgent } from '@/lib/cactus/agents-catalog';
@@ -76,6 +76,7 @@ export function Sidebar({ subscriptions, isAdmin }: SidebarProps) {
     { href: '/ecosystem', label: 'Ecosistema', icon: Layers },
     { href: '/orchestrator', label: 'Ramona', icon: Bot },
     { href: '/brain', label: 'Cerebro', icon: Brain },
+    { href: '/empresa', label: 'Empresa', icon: Building2 },
   ];
   const crear: NavItem[] = [
     { href: '/campaign', label: 'Campañas', icon: Sparkles },

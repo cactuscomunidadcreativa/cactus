@@ -9,6 +9,9 @@ import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
 import { isSensitive, deliverableKind, agentTaskPrompt } from '@/lib/cactus/orchestrator-exec';
 import { loadOrchestratorState, getTasks } from '@/lib/cactus/orchestrator';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
+import { getCompanyPlan, isAgentAvailable, activateAgent } from '@/lib/cactus/agent-access';
+import { checkQuota, registerUsage } from '@/lib/cactus/usage';
+import { raiseAlert } from '@/lib/cactus/alerts';
 
 export const maxDuration = 60;
 
@@ -64,6 +67,43 @@ export async function POST(req: Request) {
     return NextResponse.json({ state, hasMore: true, needsApproval: { taskId: task.id } });
   }
 
+  // ── Cuota del plan (Acción 4): si el mes excede tokens_monthly → 402 ──
+  if (companyId && !access.byok) {
+    const plan = await getCompanyPlan(supabase, companyId);
+    const quota = await checkQuota(supabase, companyId, plan.tokens_monthly);
+    if (quota.over) {
+      await raiseAlert(supabase, {
+        companyId, origin: 'agave', type: 'quota', severity: 'warning',
+        title: 'Cuota de tokens del mes alcanzada',
+        dedupKey: `quota-${plan.slug}-${quota.limit}`,
+        body: `Se usaron ${quota.used.toLocaleString()} de ${quota.limit.toLocaleString()} tokens este mes.`,
+      });
+      return NextResponse.json({
+        blocked: true, reason: 'quota', upgradeHref: '/packs',
+        reply: 'Llegaste al tope de tokens de tu plan este mes. Sube de plan o recarga para que el equipo siga. 🌵',
+      }, { status: 402 });
+    }
+  }
+
+  // ── Disponibilidad del agente para la empresa (Acción 3): gate one-shot ──
+  const activateMode: 'permanent' | 'one_shot' | null =
+    body?.activate === 'permanent' ? 'permanent' : body?.activate === 'one_shot' ? 'one_shot' : null;
+  if (companyId) {
+    const available = await isAgentAvailable(supabase, companyId, task.agent_slug);
+    if (!available) {
+      if (activateMode && approveTaskId === task.id) {
+        await activateAgent(supabase, { companyId, userId: user.id, slug: task.agent_slug, mode: activateMode, taskId: task.id });
+      } else {
+        const ag = getAgent(task.agent_slug);
+        const state = await loadOrchestratorState(supabase, user.id, companyId);
+        return NextResponse.json({
+          state, hasMore: true,
+          needsActivation: { taskId: task.id, agentSlug: task.agent_slug, agentName: ag?.name || task.agent_slug },
+        });
+      }
+    }
+  }
+
   // ── Ejecuta la tarea ──
   await supabase.from('cactus_project_tasks').update({ status: 'in_progress', progress: 45 }).eq('id', task.id);
   const agent = getAgent(task.agent_slug);
@@ -80,6 +120,12 @@ export async function POST(req: Request) {
       inputTokens: res.inputTokens, outputTokens: res.outputTokens,
     });
     const credits = usdToCredits(costUsd);
+
+    // Consumo (Acción 4): registro atómico por día/empresa/agente/modelo
+    await registerUsage(supabase, {
+      companyId, userId: user.id, agentSlug: task.agent_slug, model: res.model,
+      tokensIn: res.inputTokens, tokensOut: res.outputTokens, costUsd, credits,
+    });
 
     await supabase.from('cactus_deliverables').insert({
       user_id: user.id, project_id: projectId, task_id: task.id, agent_slug: task.agent_slug,
@@ -111,6 +157,6 @@ export async function POST(req: Request) {
   // Si ya no quedan pendientes, cierra el proyecto
   if (!hasMore) await supabase.from('cactus_projects').update({ status: 'done' }).eq('id', projectId);
 
-  const state = await loadOrchestratorState(supabase, user.id);
+  const state = await loadOrchestratorState(supabase, user.id, companyId);
   return NextResponse.json({ state, hasMore });
 }
