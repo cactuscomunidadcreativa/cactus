@@ -9,7 +9,7 @@ import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
 import { isSensitive, deliverableKind, agentTaskPrompt } from '@/lib/cactus/orchestrator-exec';
 import { loadOrchestratorState, getTasks } from '@/lib/cactus/orchestrator';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
-import { getCompanyPlan, isAgentAvailable, activateAgent } from '@/lib/cactus/agent-access';
+import { getCompanyPlan, isAgentAvailable, activateAgent, getAgentConfig } from '@/lib/cactus/agent-access';
 import { checkQuota, registerUsage } from '@/lib/cactus/usage';
 import { raiseAlert } from '@/lib/cactus/alerts';
 import { retrieveContext } from '@/lib/cactus/rag';
@@ -121,7 +121,9 @@ export async function POST(req: Request) {
     });
     // Aprendizaje (Fase E): preferencias aprendidas del feedback
     const prefsContext = await getLearnedContext(supabase, { companyId, agentSlug: task.agent_slug, userId: user.id });
-    const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext, prefsContext);
+    // Editor de agentes: persona/modelo/foto editados por la empresa
+    const agentCfg = await getAgentConfig(supabase, companyId, task.agent_slug);
+    const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext, prefsContext, agentCfg || undefined);
 
     // Ejecución v2 (Fase C): modo profundo = sub-agentes acotados (opt-in body.deep)
     const deep = !!body?.deep;
@@ -143,7 +145,8 @@ export async function POST(req: Request) {
         content = hit.content; provider = 'cache'; model = hit.model || 'cache'; cached = true;
       } else {
         const res = await generateContent({
-          prompt: taskPrompt, systemPrompt: system, provider: plan.provider,
+          prompt: taskPrompt, systemPrompt: system,
+          provider: (agentCfg?.provider as any) || plan.provider,  // override del editor de agentes
           maxTokens: Math.round(1200 * plan.maxTokensFactor), temperature: 0.7,
         });
         content = res.content; provider = res.provider; model = res.model;

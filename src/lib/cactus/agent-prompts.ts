@@ -26,14 +26,36 @@ const NUANCE: Record<string, string> = {
   opuntia: 'Propón estructura del sitio/landing (secciones, copy por bloque, CTA, funnel).',
 };
 
-export function buildAgentSystemPrompt(slug: string, brandContext?: string, ragContext?: string, prefsContext?: string): string {
+export interface AgentPersonaConfig {
+  display_name?: string | null;
+  description?: string | null;
+  prompt?: string | null;
+  custom_instructions?: string | null;
+  culture_prompt?: string | null;
+  company_tone?: string | null;
+  company_values?: string | null;
+  industry_context?: string | null;
+}
+
+export function buildAgentSystemPrompt(slug: string, brandContext?: string, ragContext?: string, prefsContext?: string, config?: AgentPersonaConfig): string {
   const agent = getAgent(slug);
   if (!agent) return 'Eres un asistente de Cactus Comunidad Creativa. Ayuda en español, cálido y concreto.';
   const division = DIVISIONS[agent.division];
 
-  return `Eres ${agent.name}, ${agent.role} de Cactus Comunidad Creativa (división ${division.label}).
-${agent.description}
-Áreas/herramientas: ${agent.tools.join(', ')}.
+  const name = config?.display_name || agent.name;
+  const description = config?.description || agent.description;
+  const persona: string[] = [];
+  if (config?.prompt) persona.push(config.prompt);
+  if (config?.custom_instructions) persona.push(config.custom_instructions);
+  if (config?.company_tone) persona.push(`Tono de la empresa: ${config.company_tone}`);
+  if (config?.company_values) persona.push(`Valores: ${config.company_values}`);
+  if (config?.industry_context) persona.push(`Industria/contexto: ${config.industry_context}`);
+  if (config?.culture_prompt) persona.push(config.culture_prompt);
+  const personaBlock = persona.length ? `\n\nPERSONALIZACIÓN DE LA EMPRESA (síguela):\n${persona.join('\n')}` : '';
+
+  return `Eres ${name}, ${agent.role} de Cactus Comunidad Creativa (división ${division.label}).
+${description}
+Áreas/herramientas: ${agent.tools.join(', ')}.${personaBlock}
 
 Cómo trabajas:
 - Hablas en español, cálido y profesional, con la voz de la marca.

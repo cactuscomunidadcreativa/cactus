@@ -109,6 +109,45 @@ export async function setAgentActive(db: DB, companyId: string, slug: string, is
   }
 }
 
+export interface AgentConfigOverride {
+  provider?: string | null;
+  model?: string | null;
+  display_name?: string | null;
+  description?: string | null;
+  image_url?: string | null;
+  prompt?: string | null;
+  custom_instructions?: string | null;
+  culture_prompt?: string | null;
+  company_tone?: string | null;
+  company_values?: string | null;
+  industry_context?: string | null;
+  is_active?: boolean;
+}
+
+/** Configuración por empresa de un agente (persona/modelo/foto…). null si no hay. */
+export async function getAgentConfig(db: DB, companyId: string | null, slug: string): Promise<AgentConfigOverride | null> {
+  if (!db || !companyId || !slug) return null;
+  try {
+    const { data } = await db.from('agent_configs').select('*').eq('company_id', companyId).eq('slug', slug).maybeSingle();
+    return data || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Guarda la configuración por empresa de un agente (upsert). */
+export async function saveAgentConfig(db: DB, companyId: string, slug: string, fields: AgentConfigOverride): Promise<boolean> {
+  if (!db || !companyId || !slug) return false;
+  try {
+    const clean: any = { company_id: companyId, slug };
+    for (const [k, v] of Object.entries(fields)) if (v !== undefined) clean[k] = v;
+    const { error } = await db.from('agent_configs').upsert(clean, { onConflict: 'company_id,slug' });
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 /** Activa un agente: permanente (lo suma al plan) o one-shot (solo esta tarea). */
 export async function activateAgent(
   db: DB,

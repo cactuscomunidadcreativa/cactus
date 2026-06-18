@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
-import { Bot, Gauge, Bell, Plug, Loader2, Check, X, Trash2, Plus, Lock } from 'lucide-react';
+import Link from 'next/link';
+import { Bot, Gauge, Bell, Plug, Loader2, Check, X, Trash2, Plus, Lock, Pencil } from 'lucide-react';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 
 type Tab = 'agentes' | 'consumo' | 'alertas' | 'conexiones';
@@ -89,6 +90,9 @@ function AgentesTab() {
                   {a.available ? (a.inPlan ? 'En tu plan' : 'Activado') : 'No incluido en el plan'}
                 </p>
               </div>
+              <Link href={`/empresa/agentes/${a.slug}`} title="Editar agente" className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+                <Pencil className="h-4 w-4" />
+              </Link>
               {a.available ? (
                 <button
                   disabled={!canManage || busy === a.slug}
