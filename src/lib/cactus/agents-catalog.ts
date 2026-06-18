@@ -146,14 +146,14 @@ export const AGENTS: CactusAgent[] = [
     description: 'Branding, layouts, carruseles, banners, flyers, packaging y piezas para pauta.',
     tools: ['Canvas', 'Plantillas', 'Export PNG/JPG/PDF'],
     models: ['GPT Image', 'Gemini', 'Adobe Firefly'],
-    emoji: '🎨', color: '#DB2777', image: '/cactus-ia-logo.png', status: 'live', href: '/studio',
+    emoji: '🎨', color: '#DB2777', image: '/cactus-ia-logo.png', status: 'live', href: '/apps/cardon',
   },
   {
     slug: 'lente', name: 'Lente', role: 'Fotógrafo IA', division: 'agency',
     description: 'Dirección fotográfica, shotlists, moodboards, producto y e-commerce con avatares o modelos.',
     tools: ['Avatares', 'Producto', 'E-commerce'],
     models: ['GPT Image', 'Midjourney', 'Gemini'],
-    emoji: '📷', color: '#BE185D', image: img('lente'), status: 'live', reuses: 'cereus', href: '/studio?agent=lente',
+    emoji: '📷', color: '#BE185D', image: img('lente'), status: 'live', href: '/apps/lente',
   },
   {
     slug: 'peyote', name: 'Peyote', role: 'Estratega Creativo · EQ', division: 'agency',
@@ -206,7 +206,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Mascotas, personajes, universos de marca, avatares estilizados y story bibles consistentes.',
     tools: ['San Pedro', 'Cardón'],
     models: ['GPT Image', 'Gemini', 'Midjourney'],
-    emoji: '⭐', color: '#0D9488', image: img('astrophytum'), status: 'live', href: '/studio?agent=astrophytum',
+    emoji: '⭐', color: '#0D9488', image: img('astrophytum'), status: 'live', href: '/apps/astrophytum',
   },
 
   // ─── WEB ──────────────────────────────────────────────────────────────────

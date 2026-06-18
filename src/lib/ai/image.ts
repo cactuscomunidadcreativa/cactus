@@ -77,6 +77,50 @@ export async function generateImage(
 }
 
 /**
+ * Edit an existing image with a text instruction (gpt-image-1 /images/edits).
+ * Recibe la imagen como Blob (multipart) y devuelve la imagen editada (url o base64).
+ */
+export async function editImage(opts: {
+  image: Blob;
+  prompt: string;
+  size?: '1024x1024' | '1024x1792' | '1792x1024';
+}): Promise<ImageGenerationResponse> {
+  const configured = await isProviderConfigured('openai');
+  if (!configured) throw new Error('OpenAI API key not configured — cannot edit images');
+  const apiKey = await getAPIKey('openai');
+
+  const SIZE_MAP: Record<string, string> = {
+    '1024x1024': '1024x1024',
+    '1024x1792': '1024x1536',
+    '1792x1024': '1536x1024',
+  };
+  const size = SIZE_MAP[opts.size || '1024x1024'] || '1024x1024';
+
+  const form = new FormData();
+  form.append('model', 'gpt-image-1');
+  form.append('prompt', opts.prompt);
+  form.append('n', '1');
+  form.append('size', size);
+  form.append('image', opts.image, 'image.png');
+
+  const res = await fetch('https://api.openai.com/v1/images/edits', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}` }, // sin Content-Type: FormData pone el boundary
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Image edit API error ${res.status}: ${err}`);
+  }
+  const data = await res.json();
+  const image = data.data?.[0];
+  let url: string | undefined = image?.url;
+  if (!url && image?.b64_json) url = `data:image/png;base64,${image.b64_json}`;
+  if (!url) throw new Error('La edición no devolvió imagen');
+  return { url, revisedPrompt: image.revised_prompt || opts.prompt };
+}
+
+/**
  * Generate multiple images in parallel.
  * Returns only the successful results (skips failed ones).
  */
