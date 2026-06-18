@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   Send, Check, MessageSquare, ListTodo, FolderKanban, CalendarDays, Activity,
-  Loader2, Sparkles, Inbox, Circle, Play, ShieldAlert, ThumbsUp, RefreshCw,
+  Loader2, Sparkles, Inbox, Circle, Play, ShieldAlert, ThumbsUp, RefreshCw, Brain,
 } from 'lucide-react';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 import { taskProgress, type OrchestratorTask, type OrchestratorDeliverable } from '@/lib/cactus/orchestrator';
@@ -40,7 +40,7 @@ const TASK_BADGE: Record<OrchestratorTask['status'], { label: string; cls: strin
 };
 
 export function RamonaWorkspace() {
-  const { state, loading, sending, executing, error, blocked, send, approve, refresh } = useOrchestrator();
+  const { state, loading, sending, executing, error, blocked, deep, setDeep, send, approve, refresh } = useOrchestrator();
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('conversacion');
   const [input, setInput] = useState('');
 
@@ -55,7 +55,7 @@ export function RamonaWorkspace() {
   return (
     <div className="grid gap-5 lg:grid-cols-[300px_1fr_330px]">
       {/* ── Columna izquierda: Hero de Ramona ── */}
-      <Hero stats={state.stats} />
+      <Hero stats={state.stats} deep={deep} setDeep={setDeep} />
 
       {/* ── Centro: tabs + contenido ── */}
       <div className="min-w-0 rounded-2xl border border-border bg-card">
@@ -106,7 +106,12 @@ export function RamonaWorkspace() {
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────
-function Hero({ stats }: { stats: { projects: number; tasks: number; agents: number } }) {
+function Hero({
+  stats, deep, setDeep,
+}: {
+  stats: { projects: number; tasks: number; agents: number };
+  deep: boolean; setDeep: (v: boolean) => void;
+}) {
   return (
     <aside className="rounded-2xl border border-border bg-card p-5">
       <div className="group flex flex-col items-center text-center">
@@ -146,7 +151,35 @@ function Hero({ stats }: { stats: { projects: number; tasks: number; agents: num
           ))}
         </ul>
       </div>
+
+      <DeepToggle deep={deep} setDeep={setDeep} />
     </aside>
+  );
+}
+
+// Modo profundo: el equipo ejecuta con sub-agentes acotados (más completo, más créditos).
+function DeepToggle({ deep, setDeep }: { deep: boolean; setDeep: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={deep}
+      onClick={() => setDeep(!deep)}
+      className={`mt-5 flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+        deep ? 'border-cactus-green bg-cactus-green/5' : 'border-border bg-background hover:border-cactus-green/50'
+      }`}
+    >
+      <Brain className={`h-4 w-4 shrink-0 ${deep ? 'text-cactus-green' : 'text-muted-foreground'}`} />
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-medium">Modo profundo</span>
+        <span className="mt-0.5 block text-[11px] leading-tight text-muted-foreground">
+          El equipo investiga y revisa con sub-agentes. Más completo, usa más créditos.
+        </span>
+      </span>
+      <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${deep ? 'bg-cactus-green' : 'bg-muted'}`}>
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${deep ? 'translate-x-4' : 'translate-x-0.5'}`} />
+      </span>
+    </button>
   );
 }
 

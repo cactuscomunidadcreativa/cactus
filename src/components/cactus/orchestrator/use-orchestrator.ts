@@ -20,8 +20,12 @@ export function useOrchestrator() {
   const [error, setError] = useState<string | null>(null);
   const [blocked, setBlocked] = useState<BlockedInfo | null>(null);
   const [needsApproval, setNeedsApproval] = useState<string | null>(null);
+  // Modo profundo (Fase C/D): el equipo ejecuta con sub-agentes acotados. Opt-in.
+  const [deep, setDeep] = useState(false);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const deepRef = useRef(deep);
+  deepRef.current = deep;
 
   const refresh = useCallback(async () => {
     try {
@@ -42,7 +46,7 @@ export function useOrchestrator() {
     const res = await fetch('/api/cactus/orchestrator/execute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId, taskId }),
+      body: JSON.stringify({ projectId, taskId, deep: deepRef.current }),
     });
     const data = await res.json();
     if (data?.blocked) { setBlocked({ reply: data.reply, href: data.upgradeHref || '/packs' }); return { stop: true }; }
@@ -106,5 +110,5 @@ export function useOrchestrator() {
     await runLoop(projectId);
   }, [step, runLoop]);
 
-  return { state, loading, sending, executing, error, blocked, needsApproval, send, approve, refresh };
+  return { state, loading, sending, executing, error, blocked, needsApproval, deep, setDeep, send, approve, refresh };
 }
