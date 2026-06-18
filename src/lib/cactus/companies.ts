@@ -30,6 +30,14 @@ export async function getActiveCompanyId(db: DB, userId: string | null | undefin
       .order('created_at', { ascending: true }).limit(1).maybeSingle();
     if (!e2 && m?.company_id) return m.company_id as string;
 
+    // Sin empresa → auto-aprovisiona (self-healing para usuarios existentes / sin datos).
+    // cactus_ensure_default_company es SECURITY DEFINER: crea org+empresa+membresía y
+    // setea profiles.primary_company_id; devuelve el company_id.
+    try {
+      const { data: ensured, error: e3 } = await db.rpc('cactus_ensure_default_company', { p_user: userId });
+      if (!e3 && ensured) return ensured as string;
+    } catch { /* RPC ausente (multiempresa no desplegada) → null */ }
+
     return null;
   } catch {
     return null;

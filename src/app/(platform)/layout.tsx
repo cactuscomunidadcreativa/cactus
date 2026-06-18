@@ -61,11 +61,9 @@ export default async function PlatformLayout({
 
   const isAdmin = isSuperAdmin(user.email, profile?.role);
 
-  // Multiempresa: empresas del usuario + empresa activa (resiliente si aún no se despliega)
-  const [companies, activeCompanyId] = await Promise.all([
-    listUserCompanies(supabase, user.id),
-    getActiveCompanyId(supabase, user.id),
-  ]);
+  // Multiempresa: resuelve (y auto-aprovisiona) la empresa activa primero, luego lista.
+  const activeCompanyId = await getActiveCompanyId(supabase, user.id);
+  const companies = await listUserCompanies(supabase, user.id);
 
   return (
     <PlatformShell

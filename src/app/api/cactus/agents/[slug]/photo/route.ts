@@ -54,7 +54,8 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
   const publicUrl = pub.data.publicUrl;
 
   // Guarda la URL en el nivel correcto (RLS del usuario aplica)
-  await saveAgentConfig(supabase, scope === 'global' ? null : companyId, params.slug, { image_url: publicUrl });
+  const saved = await saveAgentConfig(supabase, scope === 'global' ? null : companyId, params.slug, { image_url: publicUrl });
+  if (!saved) return NextResponse.json({ ok: false, error: 'La foto se subió pero no se pudo guardar en el agente (¿permisos?).', url: publicUrl }, { status: 500 });
 
   return NextResponse.json({ ok: true, url: publicUrl });
 }
