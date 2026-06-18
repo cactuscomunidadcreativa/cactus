@@ -231,7 +231,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Scripts, seguimiento, objeciones, prospección, propuestas, cotizaciones y cierre comercial.',
     tools: ['Tuna CRM', 'Ferocactus'],
     models: ['GPT', 'Claude', 'Gemini'],
-    emoji: '💰', color: '#C7A54A', image: img('maguey'), status: 'soon',
+    emoji: '💰', color: '#C7A54A', image: img('maguey'), status: 'live', href: '/apps/maguey',
   },
 
   // ─── MODA ─────────────────────────────────────────────────────────────────
