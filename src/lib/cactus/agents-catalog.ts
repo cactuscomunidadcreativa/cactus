@@ -215,7 +215,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Constructor web: landings, sitios, funnels, micrositios, formularios, blogs y e-commerce.',
     tools: ['Next.js', 'Tailwind', 'CMS', 'Formularios', 'Checkout'],
     models: ['GPT', 'Claude', 'Gemini'],
-    emoji: '🌐', color: '#2D6CDF', image: img('opuntia'), status: 'soon',
+    emoji: '🌐', color: '#2D6CDF', image: img('opuntia'), status: 'live', href: '/apps/opuntia',
   },
   {
     slug: 'echinocereus', name: 'Echinocereus', role: 'SEO & Growth', division: 'web',
