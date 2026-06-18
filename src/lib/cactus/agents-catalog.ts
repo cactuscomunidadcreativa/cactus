@@ -222,7 +222,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'SEO técnico, keywords, contenidos, metadata, arquitectura web, interlinking y tráfico orgánico.',
     tools: ['Opuntia', 'Pitaya', 'Biznaga'],
     models: ['Gemini', 'Perplexity', 'Claude'],
-    emoji: '📈', color: '#1D4ED8', image: img('echinocereus'), status: 'soon',
+    emoji: '📈', color: '#1D4ED8', image: img('echinocereus'), status: 'live', href: '/apps/echinocereus',
   },
 
   // ─── SALES ────────────────────────────────────────────────────────────────
