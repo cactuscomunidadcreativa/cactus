@@ -9,6 +9,7 @@ import {
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
+import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
 
 interface PitayaAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -251,12 +252,13 @@ function PiecesPanel({
   const [brief, setBrief] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [doc, setDoc] = useState<Attached | null>(null);
 
   async function generate() {
     const b = brief.trim();
     if (!b || loading) return;
     setLoading(true); setError(null);
-    const prompt = `Crea una pieza tipo "${TYPE[type].label}".\nBriefing: ${b}\nFormato: ${TYPE_INSTRUCTION[type]}`;
+    const prompt = withDoc(`Crea una pieza tipo "${TYPE[type].label}".\nBriefing: ${b}\nFormato: ${TYPE_INSTRUCTION[type]}`, doc, 'Apóyate en este material que te comparto');
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -296,6 +298,7 @@ function PiecesPanel({
           placeholder={`Briefing para tu ${TYPE[type].label.toLowerCase()}…`}
           className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none"
         />
+        <div className="mt-2"><DocAttach accent={agent.color} attached={doc} onChange={setDoc} label="Adjuntar brief o referencia" /></div>
         <button
           onClick={generate}
           disabled={loading || !brief.trim()}

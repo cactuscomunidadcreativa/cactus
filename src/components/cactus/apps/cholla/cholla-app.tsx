@@ -10,6 +10,7 @@ import {
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
+import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
 
 interface ChollaAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -256,6 +257,7 @@ function Lanzar({ agent, onSave, onGoList }: { agent: ChollaAgent; onSave: (p: P
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [doc, setDoc] = useState<Attached | null>(null);
 
   const togglePlatform = (k: PlatformKey) =>
     setPlatforms((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k]));
@@ -265,7 +267,7 @@ function Lanzar({ agent, onSave, onGoList }: { agent: ChollaAgent; onSave: (p: P
     if (!product.trim() || !platforms.length || loading) return;
     setLoading(true); setError(null); setResult(null);
     const platformLabels = platforms.map((k) => PLAT[k].label).join(', ');
-    const prompt =
+    const prompt = withDoc(
       `Diseña un plan de campaña de pauta pagada accionable.\n` +
       `Objetivo: ${objective}.\nPlataformas: ${platformLabels}.\n` +
       `Presupuesto: ${b ? fmt(b) : 'por definir'} ${period}.\n` +
@@ -275,7 +277,9 @@ function Lanzar({ agent, onSave, onGoList }: { agent: ChollaAgent; onSave: (p: P
       `- Segmentación / públicos sugeridos por plataforma.\n` +
       `- 2-3 ángulos creativos para testear (A/B): qué variar y por qué.\n` +
       `- KPIs a vigilar y un ROAS/CPA objetivo realista.\n` +
-      `- Próximos pasos. Sin preámbulo.`;
+      `- Próximos pasos. Sin preámbulo.`,
+      doc, 'Considera este brief / datos que te comparto',
+    );
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -358,6 +362,8 @@ function Lanzar({ agent, onSave, onGoList }: { agent: ChollaAgent; onSave: (p: P
             className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none"
           />
         </Field>
+
+        <div className="mb-3"><DocAttach accent={agent.color} attached={doc} onChange={setDoc} label="Adjuntar brief o datos" /></div>
 
         <button
           onClick={generate}

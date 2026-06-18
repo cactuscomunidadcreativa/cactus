@@ -9,6 +9,7 @@ import {
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
+import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
 
 interface FeroAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -229,11 +230,12 @@ function Generar({ agent, provider, onSave, onGoList }: { agent: FeroAgent; prov
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [doc, setDoc] = useState<Attached | null>(null);
 
   async function generate() {
     if (!scope.trim() || loading) return;
     setLoading(true); setError(null); setResult(null);
-    const prompt =
+    const prompt = withDoc(
       `Redacta un documento tipo "${DOC[kind].label}" en español, listo para revisar.\n` +
       `Partes: Proveedor: ${prov.trim() || 'la empresa'}; Cliente: ${client.trim() || '[Cliente]'}.\n` +
       `Objeto / alcance: ${scope.trim()}.\n` +
@@ -241,7 +243,9 @@ function Generar({ agent, provider, onSave, onGoList }: { agent: FeroAgent; prov
       `Vigencia / plazos: ${term.trim() || 'a convenir'}.\n` +
       `Estructura el documento con cláusulas o numerales claros, formal pero legible. ` +
       `Usa campos entre corchetes [ ] donde falten datos. ` +
-      `Empieza con la línea exacta: "— Borrador generado por IA; revísalo con tu abogado antes de firmar —". Sin texto adicional fuera del documento.`;
+      `Empieza con la línea exacta: "— Borrador generado por IA; revísalo con tu abogado antes de firmar —". Sin texto adicional fuera del documento.`,
+      doc, 'Toma como base / referencia este documento',
+    );
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -294,6 +298,7 @@ function Generar({ agent, provider, onSave, onGoList }: { agent: FeroAgent; prov
             <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Ej. 6 meses" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
           </Field>
         </div>
+        <div className="mb-3"><DocAttach accent={agent.color} attached={doc} onChange={setDoc} label="Adjuntar documento base" /></div>
         <button
           onClick={generate}
           disabled={loading || !scope.trim()}

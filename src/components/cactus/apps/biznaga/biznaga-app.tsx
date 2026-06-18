@@ -9,6 +9,7 @@ import {
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
+import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
 
 interface BiznagaAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -235,17 +236,20 @@ function Investigar({ agent, onSave, onGoList }: { agent: BiznagaAgent; onSave: 
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [doc, setDoc] = useState<Attached | null>(null);
 
   async function generate() {
     const t = topic.trim();
     if (!t || loading) return;
     setLoading(true); setError(null); setResult(null);
-    const prompt =
+    const prompt = withDoc(
       `Actúa como analista de inteligencia de mercado. Haz un "${KIND[kind].label}" sobre: ${t}${sector.trim() ? ` (sector: ${sector.trim()})` : ''}.\n` +
       `Entrega con encabezados claros y viñetas:\n` +
       `- Resumen ejecutivo (3-4 líneas).\n- Hallazgos clave.\n- Competidores / actores principales (si aplica).\n` +
       `- Oportunidades y amenazas.\n- Benchmark o métricas de referencia (si aplica).\n- Recomendaciones accionables.\n` +
-      `Sé concreto y realista. Si algún dato requiere fuentes en vivo, indícalo explícitamente. Sin preámbulo.`;
+      `Sé concreto y realista. Si algún dato requiere fuentes en vivo, indícalo explícitamente. Sin preámbulo.`,
+      doc, 'Usa estos datos/fuente que te comparto',
+    );
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -290,6 +294,7 @@ function Investigar({ agent, onSave, onGoList }: { agent: BiznagaAgent; onSave: 
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none"
           />
         </Field>
+        <div className="mb-3"><DocAttach accent={agent.color} attached={doc} onChange={setDoc} label="Adjuntar fuente o datos" /></div>
         <button
           onClick={generate}
           disabled={loading || !topic.trim()}
