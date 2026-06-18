@@ -139,7 +139,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Storytelling, anuncios, guiones, emails, landing pages, slogans y conceptos de campaña.',
     tools: ['Brand Kit', 'Motor Emocional', 'Biznaga'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '✍️', color: '#E8589A', image: img('pitaya'), status: 'beta', reuses: 'ramona', href: '/apps/ramona',
+    emoji: '✍️', color: '#E8589A', image: img('pitaya'), status: 'live', href: '/apps/pitaya',
   },
   {
     slug: 'cardon', name: 'Cardón', role: 'Diseñador Gráfico', division: 'agency',
