@@ -749,4 +749,22 @@ CREATE POLICY user_preferences_owner ON public.user_preferences FOR ALL
 ALTER TABLE public.agent_configs ADD COLUMN IF NOT EXISTS display_name text;
 ALTER TABLE public.agent_configs ADD COLUMN IF NOT EXISTS description text;
 ALTER TABLE public.agent_configs ADD COLUMN IF NOT EXISTS image_url text;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- SECRETOS DE AGENTE (espejo de 041_agent_secrets.sql) — cifrados AES-256-GCM
+-- ════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS public.agent_secrets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  agent_slug text NOT NULL, name text NOT NULL, kind text NOT NULL DEFAULT 'token',
+  secret_enc text NOT NULL, last4 text,
+  created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now(),
+  UNIQUE (company_id, agent_slug, name)
+);
+CREATE INDEX IF NOT EXISTS idx_agent_secrets_company ON public.agent_secrets(company_id, agent_slug);
+ALTER TABLE public.agent_secrets ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS agent_secrets_tenant ON public.agent_secrets;
+CREATE POLICY agent_secrets_tenant ON public.agent_secrets FOR ALL
+  USING (company_id IN (SELECT public.cactus_company_ids()) OR public.is_super_admin())
+  WITH CHECK (company_id IN (SELECT public.cactus_company_ids()) OR public.is_super_admin());
 `;

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Loader2, Save, ArrowLeft } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Loader2, Save, ArrowLeft, KeyRound, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props { slug: string }
@@ -114,6 +114,83 @@ export function AgentEditor({ slug }: Props) {
           </div>
         )}
       </div>
+
+      <SecretsSection slug={slug} canManage={canManage} />
+    </div>
+  );
+}
+
+// ── Credenciales del agente (contraseñas / tokens / API keys) — cifradas ─────
+function SecretsSection({ slug, canManage }: { slug: string; canManage: boolean }) {
+  const [list, setList] = useState<any[] | null>(null);
+  const [configured, setConfigured] = useState(true);
+  const [name, setName] = useState('');
+  const [kind, setKind] = useState('token');
+  const [value, setValue] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    const r = await fetch(`/api/cactus/agents/${slug}/secrets`);
+    const d = await r.json();
+    setList(d.secrets || []); setConfigured(d.configured !== false);
+  }, [slug]);
+  useEffect(() => { load(); }, [load]);
+
+  async function add() {
+    if (!name.trim() || !value.trim()) return;
+    setBusy(true); setErr('');
+    try {
+      const r = await fetch(`/api/cactus/agents/${slug}/secrets`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, kind, value }),
+      });
+      const d = await r.json();
+      if (d.ok) { setName(''); setValue(''); await load(); } else { setErr(d.error || 'No se pudo guardar.'); }
+    } finally { setBusy(false); }
+  }
+  async function del(id: string) {
+    await fetch(`/api/cactus/agents/${slug}/secrets`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    load();
+  }
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-center gap-2">
+        <KeyRound className="h-4 w-4 text-cactus-green" />
+        <h2 className="font-display font-semibold">Credenciales (contraseñas y tokens)</h2>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Se guardan <strong>cifradas</strong> (AES-256-GCM); el valor nunca se muestra ni vuelve al navegador. Úsalo para las llaves/tokens que este agente necesita.
+      </p>
+      {!configured && (
+        <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+          Falta <code>CACTUS_SECRETS_KEY</code> en el servidor (Vercel). Mientras no esté, no guardo credenciales (para no dejarlas sin cifrar).
+        </p>
+      )}
+      {list === null ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : (
+        <ul className="space-y-1.5">
+          {list.map((s) => (
+            <li key={s.id} className="flex items-center gap-2 rounded-lg border border-border bg-background p-2.5 text-sm">
+              <span className="flex-1 truncate"><span className="font-medium">{s.name}</span> <span className="text-[11px] text-muted-foreground">· {s.kind} · {s.last4 || '••••'}</span></span>
+              {canManage && <button onClick={() => del(s.id)} className="rounded p-1 hover:bg-muted"><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></button>}
+            </li>
+          ))}
+          {!list.length && <p className="text-xs text-muted-foreground">Sin credenciales guardadas.</p>}
+        </ul>
+      )}
+      {canManage && configured && (
+        <div className="flex flex-wrap items-end gap-2">
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre (ej. WhatsApp token)" className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm" />
+          <select value={kind} onChange={(e) => setKind(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm">
+            <option value="token">token</option><option value="api_key">api_key</option><option value="password">password</option>
+          </select>
+          <input value={value} onChange={(e) => setValue(e.target.value)} type="password" placeholder="Valor (secreto)" autoComplete="new-password" className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm" />
+          <button onClick={add} disabled={busy} className="inline-flex items-center gap-1 rounded-lg bg-cactus-green px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          </button>
+        </div>
+      )}
+      {err && <p className="text-xs text-red-600">{err}</p>}
     </div>
   );
 }
