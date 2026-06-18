@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { BookOpen, Boxes, Plug, Database, FileText, Link2, Plus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { BrandKitForm } from '@/components/cactus/brand-kit-form';
+import { BrainReindex } from '@/components/cactus/brain-reindex';
 import { KpiRow } from '@/components/cactus/app-shell/kpi-row';
 import { AGENTS } from '@/lib/cactus/agents-catalog';
 
@@ -66,8 +67,9 @@ export default async function BrainPage() {
           <BrandKitForm />
         </div>
 
-        {/* Lateral: conocimiento + integraciones */}
+        {/* Lateral: RAG + conocimiento + integraciones */}
         <div className="space-y-6">
+          <BrainReindex />
           <section className="rounded-2xl border border-border bg-card p-4">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-display font-semibold">Base de conocimiento</h2>

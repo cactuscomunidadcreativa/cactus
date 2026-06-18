@@ -12,6 +12,7 @@ import { getActiveCompanyId } from '@/lib/cactus/companies';
 import { getCompanyPlan, isAgentAvailable, activateAgent } from '@/lib/cactus/agent-access';
 import { checkQuota, registerUsage } from '@/lib/cactus/usage';
 import { raiseAlert } from '@/lib/cactus/alerts';
+import { retrieveContext } from '@/lib/cactus/rag';
 
 export const maxDuration = 60;
 
@@ -109,7 +110,12 @@ export async function POST(req: Request) {
   const agent = getAgent(task.agent_slug);
 
   try {
-    const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null));
+    // Cerebro RAG (Fase B): conocimiento scopeado por agente
+    const ragContext = await retrieveContext(supabase, {
+      companyId, agentSlug: task.agent_slug,
+      query: `${task.action} ${project.objective || ''}`.trim(), limit: 5,
+    });
+    const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext);
     const res = await generateContent({
       prompt: agentTaskPrompt({ action: task.action, objective: project.objective }),
       systemPrompt: system, maxTokens: 1200, temperature: 0.7,
