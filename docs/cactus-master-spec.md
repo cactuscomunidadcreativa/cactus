@@ -263,6 +263,13 @@ Corren en background (jobs programados), monitorean y **levantan alertas a Ramon
 Arrancan en **v1 con búsqueda web + jobs (Vercel Cron)** y el bus de alertas; se enriquecen con
 integraciones después. No esperan a la Fase G.
 
+### Landing público `/apps` (vitrina de marca)
+Además del ecosistema interno, las 28 apps/agentes se muestran en el **landing público**
+[`/apps`](https://www.cactuscomunidadcreativa.com/apps) — vitrina de marketing con **sus imágenes/arte
+nuevos** (las tarjetas 3:4), descripción, división y CTA para contratarlas/probarlas. Reusa el catálogo
+(`agents-catalog.ts`) + las tarjetas del ecosistema, en versión pública (sin login). Tarea de bajo
+acoplamiento: se puede hacer en cualquier momento. Pendiente: arte de Cholla (y de los que falten).
+
 ### Super dashboard de agentes (cómo se conectan)
 Una vista **mapa del ecosistema**: todos los agentes, su **estado** (activo/apagado/en plan), y las
 **conexiones** (quién delega a quién, quién depende de quién, quién escala a Ramona). Es el centro de
