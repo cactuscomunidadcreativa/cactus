@@ -109,7 +109,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Investigación de mercado, competencia, tendencias, benchmark y pricing externo.',
     tools: ['Web', 'Perplexity', 'PDFs', 'Fuentes públicas'],
     models: ['Perplexity', 'Gemini', 'Claude'],
-    emoji: '🔍', color: '#15803D', image: img('biznaga'), status: 'soon',
+    emoji: '🔍', color: '#15803D', image: img('biznaga'), status: 'live', href: '/apps/biznaga',
   },
   {
     slug: 'ferocactus', name: 'Ferocactus', role: 'Contratos & Documentos', division: 'business',
