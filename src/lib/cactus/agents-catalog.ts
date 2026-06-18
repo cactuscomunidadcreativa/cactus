@@ -125,7 +125,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'Grillas, captions, calendarios, community management, formatos virales y publicación.',
     tools: ['Meta', 'Instagram', 'TikTok', 'LinkedIn', 'YouTube', 'Buffer'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '📣', color: '#D6336C', image: img('nopal'), status: 'beta', reuses: 'ramona', href: '/apps/ramona',
+    emoji: '📣', color: '#D6336C', image: img('nopal'), status: 'live', href: '/apps/nopal',
   },
   {
     slug: 'cholla', name: 'Cholla', role: 'Campañas & Performance', division: 'agency',
