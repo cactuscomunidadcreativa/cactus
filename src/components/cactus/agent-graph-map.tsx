@@ -97,6 +97,10 @@ export function AgentGraphMap() {
             </div>
           )}
           <svg viewBox={`0 0 ${graph.view.w} ${graph.view.h}`} className="h-auto w-full" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <clipPath id="cnode-24"><circle r={24} /></clipPath>
+              <clipPath id="cnode-30"><circle r={30} /></clipPath>
+            </defs>
             {/* Aristas */}
             <g>
               {graph.edges.map((e) => {
@@ -133,6 +137,7 @@ export function AgentGraphMap() {
                 const isConnected = connected.has(n.slug);
                 const dim = !!active && !isActiveNode && !isConnected;
                 const r = n.slug === 'cactus-ia' || n.slug === 'ramona' ? 30 : 24;
+                const imgSrc = st?.image || n.image;
                 return (
                   <g
                     key={n.slug}
@@ -144,16 +149,24 @@ export function AgentGraphMap() {
                     onClick={() => setSelected((s) => (s === n.slug ? null : n.slug))}
                   >
                     {isActiveNode && <circle r={r + 7} fill={n.color} opacity={0.14} />}
+                    <circle r={r} fill="white" />
+                    {imgSrc ? (
+                      <image
+                        href={imgSrc}
+                        x={-r} y={-r} width={r * 2} height={r * 2}
+                        clipPath={`url(#${r >= 30 ? 'cnode-30' : 'cnode-24'})`}
+                        preserveAspectRatio="xMidYMid slice"
+                      />
+                    ) : (
+                      <text textAnchor="middle" dominantBaseline="central" fontSize={r * 0.85} y={1}>{n.emoji}</text>
+                    )}
                     <circle
                       r={r}
-                      fill={`${n.color}1f`}
+                      fill="none"
                       stroke={n.color}
                       strokeWidth={isActiveNode ? 3 : 2}
                       strokeDasharray={unavailable ? '4 3' : undefined}
                     />
-                    <text textAnchor="middle" dominantBaseline="central" fontSize={r * 0.85} y={1}>
-                      {n.emoji}
-                    </text>
                     {/* dot de estado encendido/apagado */}
                     <circle cx={r * 0.72} cy={-r * 0.72} r={5} fill={isOn ? '#22C55E' : '#94A3B8'} stroke="white" strokeWidth={1.5} />
                     <text
