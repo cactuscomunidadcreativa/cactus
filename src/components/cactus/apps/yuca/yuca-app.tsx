@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sun, LineChart, HeartPulse, Wind, MessageCircle, Plus, Trash2, Check, Loader2, Sparkles,
-  Flame, Send, Minus, Salad, FileText, ShieldAlert,
+  Flame, Send, Minus, Salad, FileText, ShieldAlert, Upload, ScanLine,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
+import { extractText } from '@/lib/cactus/doc-extract';
+import { parseMarkers, type MarkerResult, type MarkerStatus } from '@/lib/cactus/health-markers';
 
 interface YucaAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -242,32 +244,89 @@ function Salud({ agent, lastWeight }: { agent: YucaAgent; lastWeight?: number })
   );
 }
 
+const STATUS_UI: Record<MarkerStatus, { label: string; cls: string }> = {
+  normal: { label: 'Normal', cls: 'bg-emerald-100 text-emerald-700' },
+  limite: { label: 'Límite', cls: 'bg-amber-100 text-amber-700' },
+  bajo: { label: 'Bajo', cls: 'bg-sky-100 text-sky-700' },
+  alto: { label: 'Alto', cls: 'bg-red-100 text-red-700' },
+};
+
 function Analisis({ agent }: { agent: YucaAgent }) {
   const [text, setText] = useState('');
+  const [markers, setMarkers] = useState<MarkerResult[] | null>(null);
+  const [reading, setReading] = useState(false);   // OCR/extracción
   const [out, setOut] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingAI, setLoadingAI] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const c = agent.color;
 
-  async function read() {
-    if (!text.trim() || loading) return;
-    setLoading(true); setError(null); setOut(null);
-    const prompt = `Eres Yuca, asistente personal de salud (no médico). La persona te comparte resultados/datos de su análisis o chequeo:\n"""${text.trim()}"""\nExplica en lenguaje claro y cercano: qué significan los valores principales, qué está bien y a qué convendría poner atención, y 3 hábitos concretos que ayudarían. Sé prudente, sin diagnosticar ni alarmar. Cierra recordando consultar a su médico para interpretación oficial.`;
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]; if (!f) return;
+    setReading(true); setError(null); setOut(null);
+    try {
+      const txt = await extractText(f);
+      if (!txt) throw new Error('No pude leer texto del archivo. Prueba con otra imagen más nítida o pega los valores.');
+      setText(txt);
+      setMarkers(parseMarkers(txt));
+    } catch (err: any) {
+      setError(err?.message || 'No pude leer el archivo. Pega los valores manualmente.');
+    } finally { setReading(false); if (fileRef.current) fileRef.current.value = ''; }
+  }
+
+  function readValues() { setMarkers(parseMarkers(text)); }
+
+  async function explainAI() {
+    if (!text.trim() || loadingAI) return;
+    setLoadingAI(true); setError(null); setOut(null);
+    const prompt = `Eres Yuca, asistente personal de salud (no médico). La persona comparte resultados de su análisis:\n"""${text.trim().slice(0, 4000)}"""\nExplica en lenguaje claro y cercano qué significan los valores principales, qué está bien y a qué poner atención, y 3 hábitos concretos que ayudarían. Prudente, sin diagnosticar ni alarmar. Cierra recordando consultar a su médico.`;
     try {
       const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }], maxTokens: 1200 }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       setOut(String(data.content || '').trim());
-    } catch (e: any) { setError(e?.message || 'Error'); } finally { setLoading(false); }
+    } catch (e: any) { setError(e?.message || 'Error'); } finally { setLoadingAI(false); }
   }
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="mb-2 flex items-center gap-2"><FileText className="h-4 w-4" style={{ color: c }} /><h3 className="font-display font-semibold">Tus análisis</h3></div>
-      <p className="mb-3 text-sm text-muted-foreground">Pega los resultados de tu análisis o chequeo y Yuca te dice, en simple, cómo vas.</p>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder="Ej. Glucosa 95, colesterol total 210, HDL 45, presión 120/80, vitamina D baja…" className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
-      <button onClick={read} disabled={loading || !text.trim()} className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} ¿Cómo voy?</button>
+      <p className="mb-3 text-sm text-muted-foreground">Sube tu análisis (PDF o foto) o pega los valores. Yuca los lee y te dice cómo vas — la lectura es <strong>gratis</strong>, sin IA.</p>
+
+      <div className="mb-2 flex flex-wrap gap-2">
+        <button onClick={() => fileRef.current?.click()} disabled={reading} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>
+          {reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} {reading ? 'Leyendo…' : 'Subir análisis'}
+        </button>
+        <button onClick={readValues} disabled={!text.trim()} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"><ScanLine className="h-4 w-4" /> Leer valores</button>
+        <input ref={fileRef} type="file" accept="image/*,application/pdf" hidden onChange={onFile} />
+      </div>
+
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder="…o pega aquí: Glucosa 95, colesterol total 210, HDL 45, triglicéridos 180, presión 120/80, vitamina D 22…" className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
       {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
+
+      {markers && (
+        markers.length === 0 ? (
+          <p className="mt-3 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">No reconocí valores estándar. Revisa el texto o pídele a Yuca una explicación con IA.</p>
+        ) : (
+          <div className="mt-3 overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-sm">
+              <thead><tr className="bg-muted/50 text-left text-[11px] text-muted-foreground"><th className="px-3 py-2 font-medium">Marcador</th><th className="px-2 py-2 font-medium">Tu valor</th><th className="px-2 py-2 font-medium">Referencia</th><th className="px-3 py-2 font-medium">Estado</th></tr></thead>
+              <tbody>
+                {markers.map((m, i) => (
+                  <tr key={i} className="border-t border-border">
+                    <td className="px-3 py-2"><div className="font-medium">{m.label}</div><div className="text-[11px] text-muted-foreground">{m.note}</div></td>
+                    <td className="px-2 py-2 font-semibold">{m.raw} <span className="text-[10px] font-normal text-muted-foreground">{m.unit}</span></td>
+                    <td className="px-2 py-2 text-xs text-muted-foreground">{m.ref}</td>
+                    <td className="px-3 py-2"><span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_UI[m.status].cls}`}>{STATUS_UI[m.status].label}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      )}
+
+      <button onClick={explainAI} disabled={loadingAI || !text.trim()} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border py-2 text-sm font-medium hover:bg-muted disabled:opacity-50">{loadingAI ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" style={{ color: c }} />} Explicación con IA (opcional)</button>
       {out && <div className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-background p-3 text-sm leading-relaxed text-foreground/85">{out}</div>}
       <p className="mt-3 inline-flex items-start gap-1.5 text-[11px] leading-relaxed text-amber-700"><ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {HEALTH_NOTE}</p>
     </div>
