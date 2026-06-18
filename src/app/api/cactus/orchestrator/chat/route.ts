@@ -6,6 +6,7 @@ import { buildBrandContext } from '@/lib/cactus/brain';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
 import { loadOrchestratorState, getTasks, getMessages } from '@/lib/cactus/orchestrator';
+import { getActiveCompanyId } from '@/lib/cactus/companies';
 
 export const maxDuration = 60;
 
@@ -41,6 +42,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ blocked: true, reason: 'no_plan', reply: NO_PLAN_REPLY, upgradeHref: '/packs' });
   }
 
+  // Empresa activa (multiempresa). null si aún no se despliega → comportamiento previo.
+  const companyId = await getActiveCompanyId(supabase, user.id);
+
   // Marca activa para contexto
   const { data: brand } = await supabase
     .from('cactus_brand_kits')
@@ -50,19 +54,23 @@ export async function POST(req: Request) {
   // ── Resolver proyecto activo (o crear uno) ──
   let projectId: string | null = body?.projectId || null;
   if (!projectId && !newProject) {
-    const { data: active } = await supabase
+    let aq = supabase
       .from('cactus_projects')
-      .select('id').eq('user_id', user.id).eq('is_active', true)
+      .select('id').eq('user_id', user.id).eq('is_active', true);
+    if (companyId) aq = aq.eq('company_id', companyId);
+    const { data: active } = await aq
       .order('updated_at', { ascending: false }).limit(1).maybeSingle();
     projectId = active?.id || null;
   }
 
   if (!projectId) {
-    // Desactiva el proyecto activo previo y crea uno nuevo
-    await supabase.from('cactus_projects').update({ is_active: false }).eq('user_id', user.id).eq('is_active', true);
+    // Desactiva el proyecto activo previo (de esta empresa) y crea uno nuevo
+    let dq = supabase.from('cactus_projects').update({ is_active: false }).eq('user_id', user.id).eq('is_active', true);
+    if (companyId) dq = dq.eq('company_id', companyId);
+    await dq;
     const { data: created, error } = await supabase
       .from('cactus_projects')
-      .insert({ user_id: user.id, name: message.slice(0, 60), objective: message, status: 'active', is_active: true, brand_kit_id: brand?.id || null })
+      .insert({ user_id: user.id, name: message.slice(0, 60), objective: message, status: 'active', is_active: true, brand_kit_id: brand?.id || null, ...(companyId ? { company_id: companyId } : {}) })
       .select('id').single();
     if (error || !created) return NextResponse.json({ error: 'No se pudo crear el proyecto. ¿Aplicaste la migración 033?' }, { status: 500 });
     projectId = created.id;
@@ -71,7 +79,7 @@ export async function POST(req: Request) {
   if (!projectId) return NextResponse.json({ error: 'No se pudo resolver el proyecto.' }, { status: 500 });
 
   // Persiste el mensaje del usuario
-  await supabase.from('cactus_project_messages').insert({ user_id: user.id, project_id: projectId, role: 'user', content: message });
+  await supabase.from('cactus_project_messages').insert({ user_id: user.id, project_id: projectId, role: 'user', content: message, ...(companyId ? { company_id: companyId } : {}) });
 
   // ¿Ya hay tareas? Si no, Ramona arma el plan y lo persiste.
   const existingTasks = await getTasks(supabase, projectId);
@@ -85,6 +93,7 @@ export async function POST(req: Request) {
           plan.steps.map((s, i) => ({
             user_id: user.id, project_id: projectId, agent_slug: s.agentSlug,
             action: s.action, status: 'pending', progress: 0, order_index: i,
+            ...(companyId ? { company_id: companyId } : {}),
           }))
         );
       }
@@ -98,7 +107,7 @@ export async function POST(req: Request) {
         : 'Voy a coordinar a los agentes adecuados para esto.';
 
       await supabase.from('cactus_project_messages')
-        .insert({ user_id: user.id, project_id: projectId, role: 'assistant', content: reply, plan });
+        .insert({ user_id: user.id, project_id: projectId, role: 'assistant', content: reply, plan, ...(companyId ? { company_id: companyId } : {}) });
     } else {
       // Seguimiento conversacional con historial
       const history = await getMessages(supabase, projectId);
@@ -112,13 +121,13 @@ export async function POST(req: Request) {
       }));
 
       await supabase.from('cactus_project_messages')
-        .insert({ user_id: user.id, project_id: projectId, role: 'assistant', content: res.content, credits });
+        .insert({ user_id: user.id, project_id: projectId, role: 'assistant', content: res.content, credits, ...(companyId ? { company_id: companyId } : {}) });
     }
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Error coordinando' }, { status: 500 });
   }
 
   // Devuelve el estado completo actualizado
-  const state = await loadOrchestratorState(supabase, user.id);
+  const state = await loadOrchestratorState(supabase, user.id, companyId);
   return NextResponse.json({ state });
 }

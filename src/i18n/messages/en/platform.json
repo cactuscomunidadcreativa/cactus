@@ -9,6 +9,9 @@
       "explore": "Explore",
       "admin": "Admin"
     },
+    "companySelector": {
+      "label": "Company"
+    },
     "dashboard": {
       "title": "Dashboard",
       "welcome": "Hi, {name}",

@@ -8,6 +8,7 @@ import { getAgent } from '@/lib/cactus/agents-catalog';
 import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
 import { isSensitive, deliverableKind, agentTaskPrompt } from '@/lib/cactus/orchestrator-exec';
 import { loadOrchestratorState, getTasks } from '@/lib/cactus/orchestrator';
+import { getActiveCompanyId } from '@/lib/cactus/companies';
 
 export const maxDuration = 60;
 
@@ -30,6 +31,9 @@ export async function POST(req: Request) {
   const approveTaskId: string | null = body?.taskId || null;
   if (!projectId) return NextResponse.json({ error: 'Falta el proyecto.' }, { status: 400 });
 
+  // Empresa activa (multiempresa). null si aún no se despliega → comportamiento previo.
+  const companyId = await getActiveCompanyId(supabase, user.id);
+
   // Verifica que el proyecto sea del usuario
   const { data: project } = await supabase
     .from('cactus_projects').select('id, objective').eq('id', projectId).eq('user_id', user.id).maybeSingle();
@@ -46,7 +50,7 @@ export async function POST(req: Request) {
   let task = approveTaskId ? tasks.find((t) => t.id === approveTaskId && t.status !== 'done') : pending[0];
 
   if (!task) {
-    const state = await loadOrchestratorState(supabase, user.id);
+    const state = await loadOrchestratorState(supabase, user.id, companyId);
     return NextResponse.json({ state, hasMore: false });
   }
 
@@ -56,7 +60,7 @@ export async function POST(req: Request) {
     if (task.status !== 'review') {
       await supabase.from('cactus_project_tasks').update({ status: 'review' }).eq('id', task.id);
     }
-    const state = await loadOrchestratorState(supabase, user.id);
+    const state = await loadOrchestratorState(supabase, user.id, companyId);
     return NextResponse.json({ state, hasMore: true, needsApproval: { taskId: task.id } });
   }
 
@@ -80,7 +84,7 @@ export async function POST(req: Request) {
     await supabase.from('cactus_deliverables').insert({
       user_id: user.id, project_id: projectId, task_id: task.id, agent_slug: task.agent_slug,
       title: task.action.slice(0, 80), kind: deliverableKind(task.agent_slug), status: 'ready',
-      content: res.content, meta: { credits, model: res.model },
+      content: res.content, meta: { credits, model: res.model }, ...(companyId ? { company_id: companyId } : {}),
     });
 
     await supabase.from('cactus_project_tasks').update({ status: 'done', progress: 100 }).eq('id', task.id);
@@ -94,7 +98,7 @@ export async function POST(req: Request) {
       }
     }
     await supabase.from('cactus_credit_ledger').insert({
-      user_id: user.id, delta: -credits, reason: 'agent_run', agent_slug: task.agent_slug, model: res.model, cost_usd: costUsd,
+      user_id: user.id, delta: -credits, reason: 'agent_run', agent_slug: task.agent_slug, model: res.model, cost_usd: costUsd, ...(companyId ? { company_id: companyId } : {}),
     });
   } catch (err: any) {
     await supabase.from('cactus_project_tasks').update({ status: 'pending', progress: 0 }).eq('id', task.id);

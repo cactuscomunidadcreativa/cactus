@@ -5,16 +5,19 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { LanguageSelector } from '@/components/shared/language-selector';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
+import { CompanySelector, type CompanyOption } from '@/components/shared/company-selector';
 import { User, LogOut, Settings, Menu } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 interface HeaderProps {
   userName?: string | null;
   userEmail?: string | null;
+  companies?: CompanyOption[];
+  activeCompanyId?: string | null;
   onToggleMobileSidebar?: () => void;
 }
 
-export function Header({ userName, userEmail, onToggleMobileSidebar }: HeaderProps) {
+export function Header({ userName, userEmail, companies = [], activeCompanyId = null, onToggleMobileSidebar }: HeaderProps) {
   const t = useTranslations('common');
   const router = useRouter();
   const supabase = createClient();
@@ -49,6 +52,7 @@ export function Header({ userName, userEmail, onToggleMobileSidebar }: HeaderPro
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
+        <CompanySelector companies={companies} activeId={activeCompanyId} />
         <ThemeToggle />
         <LanguageSelector />
 

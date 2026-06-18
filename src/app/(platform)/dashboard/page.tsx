@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Reveal } from '@/components/marketing/motion';
 import { AGENTS, getAgent } from '@/lib/cactus/agents-catalog';
+import { getActiveCompanyId } from '@/lib/cactus/companies';
 
 export const metadata = { title: 'Inicio · Cactus' };
 
@@ -40,18 +41,27 @@ export default async function DashboardPage() {
       const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
       firstName = profile?.full_name?.split(' ')[0] || '';
 
-      const { data: pj } = await supabase
+      // Empresa activa (multiempresa). null si aún no se despliega → comportamiento previo.
+      const companyId = await getActiveCompanyId(supabase, user.id);
+
+      let pjQ = supabase
         .from('cactus_projects').select('id, name, status, summary, updated_at')
-        .eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5);
+        .eq('user_id', user.id);
+      if (companyId) pjQ = pjQ.eq('company_id', companyId);
+      const { data: pj } = await pjQ.order('updated_at', { ascending: false }).limit(5);
       projects = pj || [];
 
-      const { count } = await supabase
+      let countQ = supabase
         .from('cactus_deliverables').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+      if (companyId) countQ = countQ.eq('company_id', companyId);
+      const { count } = await countQ;
       deliverableCount = count || 0;
 
-      const { data: act } = await supabase
+      let actQ = supabase
         .from('cactus_deliverables').select('id, title, agent_slug, created_at')
-        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(5);
+        .eq('user_id', user.id);
+      if (companyId) actQ = actQ.eq('company_id', companyId);
+      const { data: act } = await actQ.order('created_at', { ascending: false }).limit(5);
       activity = act || [];
     }
   }

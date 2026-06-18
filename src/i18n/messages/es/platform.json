@@ -9,6 +9,9 @@
       "explore": "Explorar",
       "admin": "Admin"
     },
+    "companySelector": {
+      "label": "Empresa"
+    },
     "dashboard": {
       "title": "Panel principal",
       "welcome": "Hola, {name}",

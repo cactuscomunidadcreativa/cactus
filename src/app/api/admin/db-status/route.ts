@@ -4,7 +4,7 @@ import { createClient as createSb } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
-const TABLES = ['cactus_brand_kits', 'cactus_campaigns', 'cactus_agent_configs', 'cactus_credit_wallets', 'cactus_model_costs'];
+const TABLES = ['cactus_brand_kits', 'cactus_campaigns', 'cactus_agent_configs', 'cactus_credit_wallets', 'cactus_model_costs', 'organizations', 'companies', 'memberships', 'plans'];
 
 export async function GET() {
   const guard = await requireAdmin();

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PlatformShell } from '@/components/layout/platform-shell';
 import { isSuperAdmin } from '@/lib/admin/auth';
+import { getActiveCompanyId, listUserCompanies } from '@/lib/cactus/companies';
 
 export default async function PlatformLayout({
   children,
@@ -18,6 +19,8 @@ export default async function PlatformLayout({
         userEmail="dev@localhost"
         subscriptions={[]}
         isAdmin={false}
+        companies={[]}
+        activeCompanyId={null}
       >
         {children}
       </PlatformShell>
@@ -58,12 +61,20 @@ export default async function PlatformLayout({
 
   const isAdmin = isSuperAdmin(user.email, profile?.role);
 
+  // Multiempresa: empresas del usuario + empresa activa (resiliente si aún no se despliega)
+  const [companies, activeCompanyId] = await Promise.all([
+    listUserCompanies(supabase, user.id),
+    getActiveCompanyId(supabase, user.id),
+  ]);
+
   return (
     <PlatformShell
       userName={profile?.full_name}
       userEmail={user.email}
       subscriptions={formattedSubs}
       isAdmin={isAdmin}
+      companies={companies}
+      activeCompanyId={activeCompanyId}
     >
       {children}
     </PlatformShell>

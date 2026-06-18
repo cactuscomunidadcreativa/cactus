@@ -64,12 +64,14 @@ export interface OrchestratorState {
 // patrón del resto del código. Las queries nunca lanzan (devuelven {data,error}).
 type DB = any;
 
-export async function getActiveProject(db: DB, userId: string): Promise<OrchestratorProject | null> {
-  const { data } = await db
+export async function getActiveProject(db: DB, userId: string, companyId?: string | null): Promise<OrchestratorProject | null> {
+  let q = db
     .from('cactus_projects')
     .select('*')
     .eq('user_id', userId)
-    .eq('is_active', true)
+    .eq('is_active', true);
+  if (companyId) q = q.eq('company_id', companyId); // scope por empresa activa (si existe)
+  const { data } = await q
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -103,20 +105,22 @@ export async function getDeliverables(db: DB, projectId: string): Promise<Orches
   return data || [];
 }
 
-/** Carga el estado completo del workspace para el usuario. */
-export async function loadOrchestratorState(db: DB, userId: string): Promise<OrchestratorState> {
-  const project = await getActiveProject(db, userId);
+/** Carga el estado completo del workspace para el usuario (scopeado por empresa activa). */
+export async function loadOrchestratorState(db: DB, userId: string, companyId?: string | null): Promise<OrchestratorState> {
+  const project = await getActiveProject(db, userId, companyId);
 
   const [tasks, messages, deliverables] = project
     ? await Promise.all([getTasks(db, project.id), getMessages(db, project.id), getDeliverables(db, project.id)])
     : [[], [], []];
 
   // Stats reales
-  const { count: projectCount } = await db
+  let countQ = db
     .from('cactus_projects')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .neq('status', 'done');
+  if (companyId) countQ = countQ.eq('company_id', companyId);
+  const { count: projectCount } = await countQ;
 
   const agents = new Set(tasks.filter((t) => t.status !== 'done').map((t) => t.agent_slug));
 

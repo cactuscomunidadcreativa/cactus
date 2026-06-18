@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Sidebar } from './sidebar';
 import { Header } from './header';
+import type { CompanyOption } from '@/components/shared/company-selector';
 
 interface AppSubscription {
   app_id: string;
@@ -18,9 +19,11 @@ interface PlatformShellProps {
   userEmail?: string | null;
   subscriptions: AppSubscription[];
   isAdmin?: boolean;
+  companies?: CompanyOption[];
+  activeCompanyId?: string | null;
 }
 
-export function PlatformShell({ children, userName, userEmail, subscriptions, isAdmin }: PlatformShellProps) {
+export function PlatformShell({ children, userName, userEmail, subscriptions, isAdmin, companies = [], activeCompanyId = null }: PlatformShellProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
@@ -48,6 +51,8 @@ export function PlatformShell({ children, userName, userEmail, subscriptions, is
         <Header
           userName={userName}
           userEmail={userEmail}
+          companies={companies}
+          activeCompanyId={activeCompanyId}
           onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
         />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
