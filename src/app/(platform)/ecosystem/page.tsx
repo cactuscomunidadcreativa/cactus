@@ -3,6 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { AgentGrid } from '@/components/cactus/agent-grid';
 import { Reveal, Counter } from '@/components/marketing/motion';
 import { AGENTS, DIVISION_ORDER } from '@/lib/cactus/agents-catalog';
+import { createClient } from '@/lib/supabase/server';
+import { getActiveCompanyId } from '@/lib/cactus/companies';
+import { getEffectiveAgentImages } from '@/lib/cactus/agent-images';
 
 export const metadata = {
   title: 'Ecosistema · Cactus Comunidad Creativa',
@@ -12,6 +15,15 @@ const liveCount = AGENTS.filter((a) => a.status !== 'soon').length;
 
 export default async function EcosystemPage() {
   const t = await getTranslations('ecosystem');
+
+  // Fotos efectivas (empresa sobre global) para que se reflejen los cambios del editor
+  const supabase = await createClient();
+  let images: Record<string, string> = {};
+  if (supabase) {
+    const { data: { user } } = await supabase.auth.getUser();
+    const companyId = user ? await getActiveCompanyId(supabase, user.id) : null;
+    images = await getEffectiveAgentImages(supabase, companyId);
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-10">
@@ -82,7 +94,7 @@ export default async function EcosystemPage() {
             {t('team.subtitle')}
           </p>
         </Reveal>
-        <AgentGrid />
+        <AgentGrid images={images} />
       </section>
     </div>
   );

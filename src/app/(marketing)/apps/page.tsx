@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { APP_INFO } from '@/components/marketing';
 import { getTranslations } from 'next-intl/server';
+import { createClient } from '@/lib/supabase/server';
+import { getEffectiveAgentImages } from '@/lib/cactus/agent-images';
 
 const APP_ORDER = ['ramona', 'tuna', 'agave', 'saguaro', 'pita', 'cereus'] as const;
 
@@ -17,6 +19,10 @@ const GRADIENTS: Record<string, string> = {
 
 export default async function AppsMarketplacePage() {
   const t = await getTranslations('home.appsPage');
+
+  // Fotos efectivas de nivel global "Cactus" (página pública → sin empresa)
+  const supabase = await createClient();
+  const images = supabase ? await getEffectiveAgentImages(supabase, null) : {};
 
   return (
     <div className="bg-background">
@@ -54,11 +60,11 @@ export default async function AppsMarketplacePage() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <Image
-                          src={app.logo}
+                          src={images[appId] || app.logo}
                           alt={app.name}
                           width={48}
                           height={48}
-                          className="rounded-lg"
+                          className="rounded-lg object-cover"
                         />
                         <div>
                           <h2 className="text-2xl font-display font-bold">{app.name}</h2>

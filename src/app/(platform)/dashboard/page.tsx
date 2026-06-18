@@ -8,6 +8,7 @@ import {
 import { Reveal } from '@/components/marketing/motion';
 import { AGENTS, getAgent } from '@/lib/cactus/agents-catalog';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
+import { getEffectiveAgentImages } from '@/lib/cactus/agent-images';
 
 export const metadata = { title: 'Inicio · Cactus' };
 
@@ -34,6 +35,7 @@ export default async function DashboardPage() {
   let projects: any[] = [];
   let deliverableCount = 0;
   let activity: any[] = [];
+  let agentImages: Record<string, string> = {};
 
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -43,6 +45,7 @@ export default async function DashboardPage() {
 
       // Empresa activa (multiempresa). null si aún no se despliega → comportamiento previo.
       const companyId = await getActiveCompanyId(supabase, user.id);
+      agentImages = await getEffectiveAgentImages(supabase, companyId);
 
       let pjQ = supabase
         .from('cactus_projects').select('id, name, status, summary, updated_at')
@@ -113,7 +116,7 @@ export default async function DashboardPage() {
                 <Link key={a.slug} href={a.slug === 'ramona' ? '/orchestrator' : `/agent/${a.slug}`}
                   className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-4 text-center transition-all hover:-translate-y-1 card-glow"
                   style={{ ['--tw-shadow-color' as string]: a.color + '40' }}>
-                  <Image src={a.image} alt={a.name} width={52} height={52} className="rounded-xl motion-safe:group-hover:animate-cactus-wiggle" />
+                  <Image src={agentImages[a.slug] || a.image} alt={a.name} width={52} height={52} className="h-[52px] w-[52px] rounded-xl object-cover motion-safe:group-hover:animate-cactus-wiggle" />
                   <div className="leading-tight">
                     <div className="text-sm font-semibold">{a.name}</div>
                     <div className="truncate text-[11px]" style={{ color: a.color }}>{a.role}</div>
@@ -189,7 +192,7 @@ export default async function DashboardPage() {
                   const a = getAgent(d.agent_slug || '');
                   return (
                     <li key={d.id} className="flex items-start gap-2.5">
-                      {a ? <Image src={a.image} alt={a.name} width={26} height={26} className="rounded-md" /> : <CircleDot className="h-5 w-5 text-muted-foreground" />}
+                      {a ? <Image src={agentImages[d.agent_slug] || a.image} alt={a.name} width={26} height={26} className="h-[26px] w-[26px] rounded-md object-cover" /> : <CircleDot className="h-5 w-5 text-muted-foreground" />}
                       <div className="min-w-0">
                         <p className="truncate text-xs font-medium">{d.title}</p>
                         <p className="text-[10px] text-muted-foreground">{a?.name || 'Agente'}</p>
