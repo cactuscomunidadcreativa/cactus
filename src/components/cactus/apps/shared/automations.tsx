@@ -53,8 +53,11 @@ export function useAutomations(agentSlug: string, defs: AutomationDef[]): Automa
     try {
       const map = Object.fromEntries(list.map((d) => [d.id, d.enabled]));
       localStorage.setItem(key, JSON.stringify(map));
+      // Cookie por agente: el route de IA la lee para aplicar las directivas.
+      const active = list.filter((d) => d.enabled).map((d) => d.id).join(',');
+      document.cookie = `cactus_auto_${agentSlug}=${encodeURIComponent(active)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     } catch { /* noop */ }
-  }, [list, loaded, key]);
+  }, [list, loaded, key, agentSlug]);
 
   const toggle = useCallback((id: string) => {
     setList((prev) => prev.map((d) => (d.id === id ? { ...d, enabled: !d.enabled } : d)));

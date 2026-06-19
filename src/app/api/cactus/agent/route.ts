@@ -8,6 +8,7 @@ import { getAgent } from '@/lib/cactus/agents-catalog';
 import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import { getBudgetTier } from '@/lib/cactus/budget-server';
 import { subAgentDirective } from '@/lib/cactus/sub-agents';
+import { getAutomationDirectives } from '@/lib/cactus/automations-server';
 import type { AIChatMessage } from '@/lib/ai';
 
 export const maxDuration = 60;
@@ -31,9 +32,11 @@ export async function POST(req: Request) {
   // Tokens de salida: 2000 por defecto; configurable hasta 4000 (p. ej. contenido largo de Pitaya).
   const tokenCap = Math.min(4000, Math.max(256, Number(maxTokens) || 2000));
 
-  // Sub-agente especializado (Bloque 6): reorienta el system prompt del agente.
+  // Sub-agente especializado (Bloque 6) + automatizaciones activas (Bloque 7):
+  // ambos reorientan el system prompt del agente.
   const systemPrompt = buildAgentSystemPrompt(slug, buildBrandContext(brand))
-    + subAgentDirective(slug, typeof subAgent === 'string' ? subAgent : null);
+    + subAgentDirective(slug, typeof subAgent === 'string' ? subAgent : null)
+    + await getAutomationDirectives(slug);
   const tier = await getBudgetTier();
 
   try {
