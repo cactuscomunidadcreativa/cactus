@@ -22,6 +22,7 @@ const PROVIDER_KEY_CONFIGS = [
   { key: 'kling_api_key', label: 'Kling AI · Access Key (video)' },
   { key: 'kling_secret_key', label: 'Kling AI · Secret Key (video)' },
   { key: 'suno_api_key', label: 'Suno (música)' },
+  { key: 'elevenlabs_api_key', label: 'ElevenLabs (voz + clonación)' },
 ];
 
 const WA_KEY_CONFIGS = [

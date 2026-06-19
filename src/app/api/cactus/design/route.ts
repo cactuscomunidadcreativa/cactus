@@ -32,13 +32,19 @@ export async function POST(req: Request) {
   const brand = body.brandName ? `para la marca "${body.brandName}"` : '';
 
   const MODE_PREFIX: Record<string, string> = {
-    design: 'Diseño gráfico profesional',
-    photo: 'Fotografía profesional, editorial y de producto, iluminación cuidada',
-    character: 'Ilustración de personaje/mascota de marca, estilo consistente',
+    design: 'Diseño gráfico profesional de marca, jerarquía visual clara, vectorial y pulido',
+    photo: 'Fotografía profesional editorial y de producto, iluminación de estudio cuidada, enfoque nítido, calidad de revista',
+    avatar: 'Retrato fotorrealista de avatar de marca: persona real y creíble, piel y ojos de alta fidelidad, iluminación de estudio suave, fondo neutro desenfocado, encuadre de cabeza y hombros, mirada a cámara, expresión cálida y profesional',
+    character: 'Diseño de personaje/mascota de marca: ilustración 3D pulida y expresiva, formas limpias, paleta coherente, pose con personalidad, fondo simple',
   };
   const prefix = MODE_PREFIX[body.mode as string] || MODE_PREFIX.design;
 
-  const prompt = `${prefix} ${brand}: ${body.brief}. ${STYLE_HINT[style]}. Composición limpia y equilibrada, alta calidad, lista para usar. Evita texto ilegible o deformado.`;
+  // Para avatar/foto evitamos lenguaje de "ilustración" y reforzamos realismo.
+  const realism = (body.mode === 'avatar' || body.mode === 'photo')
+    ? 'Resultado fotorrealista, detalle natural, sin aspecto de dibujo ni 3D plástico.'
+    : '';
+
+  const prompt = `${prefix} ${brand}: ${body.brief}. ${STYLE_HINT[style]}. ${realism} Composición equilibrada, alta calidad y lista para usar. Evita texto ilegible o deformado; manos y rasgos anatómicamente correctos.`;
 
   try {
     const img = await generateImage({ prompt, size: SIZE[format] || SIZE.square, quality: 'standard', style });

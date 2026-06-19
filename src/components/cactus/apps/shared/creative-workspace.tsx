@@ -11,7 +11,7 @@ import { getSubAgents } from '@/lib/cactus/sub-agents';
 
 export interface WsAgent { slug: string; name: string; role: string; color: string; image: string }
 export interface WsConfig {
-  mode: 'design' | 'photo' | 'character';
+  mode: 'design' | 'photo' | 'character' | 'avatar';
   greeting: string;
   subtitle: string;
   genLabel: string;

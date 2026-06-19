@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getAPIKey } from '@/lib/ai/config';
+import { getAPIKey, getIntegrationKey } from '@/lib/ai/config';
 import { usdToCredits } from '@/lib/cactus/credits';
 
 export const maxDuration = 60;
 
-const VOICES = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
+const OPENAI_VOICES = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -19,10 +19,34 @@ export async function POST(req: Request) {
   const text = (body?.text || '').trim();
   if (!text) return NextResponse.json({ error: 'Escribe el texto a locutar.' }, { status: 400 });
   if (text.length > 4000) return NextResponse.json({ error: 'Máximo 4000 caracteres.' }, { status: 400 });
-  const voice = VOICES.includes(body?.voice) ? body.voice : 'nova';
 
+  // ── ElevenLabs (voces premium + clonadas) si hay voiceId + key ─────────────
+  const elevenKey = await getIntegrationKey('elevenlabs');
+  const voiceId = typeof body?.voiceId === 'string' ? body.voiceId.trim() : '';
+  if (elevenKey && voiceId) {
+    try {
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: { 'xi-api-key': elevenKey, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
+        body: JSON.stringify({ text, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        return NextResponse.json({ error: `ElevenLabs error ${res.status}: ${err.slice(0, 200)}` }, { status: 500 });
+      }
+      const buf = Buffer.from(await res.arrayBuffer());
+      const audio = `data:audio/mp3;base64,${buf.toString('base64')}`;
+      const costUsd = (text.length / 1000) * 0.30 * 0.1; // estimación ElevenLabs por caracteres
+      return NextResponse.json({ audio, credits: usdToCredits(costUsd), costUsd, provider: 'elevenlabs', voiceId });
+    } catch (err: any) {
+      return NextResponse.json({ error: err?.message || 'Error con ElevenLabs' }, { status: 500 });
+    }
+  }
+
+  // ── OpenAI TTS (voces fijas) — respaldo ────────────────────────────────────
+  const voice = OPENAI_VOICES.includes(body?.voice) ? body.voice : 'nova';
   const apiKey = await getAPIKey('openai');
-  if (!apiKey) return NextResponse.json({ error: 'OpenAI no configurado.' }, { status: 500 });
+  if (!apiKey) return NextResponse.json({ error: 'Voz no configurada. Añade ElevenLabs u OpenAI en Conexiones.' }, { status: 500 });
 
   try {
     const res = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -37,7 +61,7 @@ export async function POST(req: Request) {
     const buf = Buffer.from(await res.arrayBuffer());
     const audio = `data:audio/mp3;base64,${buf.toString('base64')}`;
     const costUsd = (text.length / 1000) * 0.015; // tts-1 ~ $0.015 / 1k chars
-    return NextResponse.json({ audio, credits: usdToCredits(costUsd), costUsd, voice });
+    return NextResponse.json({ audio, credits: usdToCredits(costUsd), costUsd, provider: 'openai', voice });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Error generando audio' }, { status: 500 });
   }
