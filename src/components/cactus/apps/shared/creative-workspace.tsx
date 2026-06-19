@@ -6,6 +6,8 @@ import {
   Sliders, ImageIcon, History, Layers,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { getSubAgents } from '@/lib/cactus/sub-agents';
 
 export interface WsAgent { slug: string; name: string; role: string; color: string; image: string }
 export interface WsConfig {
@@ -44,6 +46,7 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
   const [brief, setBrief] = useState('');
   const [format, setFormat] = useState<'square' | 'story' | 'wide'>('square');
   const [style, setStyle] = useState<'vivid' | 'natural'>('vivid');
+  const [subAgent, setSubAgent] = useState<string | null>(null);
 
   // estado de imagen
   const [current, setCurrent] = useState<Img | null>(null);
@@ -75,8 +78,11 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
   async function generate() {
     if (!brief.trim() || busy) return;
     setBusy('gen'); setError(null);
+    // Mini-agente (Bloque 6): su enfoque afina el brief visual.
+    const focus = subAgent ? getSubAgents(agent.slug).find((s) => s.key === subAgent)?.focus : '';
+    const fullBrief = focus ? `${focus} ${brief.trim()}` : brief.trim();
     try {
-      const res = await fetch('/api/cactus/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brief: brief.trim(), mode: config.mode, format, style }) });
+      const res = await fetch('/api/cactus/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brief: fullBrief, mode: config.mode, format, style }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
       await setFromUrl(data.url);
@@ -141,6 +147,7 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
             <textarea value={brief} onChange={(e) => setBrief(e.target.value)} rows={4} placeholder={config.promptPlaceholder} className="mb-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
             <div className="mb-2 flex gap-1">{FORMATS.map((f) => <button key={f.key} onClick={() => setFormat(f.key)} className={`flex-1 rounded-md px-1.5 py-1 text-[11px] font-medium ${format === f.key ? 'text-white' : 'border border-border text-muted-foreground hover:bg-muted'}`} style={format === f.key ? { backgroundColor: c } : undefined}>{f.label}</button>)}</div>
             <div className="mb-3 flex gap-1">{(['vivid', 'natural'] as const).map((s) => <button key={s} onClick={() => setStyle(s)} className={`flex-1 rounded-md px-1.5 py-1 text-[11px] font-medium ${style === s ? 'text-white' : 'border border-border text-muted-foreground hover:bg-muted'}`} style={style === s ? { backgroundColor: c } : undefined}>{s === 'vivid' ? 'Vibrante' : 'Natural'}</button>)}</div>
+            <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
             <button onClick={generate} disabled={busy !== '' || !brief.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{busy === 'gen' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Generar</button>
           </div>
           <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4">
