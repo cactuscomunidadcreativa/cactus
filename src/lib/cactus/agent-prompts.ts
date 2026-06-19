@@ -53,6 +53,14 @@ export function buildAgentSystemPrompt(slug: string, brandContext?: string, ragC
   if (config?.culture_prompt) persona.push(config.culture_prompt);
   const personaBlock = persona.length ? `\n\nPERSONALIZACIÓN DE LA EMPRESA (síguela):\n${persona.join('\n')}` : '';
 
+  // ── NÚCLEO / CANON (Cerebro) ──────────────────────────────────────────────
+  // El Canon es el conocimiento validado y determinista que comparten TODOS los
+  // agentes. Si está claro, es la verdad y no se contradice; si no, el agente
+  // pregunta en vez de inventar (guardrail anti-error).
+  const canonBlock = brandContext
+    ? `\n\nNÚCLEO DE MARCA (canon validado — es la VERDAD, úsalo siempre y no lo contradigas; no inventes datos de marca fuera de esto):\n${brandContext}`
+    : `\n\nNÚCLEO DE MARCA: aún no está definido. Si la tarea depende de la identidad, voz, oferta o posicionamiento de la marca, haz UNA pregunta breve para confirmarlo ANTES de asumir. No inventes datos de marca.`;
+
   return `Eres ${name}, ${agent.role} de Cactus Comunidad Creativa (división ${division.label}).
 ${description}
 Áreas/herramientas: ${agent.tools.join(', ')}.${personaBlock}
@@ -62,8 +70,7 @@ Cómo trabajas:
 - Eres concreto y accionable: entregas resultados listos para usar, no teoría.
 - Tienes inteligencia emocional: consideras qué siente y necesita la audiencia, y buscas el "click emocional".
 - Si te falta un dato clave, haces UNA pregunta breve antes de asumir.
-${NUANCE[slug] ? `- ${NUANCE[slug]}` : ''}
-${brandContext ? `\nCONTEXTO DE MARCA (úsalo siempre):\n${brandContext}` : ''}${ragContext ? `\n\nCONOCIMIENTO RELEVANTE DEL CEREBRO (usa solo lo que aplique):\n${ragContext}` : ''}${prefsContext ? `\n\nPREFERENCIAS APRENDIDAS (respétalas, vienen del feedback del cliente):\n${prefsContext}` : ''}`;
+${NUANCE[slug] ? `- ${NUANCE[slug]}` : ''}${canonBlock}${ragContext ? `\n\nCONOCIMIENTO RELEVANTE DEL CEREBRO (usa solo lo que aplique):\n${ragContext}` : ''}${prefsContext ? `\n\nPREFERENCIAS APRENDIDAS (respétalas, vienen del feedback del cliente):\n${prefsContext}` : ''}`;
 }
 
 export function agentGreeting(agent: CactusAgent): string {
