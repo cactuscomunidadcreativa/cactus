@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   Bell, Search, HelpCircle, Coins, Menu, X, ChevronRight,
-  Layers, Bot, Brain, Building2, Plug, ArrowLeftRight, type LucideIcon,
+  Layers, Bot, Brain, Building2, Plug, LayoutDashboard, Store, Settings, type LucideIcon,
 } from 'lucide-react';
 import type { CactusAgent } from '@/lib/cactus/agents-catalog';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
@@ -26,6 +26,13 @@ const PLATFORM_LINKS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/empresa/conexiones', label: 'Conexiones', icon: Plug },
 ];
 
+// Cuenta: mismas entradas que la barra de plataforma, para coherencia total.
+const ACCOUNT_LINKS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: '/dashboard', label: 'Panel principal', icon: LayoutDashboard },
+  { href: '/marketplace', label: 'Marketplace', icon: Store },
+  { href: '/settings', label: 'Ajustes', icon: Settings },
+];
+
 interface Props {
   agent: ShellAgent;
   nav: AppNavItem[];
@@ -43,27 +50,12 @@ export function AgentAppShell({
   agent, nav, activeNav, onNav, user, credits, greeting, subtitle, cta, children,
 }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [browserOpen, setBrowserOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Explorador de agentes (cambiar de agente) */}
-      {browserOpen && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setBrowserOpen(false)} />
-          <div className="absolute left-0 top-0 flex h-full w-80 flex-col gap-3 border-r border-border bg-card p-3 shadow-xl">
-            <div className="flex items-center justify-between">
-              <span className="font-display text-sm font-semibold">Cambiar de agente</span>
-              <button onClick={() => setBrowserOpen(false)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="Cerrar"><X className="h-4 w-4" /></button>
-            </div>
-            <div className="min-h-0 flex-1"><AgentBrowser activeSlug={agent.slug} onPick={() => setBrowserOpen(false)} /></div>
-          </div>
-        </div>
-      )}
-
       {/* Sidebar (desktop) */}
       <div className="hidden lg:block">
-        <AgentSidebar agent={agent} nav={nav} activeNav={activeNav} onNav={onNav} user={user} credits={credits} onOpenBrowser={() => setBrowserOpen(true)} />
+        <AgentSidebar agent={agent} nav={nav} activeNav={activeNav} onNav={onNav} user={user} credits={credits} />
       </div>
 
       {/* Sidebar (mobile overlay) */}
@@ -71,7 +63,7 @@ export function AgentAppShell({
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <div className="absolute left-0 top-0 h-full">
-            <AgentSidebar agent={agent} nav={nav} activeNav={activeNav} onNav={(k) => { onNav?.(k); setMobileOpen(false); }} user={user} credits={credits} onClose={() => setMobileOpen(false)} onOpenBrowser={() => { setMobileOpen(false); setBrowserOpen(true); }} />
+            <AgentSidebar agent={agent} nav={nav} activeNav={activeNav} onNav={(k) => { onNav?.(k); setMobileOpen(false); }} user={user} credits={credits} onClose={() => setMobileOpen(false)} />
           </div>
         </div>
       )}
@@ -87,10 +79,10 @@ export function AgentAppShell({
 
 // ── Sidebar por agente ──────────────────────────────────────────────────────
 function AgentSidebar({
-  agent, nav, activeNav, onNav, user, credits, onClose, onOpenBrowser,
+  agent, nav, activeNav, onNav, user, credits, onClose,
 }: {
   agent: ShellAgent; nav: AppNavItem[]; activeNav?: string; onNav?: (key: string) => void;
-  user?: ShellUser; credits?: number; onClose?: () => void; onOpenBrowser?: () => void;
+  user?: ShellUser; credits?: number; onClose?: () => void;
 }) {
   // Agrupa por sección preservando el orden
   const sections: { name?: string; items: AppNavItem[] }[] = [];
@@ -111,35 +103,15 @@ function AgentSidebar({
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Activo
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-1">
-          {onOpenBrowser && (
-            <button onClick={onOpenBrowser} title="Cambiar de agente" aria-label="Cambiar de agente" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
-              <ArrowLeftRight className="h-4 w-4" />
-            </button>
-          )}
-          {onClose && <button onClick={onClose} className="text-muted-foreground"><X className="h-4 w-4" /></button>}
-        </div>
+        {onClose && <button onClick={onClose} className="ml-auto text-muted-foreground"><X className="h-4 w-4" /></button>}
       </div>
 
       {/* Navegación */}
       <nav className="flex-1 space-y-3 overflow-y-auto p-3">
-        {/* Plataforma: salir del agente hacia el resto del ecosistema */}
-        <div className="border-b border-border pb-3">
-          <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Plataforma</p>
-          <div className="space-y-0.5">
-            {PLATFORM_LINKS.map((l) => (
-              <Link key={l.href} href={l.href} onClick={onClose}
-                className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-                <l.icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{l.label}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-
+        {/* Vistas del agente activo */}
         {sections.map((sec, i) => (
           <div key={i}>
-            {sec.name && <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">{sec.name}</p>}
+            <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">{sec.name || `${agent.name}`}</p>
             <div className="space-y-0.5">
               {sec.items.map((item) => {
                 const active = item.key === activeNav;
@@ -162,6 +134,40 @@ function AgentSidebar({
             </div>
           </div>
         ))}
+
+        {/* Plataforma */}
+        <div className="border-t border-border pt-3">
+          <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Plataforma</p>
+          <div className="space-y-0.5">
+            {PLATFORM_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} onClick={onClose}
+                className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+                <l.icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{l.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Agentes — explorador unificado (mismo que en plataforma) */}
+        <div className="border-t border-border pt-3">
+          <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Agentes</p>
+          <div className="h-[42vh] min-h-[260px]"><AgentBrowser activeSlug={agent.slug} onPick={onClose} /></div>
+        </div>
+
+        {/* Cuenta */}
+        <div className="border-t border-border pt-3">
+          <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Cuenta</p>
+          <div className="space-y-0.5">
+            {ACCOUNT_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} onClick={onClose}
+                className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+                <l.icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{l.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </nav>
 
       {/* Footer: créditos + usuario + ayuda */}
