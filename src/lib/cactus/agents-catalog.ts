@@ -160,7 +160,7 @@ export const AGENTS: CactusAgent[] = [
     description: 'La idea madre. Define el ángulo emocional de cada campaña, audita las piezas y dirige al equipo creativo.',
     tools: ['Motor Emocional', 'Pitaya', 'Cardón', 'Nopal', 'Lente'],
     models: ['Claude', 'GPT', 'Gemini'],
-    emoji: '💡', color: '#9333EA', image: img('peyote'), status: 'live', href: '/campaign',
+    emoji: '💡', color: '#9333EA', image: img('peyote'), status: 'live', href: '/apps/peyote',
   },
 
   // ─── MEDIA ────────────────────────────────────────────────────────────────
