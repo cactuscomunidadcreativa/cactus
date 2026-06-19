@@ -5,10 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   Bell, Search, HelpCircle, Coins, Menu, X, ChevronRight,
-  Layers, Bot, Brain, Building2, Plug, type LucideIcon,
+  Layers, Bot, Brain, Building2, Plug, ArrowLeftRight, type LucideIcon,
 } from 'lucide-react';
 import type { CactusAgent } from '@/lib/cactus/agents-catalog';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
+import { AgentBrowser } from '@/components/cactus/app-shell/agent-browser';
 
 export interface AppNavItem { key: string; label: string; icon: LucideIcon; href?: string; section?: string }
 export interface ShellUser { name: string; email?: string; avatar?: string }
@@ -42,12 +43,27 @@ export function AgentAppShell({
   agent, nav, activeNav, onNav, user, credits, greeting, subtitle, cta, children,
 }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [browserOpen, setBrowserOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-background">
+      {/* Explorador de agentes (cambiar de agente) */}
+      {browserOpen && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setBrowserOpen(false)} />
+          <div className="absolute left-0 top-0 flex h-full w-80 flex-col gap-3 border-r border-border bg-card p-3 shadow-xl">
+            <div className="flex items-center justify-between">
+              <span className="font-display text-sm font-semibold">Cambiar de agente</span>
+              <button onClick={() => setBrowserOpen(false)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="Cerrar"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="min-h-0 flex-1"><AgentBrowser activeSlug={agent.slug} onPick={() => setBrowserOpen(false)} /></div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar (desktop) */}
       <div className="hidden lg:block">
-        <AgentSidebar agent={agent} nav={nav} activeNav={activeNav} onNav={onNav} user={user} credits={credits} />
+        <AgentSidebar agent={agent} nav={nav} activeNav={activeNav} onNav={onNav} user={user} credits={credits} onOpenBrowser={() => setBrowserOpen(true)} />
       </div>
 
       {/* Sidebar (mobile overlay) */}
@@ -55,7 +71,7 @@ export function AgentAppShell({
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <div className="absolute left-0 top-0 h-full">
-            <AgentSidebar agent={agent} nav={nav} activeNav={activeNav} onNav={(k) => { onNav?.(k); setMobileOpen(false); }} user={user} credits={credits} onClose={() => setMobileOpen(false)} />
+            <AgentSidebar agent={agent} nav={nav} activeNav={activeNav} onNav={(k) => { onNav?.(k); setMobileOpen(false); }} user={user} credits={credits} onClose={() => setMobileOpen(false)} onOpenBrowser={() => { setMobileOpen(false); setBrowserOpen(true); }} />
           </div>
         </div>
       )}
@@ -71,10 +87,10 @@ export function AgentAppShell({
 
 // ── Sidebar por agente ──────────────────────────────────────────────────────
 function AgentSidebar({
-  agent, nav, activeNav, onNav, user, credits, onClose,
+  agent, nav, activeNav, onNav, user, credits, onClose, onOpenBrowser,
 }: {
   agent: ShellAgent; nav: AppNavItem[]; activeNav?: string; onNav?: (key: string) => void;
-  user?: ShellUser; credits?: number; onClose?: () => void;
+  user?: ShellUser; credits?: number; onClose?: () => void; onOpenBrowser?: () => void;
 }) {
   // Agrupa por sección preservando el orden
   const sections: { name?: string; items: AppNavItem[] }[] = [];
@@ -86,7 +102,7 @@ function AgentSidebar({
 
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-card">
-      {/* Identidad del agente */}
+      {/* Identidad del agente + cambiar de agente */}
       <div className="flex items-center gap-2.5 border-b border-border p-4">
         <Image src={agent.image} alt={agent.name} width={38} height={38} className="rounded-xl" />
         <div className="min-w-0 leading-tight">
@@ -95,7 +111,14 @@ function AgentSidebar({
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Activo
           </div>
         </div>
-        {onClose && <button onClick={onClose} className="ml-auto text-muted-foreground"><X className="h-4 w-4" /></button>}
+        <div className="ml-auto flex items-center gap-1">
+          {onOpenBrowser && (
+            <button onClick={onOpenBrowser} title="Cambiar de agente" aria-label="Cambiar de agente" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+              <ArrowLeftRight className="h-4 w-4" />
+            </button>
+          )}
+          {onClose && <button onClick={onClose} className="text-muted-foreground"><X className="h-4 w-4" /></button>}
+        </div>
       </div>
 
       {/* Navegación */}

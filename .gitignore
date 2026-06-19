@@ -45,3 +45,7 @@ public/bench/
 
 # Originales de tarjetas (pesados); se usan los -card.png optimizados
 public/agents/New/
+
+# Copias accidentales del build (.next 2, .next copy, etc.)
+/.next */
+".next 2/"
