@@ -10,6 +10,7 @@ import {
 import type { CactusAgent } from '@/lib/cactus/agents-catalog';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { AgentBrowser } from '@/components/cactus/app-shell/agent-browser';
+import { CompanyBadge } from '@/components/cactus/app-shell/company-badge';
 
 export interface AppNavItem { key: string; label: string; icon: LucideIcon; href?: string; section?: string }
 export interface ShellUser { name: string; email?: string; avatar?: string }
@@ -201,6 +202,8 @@ function AppHeader({
           style={{ ['--tw-ring-color' as string]: agent.color }}
         />
       </div>
+
+      <CompanyBadge />
 
       <ThemeToggle />
 

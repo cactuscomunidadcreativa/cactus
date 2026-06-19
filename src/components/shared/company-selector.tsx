@@ -63,8 +63,11 @@ export function CompanySelector({ companies, activeId }: Props) {
         className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm transition-colors hover:bg-muted disabled:opacity-60"
         disabled={!!busy}
       >
-        <Building2 className="h-4 w-4 text-cactus-green" />
-        <span className="hidden max-w-[10rem] truncate font-medium sm:block">{active.name}</span>
+        <Building2 className="h-4 w-4 shrink-0 text-cactus-green" />
+        <span className="hidden leading-tight sm:block">
+          <span className="block text-[9px] uppercase tracking-wider text-muted-foreground">Estás en</span>
+          <span className="block max-w-[10rem] truncate text-xs font-semibold">{active.name}</span>
+        </span>
         {!single && <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
       </button>
 
