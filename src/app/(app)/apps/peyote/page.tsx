@@ -1,15 +1,15 @@
 import { notFound, redirect } from 'next/navigation';
-import { SaguaroApp } from '@/components/cactus/apps/saguaro/saguaro-app';
+import { PeyoteApp } from '@/components/cactus/apps/peyote/peyote-app';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
 import { getEffectiveAgentImages } from '@/lib/cactus/agent-images';
 import { getAccessStatus } from '@/lib/cactus/access';
 
-export const metadata = { title: 'Saguaro · Workflow & Tasks · Cactus' };
+export const metadata = { title: 'Peyote · Estrategia & EQ · Cactus' };
 
-export default async function SaguaroAppPage() {
-  const agent = getAgent('saguaro');
+export default async function PeyoteAppPage() {
+  const agent = getAgent('peyote');
   if (!agent) notFound();
 
   let image = agent.image;
@@ -19,7 +19,7 @@ export default async function SaguaroAppPage() {
   const supabase = await createClient();
   if (supabase) {
     const { data: { user: u } } = await supabase.auth.getUser();
-    if (!u) redirect('/login?redirect=/apps/saguaro');
+    if (!u) redirect('/login?redirect=/apps/peyote');
 
     const companyId = await getActiveCompanyId(supabase, u.id);
     const images = await getEffectiveAgentImages(supabase, companyId);
@@ -34,7 +34,7 @@ export default async function SaguaroAppPage() {
   }
 
   return (
-    <SaguaroApp
+    <PeyoteApp
       agent={{ slug: agent.slug, name: agent.name, role: agent.role, color: agent.color, image }}
       user={user}
       credits={credits}
