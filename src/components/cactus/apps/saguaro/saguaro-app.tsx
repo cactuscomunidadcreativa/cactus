@@ -516,7 +516,7 @@ function StatusPill({ status }: { status: FlowStatus }) {
 
 function Toggle({ on, accent, onClick }: { on: boolean; accent: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="relative h-5 w-9 shrink-0 rounded-full transition-colors" style={{ backgroundColor: on ? accent : 'var(--muted, #e5e7eb)' }} aria-pressed={on}>
+    <button onClick={onClick} className="relative h-5 w-9 shrink-0 rounded-full transition-colors" style={{ backgroundColor: on ? accent : 'rgb(148 163 184 / 0.4)' }} aria-pressed={on}>
       <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${on ? 'left-[18px]' : 'left-0.5'}`} />
     </button>
   );

@@ -8,6 +8,7 @@ import {
   Layers, Bot, Brain, Building2, Plug, type LucideIcon,
 } from 'lucide-react';
 import type { CactusAgent } from '@/lib/cactus/agents-catalog';
+import { ThemeToggle } from '@/components/shared/theme-toggle';
 
 export interface AppNavItem { key: string; label: string; icon: LucideIcon; href?: string; section?: string }
 export interface ShellUser { name: string; email?: string; avatar?: string }
@@ -192,6 +193,8 @@ function AppHeader({
           style={{ ['--tw-ring-color' as string]: agent.color }}
         />
       </div>
+
+      <ThemeToggle />
 
       <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted" aria-label="Notificaciones">
         <Bell className="h-4 w-4" />
