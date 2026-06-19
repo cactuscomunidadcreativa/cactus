@@ -60,6 +60,14 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ content: res.content, credits: usdToCredits(costUsd), costUsd, model: res.model });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'Error del agente' }, { status: 500 });
+    console.error('[cactus/agent] error:', slug, err?.message || err);
+    const raw = String(err?.message || '');
+    // Mensaje amigable; no filtra detalles crudos del proveedor al cliente.
+    const friendly = /not.?found|404|model/i.test(raw)
+      ? 'El modelo de IA no está disponible ahora mismo. Intenta de nuevo o cambia el presupuesto en Ajustes.'
+      : /api key|configured|unauthorized|401/i.test(raw)
+        ? 'La IA no está configurada. Avísale al administrador.'
+        : 'El agente tuvo un problema al responder. Intenta de nuevo.';
+    return NextResponse.json({ error: friendly }, { status: 500 });
   }
 }
