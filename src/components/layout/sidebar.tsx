@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Store, Settings, Shield,
-  Layers, DollarSign, Brain, Palette, Sparkles, Bot, Building2,
+  Layers, DollarSign, Palette, Sparkles, Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getAgent, type CactusAgent } from '@/lib/cactus/agents-catalog';
@@ -75,8 +75,6 @@ export function Sidebar({ isAdmin }: SidebarProps) {
 
   const plataforma: NavItem[] = [
     { href: '/ecosystem', label: 'Ecosistema', icon: Layers },
-    { href: '/orchestrator', label: 'Ramona', icon: Bot },
-    { href: '/brain', label: 'Cerebro', icon: Brain },
     { href: '/empresa', label: 'Empresa', icon: Building2 },
   ];
   const crear: NavItem[] = [
@@ -143,9 +141,9 @@ export function Sidebar({ isAdmin }: SidebarProps) {
         <SectionLabel className="mt-4">Crear</SectionLabel>
         {crear.map(renderLink)}
 
-        {/* Agentes — explorador unificado (categorías + buscador + Ramona) */}
+        {/* Agentes — explorador unificado (fluye con el resto, un solo scroll) */}
         <SectionLabel className="mt-4">Agentes</SectionLabel>
-        <div className="h-[56vh] min-h-[320px] px-1">
+        <div className="px-1">
           <AgentBrowser activeSlug={agentSlug} />
         </div>
 

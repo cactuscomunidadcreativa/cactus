@@ -8,12 +8,13 @@ import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  Search, X, ChevronDown, ChevronRight, Sparkles, LayoutGrid,
+  Search, X, ChevronDown, ChevronRight, Sparkles, LayoutGrid, Brain,
   Megaphone, Palette, Globe, Briefcase, Users, type LucideIcon,
 } from 'lucide-react';
 import {
   NAV_CATEGORIES, agentsOfCategory, allNavAgents, type NavAgentLite,
 } from '@/lib/cactus/nav-taxonomy';
+import { getAgent } from '@/lib/cactus/agents-catalog';
 
 const CAT_ICON: Record<string, LucideIcon> = {
   Megaphone, Palette, Globe, Briefcase, Users,
@@ -60,13 +61,15 @@ export function AgentBrowser({ activeSlug, onPick }: { activeSlug?: string; onPi
 
   function pick(slug: string) { recordRecent(slug); onPick?.(); }
 
+  const ramonaImg = getAgent('ramona')?.image || '/agents/ramona.png';
+
   return (
-    <div className="flex h-full flex-col gap-3">
-      {/* Buscador + Ramona */}
+    <div className="space-y-3">
+      {/* Buscador */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
-          autoFocus value={query} onChange={(e) => setQuery(e.target.value)}
+          value={query} onChange={(e) => setQuery(e.target.value)}
           placeholder="Busca un agente o di qué necesitas…"
           className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-8 text-sm focus:outline-none"
         />
@@ -77,7 +80,7 @@ export function AgentBrowser({ activeSlug, onPick }: { activeSlug?: string; onPi
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div>
         {q ? (
           <div className="space-y-1">
             {results.map((a) => <AgentRow key={a.slug} a={a} active={a.slug === activeSlug} onPick={() => pick(a.slug)} />)}
@@ -90,6 +93,22 @@ export function AgentBrowser({ activeSlug, onPick }: { activeSlug?: string; onPi
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Núcleo fijo: Ramona + Cerebro */}
+            <div className="space-y-0.5">
+              <Link href="/orchestrator" onClick={() => pick('ramona')}
+                className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted"
+                style={activeSlug === 'ramona' ? { backgroundColor: '#7E3FF214' } : undefined}>
+                <Image src={ramonaImg} alt="Ramona" width={26} height={26} className="rounded-full" />
+                <span className="min-w-0 flex-1 truncate text-sm" style={activeSlug === 'ramona' ? { color: '#7E3FF2' } : undefined}>Ramona</span>
+                <span className="truncate text-[10px] text-muted-foreground">Coordinadora</span>
+              </Link>
+              <Link href="/brain" onClick={onPick} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted">
+                <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-[#0D6E4F]/12 text-[#0D6E4F]"><Brain className="h-3.5 w-3.5" /></span>
+                <span className="min-w-0 flex-1 truncate text-sm">Cerebro</span>
+                <span className="truncate text-[10px] text-muted-foreground">Conocimiento</span>
+              </Link>
+            </div>
+
             {recents.length > 0 && (
               <div>
                 <p className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Recientes</p>
