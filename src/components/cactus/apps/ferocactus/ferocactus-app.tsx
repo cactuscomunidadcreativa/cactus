@@ -5,12 +5,15 @@ import { Markdown } from '@/components/cactus/shared/markdown';
 import Link from 'next/link';
 import {
   LayoutDashboard, FilePlus2, ScrollText, Plug, Wand2, Loader2, Copy, Check, Trash2,
-  ChevronDown, BarChart3, FileSignature, ShieldCheck, Sparkles,
+  ChevronDown, BarChart3, FileSignature, ShieldCheck, Sparkles, Zap,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { defaultAutomationsFor } from '@/lib/cactus/automations-catalog';
 
 interface FeroAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -40,7 +43,7 @@ interface Doc {
 const STORAGE_KEY = 'cactus.ferocactus.docs.v1';
 const uid = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
 
-type View = 'resumen' | 'generar' | 'documentos';
+type View = 'resumen' | 'generar' | 'documentos' | 'automatizaciones';
 
 export function FerocactusApp({
   agent, user, credits,
@@ -50,6 +53,7 @@ export function FerocactusApp({
   const [view, setView] = useState<View>('resumen');
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const autos = useAutomations(agent.slug, defaultAutomationsFor(agent.slug));
 
   useEffect(() => {
     try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) setDocs(JSON.parse(raw)); } catch { /* noop */ }
@@ -69,6 +73,7 @@ export function FerocactusApp({
     { key: 'generar', label: 'Nuevo documento', icon: FilePlus2 },
     { key: 'documentos', label: 'Documentos', icon: ScrollText },
     { key: 'conexiones', label: 'Firma & Drive', icon: Plug, href: '/empresa', section: 'Cuenta' },
+    { key: 'automatizaciones', label: 'Automatizaciones', icon: Zap },
   ];
 
   return (
@@ -88,6 +93,7 @@ export function FerocactusApp({
       {view === 'resumen' && <Resumen docs={docs} accent={agent.color} onGo={setView} />}
       {view === 'generar' && <Generar agent={agent} provider={user?.name} onSave={add} onGoList={() => setView('documentos')} />}
       {view === 'documentos' && <Lista docs={docs} accent={agent.color} onRemove={remove} onGo={() => setView('generar')} />}
+      {view === 'automatizaciones' && <AutomationsPanel autos={autos} accent={agent.color} />}
 
       <QuickActionsBar
         accent={agent.color}
@@ -232,6 +238,7 @@ function Generar({ agent, provider, onSave, onGoList }: { agent: FeroAgent; prov
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [doc, setDoc] = useState<Attached | null>(null);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
 
   async function generate() {
     if (!scope.trim() || loading) return;
@@ -250,7 +257,7 @@ function Generar({ agent, provider, onSave, onGoList }: { agent: FeroAgent; prov
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }] }),
+        body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo redactar.');
@@ -300,6 +307,7 @@ function Generar({ agent, provider, onSave, onGoList }: { agent: FeroAgent; prov
           </Field>
         </div>
         <div className="mb-3"><DocAttach accent={agent.color} attached={doc} onChange={setDoc} label="Adjuntar documento base" /></div>
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={agent.color} />
         <button
           onClick={generate}
           disabled={loading || !scope.trim()}

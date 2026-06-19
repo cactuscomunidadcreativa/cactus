@@ -6,12 +6,15 @@ import Link from 'next/link';
 import {
   LayoutDashboard, Rocket, Megaphone, Plug, Wand2, Loader2, Copy, Check, Trash2,
   TrendingUp, Lock, BarChart3, Target, DollarSign, Percent, MousePointerClick,
-  ChevronDown, FlaskConical,
+  ChevronDown, FlaskConical, Zap,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { defaultAutomationsFor } from '@/lib/cactus/automations-catalog';
 
 interface ChollaAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -44,7 +47,7 @@ const STORAGE_KEY = 'cactus.cholla.plans.v1';
 const uid = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
 const fmt = (n: number) => n.toLocaleString('es-MX');
 
-type View = 'resumen' | 'lanzar' | 'campanas';
+type View = 'resumen' | 'lanzar' | 'campanas' | 'automatizaciones';
 
 export function ChollaApp({
   agent, user, credits,
@@ -54,6 +57,7 @@ export function ChollaApp({
   const [view, setView] = useState<View>('resumen');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const autos = useAutomations(agent.slug, defaultAutomationsFor(agent.slug));
 
   useEffect(() => {
     try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) setPlans(JSON.parse(raw)); } catch { /* noop */ }
@@ -73,6 +77,7 @@ export function ChollaApp({
     { key: 'lanzar', label: 'Lanzar campaña', icon: Rocket },
     { key: 'campanas', label: 'Campañas', icon: Megaphone },
     { key: 'conexiones', label: 'Cuentas de Ads', icon: Plug, href: '/empresa', section: 'Cuenta' },
+    { key: 'automatizaciones', label: 'Automatizaciones', icon: Zap },
   ];
 
   return (
@@ -92,6 +97,7 @@ export function ChollaApp({
       {view === 'resumen' && <Resumen plans={plans} accent={agent.color} onGo={setView} />}
       {view === 'lanzar' && <Lanzar agent={agent} onSave={(p) => { addPlan(p); }} onGoList={() => setView('campanas')} />}
       {view === 'campanas' && <Campanas plans={plans} accent={agent.color} onRemove={removePlan} onGo={() => setView('lanzar')} />}
+      {view === 'automatizaciones' && <AutomationsPanel autos={autos} accent={agent.color} />}
 
       <QuickActionsBar
         accent={agent.color}
@@ -259,6 +265,7 @@ function Lanzar({ agent, onSave, onGoList }: { agent: ChollaAgent; onSave: (p: P
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [doc, setDoc] = useState<Attached | null>(null);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
 
   const togglePlatform = (k: PlatformKey) =>
     setPlatforms((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k]));
@@ -284,7 +291,7 @@ function Lanzar({ agent, onSave, onGoList }: { agent: ChollaAgent; onSave: (p: P
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }] }),
+        body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar el plan.');
@@ -365,6 +372,8 @@ function Lanzar({ agent, onSave, onGoList }: { agent: ChollaAgent; onSave: (p: P
         </Field>
 
         <div className="mb-3"><DocAttach accent={agent.color} attached={doc} onChange={setDoc} label="Adjuntar brief o datos" /></div>
+
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={agent.color} />
 
         <button
           onClick={generate}

@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import { Markdown } from '@/components/cactus/shared/markdown';
 import {
   LayoutDashboard, Users, UserCheck, Plus, Trash2, Loader2, Wand2, Copy, Check,
-  Filter, Trophy, Percent, ClipboardList,
+  Filter, Trophy, Percent, ClipboardList, Zap,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { defaultAutomationsFor } from '@/lib/cactus/automations-catalog';
 
 interface OcotilloAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -36,11 +39,12 @@ function useStored<T>(key: string, initial: T): [T, React.Dispatch<React.SetStat
   return [val, setVal];
 }
 
-type View = 'resumen' | 'candidatos' | 'reclutador';
+type View = 'resumen' | 'candidatos' | 'reclutador' | 'automatizaciones';
 
 export function OcotilloApp({ agent, user, credits }: { agent: OcotilloAgent; user?: ShellUser; credits?: number }) {
   const [view, setView] = useState<View>('resumen');
   const [cands, setCands] = useStored<Cand[]>(STORAGE, []);
+  const autos = useAutomations(agent.slug, defaultAutomationsFor(agent.slug));
 
   const hired = cands.filter((c) => c.stage === 'contratado').length;
   const rejected = cands.filter((c) => c.stage === 'descartado').length;
@@ -51,6 +55,7 @@ export function OcotilloApp({ agent, user, credits }: { agent: OcotilloAgent; us
     { key: 'resumen', label: 'Resumen', icon: LayoutDashboard },
     { key: 'candidatos', label: 'Candidatos', icon: Users },
     { key: 'reclutador', label: 'Reclutador IA', icon: ClipboardList },
+    { key: 'automatizaciones', label: 'Automatizaciones', icon: Zap },
   ];
   const kpis: Kpi[] = [
     { label: 'Candidatos', value: cands.length, icon: <Users className="h-4 w-4" /> },
@@ -71,6 +76,7 @@ export function OcotilloApp({ agent, user, credits }: { agent: OcotilloAgent; us
       {view === 'resumen' && <Resumen cands={cands} accent={agent.color} onGo={setView} />}
       {view === 'candidatos' && <Candidatos cands={cands} setCands={setCands} accent={agent.color} />}
       {view === 'reclutador' && <Reclutador agent={agent} />}
+      {view === 'automatizaciones' && <AutomationsPanel autos={autos} accent={agent.color} />}
       <QuickActionsBar accent={agent.color} actions={[
         { label: 'Candidatos', icon: Users, onClick: () => setView('candidatos') },
         { label: 'Evaluar / preguntas', icon: ClipboardList, onClick: () => setView('reclutador') },
@@ -158,6 +164,7 @@ function Reclutador({ agent }: { agent: OcotilloAgent }) {
   const [role, setRole] = useState(''); const [cv, setCv] = useState(''); const [doc, setDoc] = useState<Attached | null>(null);
   const [loading, setLoading] = useState<'' | 'eval' | 'preg'>(''); const [error, setError] = useState<string | null>(null);
   const [out, setOut] = useState<string | null>(null); const [copied, setCopied] = useState(false);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
   const c = agent.color;
 
   async function run(mode: 'eval' | 'preg') {
@@ -169,7 +176,7 @@ function Reclutador({ agent }: { agent: OcotilloAgent }) {
       ? withDoc(`Eres reclutador. Evalúa el ajuste del candidato para el puesto "${role.trim()}".\nPerfil/CV/notas:\n"""${cv.trim() || '(ver documento adjunto)'}"""\nEntrega: 1) Resumen del perfil, 2) Fortalezas, 3) Brechas/riesgos, 4) Preguntas clave a indagar, 5) Recomendación (avanzar / con reservas / descartar) y por qué. Objetivo y justo, sin sesgos. Sin preámbulo.`, doc, 'CV / documento del candidato')
       : `Eres reclutador. Genera una guía de entrevista para el puesto "${role.trim()}": 8-10 preguntas (mezcla de experiencia, competencias, situacionales y de cultura), agrupadas por categoría, y qué buscar en una buena respuesta. Sin preámbulo.`;
     try {
-      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }], maxTokens: 1400 }) });
+      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }], maxTokens: 1400 }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       setOut(String(data.content || '').trim());
@@ -186,6 +193,7 @@ function Reclutador({ agent }: { agent: OcotilloAgent }) {
         <label className="mb-1 block text-xs font-medium text-muted-foreground">CV / notas del candidato (para evaluar)</label>
         <textarea value={cv} onChange={(e) => setCv(e.target.value)} rows={4} placeholder="Pega el CV o experiencia…" className="mb-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
         <div className="mb-3"><DocAttach accent={c} attached={doc} onChange={setDoc} label="Adjuntar CV (PDF/imagen)" /></div>
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
         <div className="flex gap-2">
           <button onClick={() => run('eval')} disabled={loading !== ''} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{loading === 'eval' ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />} Evaluar</button>
           <button onClick={() => run('preg')} disabled={loading !== ''} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border py-2 text-sm font-medium hover:bg-muted disabled:opacity-50">{loading === 'preg' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Preguntas</button>

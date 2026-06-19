@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import { Markdown } from '@/components/cactus/shared/markdown';
 import {
   LayoutDashboard, Filter, FileText, Plus, Trash2, Loader2, Wand2, Copy, Check,
-  DollarSign, Target, Trophy, Percent, Briefcase,
+  DollarSign, Target, Trophy, Percent, Briefcase, Zap,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { defaultAutomationsFor } from '@/lib/cactus/automations-catalog';
 
 interface MagueyAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -38,11 +41,12 @@ function useStored<T>(key: string, initial: T): [T, React.Dispatch<React.SetStat
   return [val, setVal];
 }
 
-type View = 'resumen' | 'pipeline' | 'propuestas';
+type View = 'resumen' | 'pipeline' | 'propuestas' | 'automatizaciones';
 
 export function MagueyApp({ agent, user, credits }: { agent: MagueyAgent; user?: ShellUser; credits?: number }) {
   const [view, setView] = useState<View>('resumen');
   const [deals, setDeals] = useStored<Deal[]>(STORAGE, []);
+  const autos = useAutomations(agent.slug, defaultAutomationsFor(agent.slug));
 
   const open = deals.filter((d) => OPEN.includes(d.stage));
   const pipelineValue = open.reduce((s, d) => s + d.value, 0);
@@ -56,6 +60,7 @@ export function MagueyApp({ agent, user, credits }: { agent: MagueyAgent; user?:
     { key: 'pipeline', label: 'Pipeline', icon: Filter },
     { key: 'propuestas', label: 'Propuestas', icon: FileText },
     { key: 'crm', label: 'CRM (Tuna)', icon: Briefcase, href: '/apps/tuna', section: 'Conecta' },
+    { key: 'automatizaciones', label: 'Automatizaciones', icon: Zap },
   ];
   const kpis: Kpi[] = [
     { label: 'Pipeline abierto', value: money(pipelineValue), icon: <DollarSign className="h-4 w-4" /> },
@@ -77,6 +82,7 @@ export function MagueyApp({ agent, user, credits }: { agent: MagueyAgent; user?:
       {view === 'resumen' && <Resumen deals={deals} accent={agent.color} onGo={setView} />}
       {view === 'pipeline' && <Pipeline deals={deals} setDeals={setDeals} accent={agent.color} />}
       {view === 'propuestas' && <Propuestas agent={agent} deals={deals} />}
+      {view === 'automatizaciones' && <AutomationsPanel autos={autos} accent={agent.color} />}
       <QuickActionsBar accent={agent.color} actions={[
         { label: 'Pipeline', icon: Filter, onClick: () => setView('pipeline') },
         { label: 'Nueva propuesta', icon: FileText, onClick: () => setView('propuestas') },
@@ -189,6 +195,7 @@ function Propuestas({ agent, deals }: { agent: MagueyAgent; deals: Deal[] }) {
   const [error, setError] = useState<string | null>(null);
   const [out, setOut] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
   const c = agent.color;
   const deal = deals.find((d) => d.id === dealId);
 
@@ -205,7 +212,7 @@ function Propuestas({ agent, deals }: { agent: MagueyAgent; deals: Deal[] }) {
       doc, 'Apóyate en este material del cliente',
     );
     try {
-      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }], maxTokens: 1800 }) });
+      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }], maxTokens: 1800 }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       setOut(String(data.content || '').trim());
@@ -225,6 +232,7 @@ function Propuestas({ agent, deals }: { agent: MagueyAgent; deals: Deal[] }) {
         <label className="mb-1 block text-xs font-medium text-muted-foreground">Notas / contexto</label>
         <textarea value={extra} onChange={(e) => setExtra(e.target.value)} rows={3} placeholder="Qué necesita el cliente, diferenciadores, plazos…" className="mb-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
         <div className="mb-3"><DocAttach accent={c} attached={doc} onChange={setDoc} label="Adjuntar brief del cliente" /></div>
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
         <button onClick={generate} disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Generar propuesta</button>
         {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
       </div>

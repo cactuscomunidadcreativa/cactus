@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import { Markdown } from '@/components/cactus/shared/markdown';
 import {
   LayoutDashboard, FolderOpen, ScanText, Plus, Trash2, Loader2, Wand2, Copy, Check,
-  ShieldAlert, FileWarning, ClipboardCheck,
+  ShieldAlert, FileWarning, ClipboardCheck, Zap,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { defaultAutomationsFor } from '@/lib/cactus/automations-catalog';
 
 interface HuerniaAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -40,17 +43,19 @@ function useStored<T>(key: string, initial: T): [T, React.Dispatch<React.SetStat
   return [val, setVal];
 }
 
-type View = 'resumen' | 'expedientes' | 'revisar';
+type View = 'resumen' | 'expedientes' | 'revisar' | 'automatizaciones';
 
 export function HuerniaApp({ agent, user, credits }: { agent: HuerniaAgent; user?: ShellUser; credits?: number }) {
   const [view, setView] = useState<View>('resumen');
   const [casos, setCasos] = useStored<Caso[]>(STORAGE, []);
+  const autos = useAutomations(agent.slug, defaultAutomationsFor(agent.slug));
 
   const firstName = user?.name?.split(' ')[0];
   const nav: AppNavItem[] = [
     { key: 'resumen', label: 'Resumen', icon: LayoutDashboard },
     { key: 'expedientes', label: 'Expedientes', icon: FolderOpen },
     { key: 'revisar', label: 'Revisar documento', icon: ScanText },
+    { key: 'automatizaciones', label: 'Automatizaciones', icon: Zap },
   ];
   const kpis: Kpi[] = [
     { label: 'Expedientes', value: casos.length, icon: <FolderOpen className="h-4 w-4" /> },
@@ -71,6 +76,7 @@ export function HuerniaApp({ agent, user, credits }: { agent: HuerniaAgent; user
       {view === 'resumen' && <Resumen casos={casos} accent={agent.color} onGo={setView} />}
       {view === 'expedientes' && <Expedientes casos={casos} setCasos={setCasos} accent={agent.color} />}
       {view === 'revisar' && <Revisar agent={agent} />}
+      {view === 'automatizaciones' && <AutomationsPanel autos={autos} accent={agent.color} />}
       <QuickActionsBar accent={agent.color} actions={[
         { label: 'Expedientes', icon: FolderOpen, onClick: () => setView('expedientes') },
         { label: 'Revisar documento', icon: ScanText, onClick: () => setView('revisar') },
@@ -151,6 +157,7 @@ function Revisar({ agent }: { agent: HuerniaAgent }) {
   const [text, setText] = useState(''); const [doc, setDoc] = useState<Attached | null>(null);
   const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null);
   const [out, setOut] = useState<string | null>(null); const [copied, setCopied] = useState(false);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
   const c = agent.color;
 
   async function review() {
@@ -165,7 +172,7 @@ function Revisar({ agent }: { agent: HuerniaAgent }) {
       doc, 'Documento a revisar',
     );
     try {
-      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }], maxTokens: 1600 }) });
+      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }], maxTokens: 1600 }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       setOut(String(data.content || '').trim());
@@ -180,6 +187,7 @@ function Revisar({ agent }: { agent: HuerniaAgent }) {
         <p className="mb-3 text-sm text-muted-foreground">Sube un contrato (PDF/imagen) o pega el texto. Huernia detecta riesgos y faltantes.</p>
         <div className="mb-2"><DocAttach accent={c} attached={doc} onChange={setDoc} label="Subir documento (PDF/imagen)" /></div>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="…o pega aquí el texto del documento" className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
         <button onClick={review} disabled={loading} className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Revisar con Huernia</button>
         {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
         <p className="mt-3 inline-flex items-start gap-1.5 text-[11px] leading-relaxed text-amber-700"><ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {NOTE}</p>

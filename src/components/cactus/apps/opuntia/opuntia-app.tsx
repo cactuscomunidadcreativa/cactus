@@ -7,10 +7,13 @@ import {
   LayoutDashboard, Blocks, Plug, Wand2, Loader2, Monitor, Tablet, Smartphone, Eye, Pencil,
   Download, Trash2, Copy, GripVertical, Plus, PanelTop, LayoutTemplate, Type, Image as ImageIcon,
   Sparkles, MessageSquareQuote, CreditCard, HelpCircle, Mail, AlignLeft, TrendingUp, Rocket,
-  ShoppingBag, Package, Files, FileText, Check, Upload,
+  ShoppingBag, Package, Files, FileText, Check, Upload, Zap,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { defaultAutomationsFor } from '@/lib/cactus/automations-catalog';
 
 interface OpuntiaAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -228,12 +231,13 @@ const TEMPLATES: Template[] = [
   },
 ];
 
-type View = 'resumen' | 'builder' | 'productos';
+type View = 'resumen' | 'builder' | 'productos' | 'automatizaciones';
 
 export function OpuntiaApp({ agent, user, credits }: { agent: OpuntiaAgent; user?: ShellUser; credits?: number }) {
   const [view, setView] = useState<View>('builder');
   const [site, setSite] = useState<Site>(starterSite);
   const [loaded, setLoaded] = useState(false);
+  const autos = useAutomations(agent.slug, defaultAutomationsFor(agent.slug));
 
   useEffect(() => {
     try {
@@ -259,6 +263,7 @@ export function OpuntiaApp({ agent, user, credits }: { agent: OpuntiaAgent; user
     { key: 'builder', label: 'Builder', icon: Blocks },
     { key: 'productos', label: 'Productos', icon: ShoppingBag },
     { key: 'conexiones', label: 'Dominio & pagos', icon: Plug, href: '/empresa', section: 'Cuenta' },
+    { key: 'automatizaciones', label: 'Automatizaciones', icon: Zap },
   ];
 
   return (
@@ -276,6 +281,7 @@ export function OpuntiaApp({ agent, user, credits }: { agent: OpuntiaAgent; user
       {view === 'resumen' && <Resumen site={site} accent={agent.color} onGo={setView} />}
       {view === 'builder' && <Builder agent={agent} site={site} setSite={setSite} />}
       {view === 'productos' && <Productos site={site} setSite={setSite} accent={agent.color} />}
+      {view === 'automatizaciones' && <AutomationsPanel autos={autos} accent={agent.color} />}
     </AgentAppShell>
   );
 }
@@ -733,6 +739,7 @@ function AiModal({ agent, onClose, onApply }: { agent: OpuntiaAgent; onClose: ()
   const [brief, setBrief] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
   async function generate() {
     const b = brief.trim();
     if (!b || loading) return;
@@ -749,7 +756,7 @@ function AiModal({ agent, onClose, onApply }: { agent: OpuntiaAgent; onClose: ()
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }], maxTokens: 4000 }),
+        body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }], maxTokens: 4000 }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
@@ -765,6 +772,7 @@ function AiModal({ agent, onClose, onApply }: { agent: OpuntiaAgent; onClose: ()
         <div className="mb-2 flex items-center gap-2"><Wand2 className="h-4 w-4" style={{ color: agent.color }} /><h3 className="font-display text-lg font-semibold">Generar página con IA</h3></div>
         <p className="mb-3 text-sm text-muted-foreground">Describe el negocio o la página y Opuntia arma esta página. (Reemplaza los bloques de la página actual.)</p>
         <textarea value={brief} onChange={(e) => setBrief(e.target.value)} rows={4} placeholder="Ej. Tienda de café de especialidad, venta online, envíos a todo el país…" className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={agent.color} />
         {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
         <div className="mt-3 flex items-center justify-end gap-2">
           <button onClick={onClose} className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted">Cancelar</button>

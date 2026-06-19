@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import {
-  Inbox, MessageSquare, Plus, Loader2, Wand2, Send, Check, Trash2, Clock, CheckCircle2, Plug,
+  Inbox, MessageSquare, Plus, Loader2, Wand2, Send, Check, Trash2, Clock, CheckCircle2, Plug, Zap,
 } from 'lucide-react';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { defaultAutomationsFor } from '@/lib/cactus/automations-catalog';
 
 interface AloeAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -33,12 +36,13 @@ function useStored<T>(key: string, initial: T): [T, React.Dispatch<React.SetStat
   return [val, setVal];
 }
 
-type View = 'bandeja' | 'nuevo';
+type View = 'bandeja' | 'nuevo' | 'automatizaciones';
 
 export function AloeApp({ agent, user, credits }: { agent: AloeAgent; user?: ShellUser; credits?: number }) {
   const [view, setView] = useState<View>('bandeja');
   const [tickets, setTickets] = useStored<Ticket[]>(STORAGE, []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const autos = useAutomations(agent.slug, defaultAutomationsFor(agent.slug));
 
   const update = (id: string, patch: Partial<Ticket>) => setTickets((p) => p.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   const remove = (id: string) => { setTickets((p) => p.filter((t) => t.id !== id)); setSelectedId((s) => (s === id ? null : s)); };
@@ -49,6 +53,7 @@ export function AloeApp({ agent, user, credits }: { agent: AloeAgent; user?: She
     { key: 'bandeja', label: 'Bandeja', icon: Inbox },
     { key: 'nuevo', label: 'Nuevo ticket', icon: Plus },
     { key: 'conexiones', label: 'WhatsApp & correo', icon: Plug, href: '/empresa', section: 'Conecta' },
+    { key: 'automatizaciones', label: 'Automatizaciones', icon: Zap },
   ];
   const kpis: Kpi[] = [
     { label: 'Abiertos', value: tickets.filter((t) => t.status === 'abierto').length, icon: <Inbox className="h-4 w-4" /> },
@@ -75,6 +80,7 @@ export function AloeApp({ agent, user, credits }: { agent: AloeAgent; user?: She
       {view === 'nuevo' && (
         <Nuevo accent={agent.color} onCreate={(t) => { setTickets((p) => [t, ...p]); setSelectedId(t.id); setView('bandeja'); }} />
       )}
+      {view === 'automatizaciones' && <AutomationsPanel autos={autos} accent={agent.color} />}
       <QuickActionsBar accent={agent.color} actions={[
         { label: 'Bandeja', icon: Inbox, onClick: () => setView('bandeja') },
         { label: 'Nuevo ticket', icon: Plus, onClick: () => setView('nuevo') },
@@ -129,6 +135,7 @@ function Detalle({
   const [doc, setDoc] = useState<Attached | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
   const c = agent.color;
 
   async function draft() {
@@ -141,7 +148,7 @@ function Detalle({
       doc, 'Apóyate en esta política/base de conocimiento',
     );
     try {
-      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }], maxTokens: 600 }) });
+      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }], maxTokens: 600 }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       setReply(String(data.content || '').trim());
@@ -171,6 +178,7 @@ function Detalle({
       </div>
 
       <div className="border-t border-border p-3">
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
         <div className="mb-2 flex items-center gap-2">
           <button onClick={draft} disabled={loading} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} Borrador con IA</button>
           <DocAttach accent={c} attached={doc} onChange={setDoc} label="Adjuntar política" />

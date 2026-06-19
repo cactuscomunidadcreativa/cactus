@@ -5,12 +5,15 @@ import { Markdown } from '@/components/cactus/shared/markdown';
 import {
   LayoutDashboard, Sparkles, CalendarDays, Library, Plug, PenLine,
   Copy, Check, Trash2, Loader2, Wand2, FileText, Send, CalendarPlus,
-  Users, Heart, TrendingUp, Lock, BarChart3,
+  Users, Heart, TrendingUp, Lock, BarChart3, Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cactus/app-shell/agent-app-shell';
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
+import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { defaultAutomationsFor } from '@/lib/cactus/automations-catalog';
 
 // ── Identidad del agente (recibida del catálogo, server-side) ────────────────
 interface NopalAgent { slug: string; name: string; role: string; color: string; image: string }
@@ -44,7 +47,7 @@ interface Draft {
 const STORAGE_KEY = 'cactus.nopal.drafts.v1';
 const uid = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
 
-type View = 'resumen' | 'generador' | 'calendario' | 'biblioteca';
+type View = 'resumen' | 'generador' | 'calendario' | 'biblioteca' | 'automatizaciones';
 
 export function NopalApp({
   agent, user, credits,
@@ -54,6 +57,7 @@ export function NopalApp({
   const [view, setView] = useState<View>('resumen');
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const autos = useAutomations(agent.slug, defaultAutomationsFor(agent.slug));
 
   // Persistencia local (honesto: borradores en este navegador hasta que existan conexiones reales)
   useEffect(() => {
@@ -79,6 +83,7 @@ export function NopalApp({
     { key: 'calendario', label: 'Calendario', icon: CalendarDays },
     { key: 'biblioteca', label: 'Biblioteca', icon: Library },
     { key: 'conexiones', label: 'Conexiones', icon: Plug, href: '/empresa', section: 'Cuenta' },
+    { key: 'automatizaciones', label: 'Automatizaciones', icon: Zap },
   ];
 
   const firstName = user?.name?.split(' ')[0];
@@ -109,6 +114,7 @@ export function NopalApp({
       {view === 'biblioteca' && (
         <Biblioteca drafts={drafts} accent={agent.color} onSchedule={scheduleDraft} onRemove={removeDraft} onGo={() => setView('generador')} />
       )}
+      {view === 'automatizaciones' && <AutomationsPanel autos={autos} accent={agent.color} />}
 
       <QuickActionsBar
         accent={agent.color}
@@ -322,6 +328,7 @@ function Generador({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<{ id: string; content: string }[]>([]);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
 
   async function generate() {
     const t = topic.trim();
@@ -335,7 +342,7 @@ function Generador({
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }] }),
+        body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
@@ -412,6 +419,8 @@ function Generador({
             style={{ ['--tw-ring-color' as string]: agent.color }}
           />
         </Field>
+
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={agent.color} />
 
         <button
           onClick={generate}
