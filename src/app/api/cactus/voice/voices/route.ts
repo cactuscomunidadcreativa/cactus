@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getIntegrationKey } from '@/lib/ai/config';
+import { companyKey } from '@/lib/cactus/provider-keys';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ enabled: false, voices: [] });
   }
-  const key = await getIntegrationKey('elevenlabs');
+  const key = (await companyKey('elevenlabs')) || (await getIntegrationKey('elevenlabs'));
   if (!key) return NextResponse.json({ enabled: false, voices: [] });
 
   try {

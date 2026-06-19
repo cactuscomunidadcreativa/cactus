@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getIntegrationKey } from '@/lib/ai/config';
+import { companyKey } from '@/lib/cactus/provider-keys';
 
 export const maxDuration = 60;
 
@@ -11,8 +12,8 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const key = await getIntegrationKey('elevenlabs');
-  if (!key) return NextResponse.json({ error: 'Clonación no disponible: configura ElevenLabs en Conexiones.' }, { status: 400 });
+  const key = (await companyKey('elevenlabs')) || (await getIntegrationKey('elevenlabs'));
+  if (!key) return NextResponse.json({ error: 'Clonación no disponible: conecta ElevenLabs en /empresa/conexiones.' }, { status: 400 });
 
   let form: FormData;
   try { form = await req.formData(); } catch { return NextResponse.json({ error: 'Bad request' }, { status: 400 }); }

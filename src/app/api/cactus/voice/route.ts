@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getAPIKey, getIntegrationKey } from '@/lib/ai/config';
+import { companyKey } from '@/lib/cactus/provider-keys';
 import { usdToCredits } from '@/lib/cactus/credits';
 
 export const maxDuration = 60;
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
   if (text.length > 4000) return NextResponse.json({ error: 'Máximo 4000 caracteres.' }, { status: 400 });
 
   // ── ElevenLabs (voces premium + clonadas) si hay voiceId + key ─────────────
-  const elevenKey = await getIntegrationKey('elevenlabs');
+  const elevenKey = (await companyKey('elevenlabs')) || (await getIntegrationKey('elevenlabs'));
   const voiceId = typeof body?.voiceId === 'string' ? body.voiceId.trim() : '';
   if (elevenKey && voiceId) {
     try {
