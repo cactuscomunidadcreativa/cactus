@@ -27,7 +27,7 @@ export const claudeAdapter: AIProviderAdapter = {
     }
 
     const body: Record<string, unknown> = {
-      model: request.model || 'claude-sonnet-4-20250514',
+      model: request.model || 'claude-sonnet-4-6',
       max_tokens: request.maxTokens || 1024,
       messages,
     };
@@ -36,9 +36,8 @@ export const claudeAdapter: AIProviderAdapter = {
       body.system = request.systemPrompt;
     }
 
-    if (request.temperature !== undefined) {
-      body.temperature = request.temperature;
-    }
+    // NOTA: los modelos Claude 4.7/4.8 (y Fable) rechazan temperature/top_p/top_k
+    // con error 400. No los enviamos; el comportamiento se guía por prompt.
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -66,7 +65,7 @@ export const claudeAdapter: AIProviderAdapter = {
     return {
       content: text,
       provider: 'claude',
-      model: data.model || 'claude-sonnet-4-20250514',
+      model: data.model || 'claude-sonnet-4-6',
       inputTokens: data.usage?.input_tokens || 0,
       outputTokens: data.usage?.output_tokens || 0,
       durationMs,

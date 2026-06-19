@@ -29,11 +29,12 @@ export const BUDGET_TIERS: TierMeta[] = [
 ];
 
 /** Modelo concreto por proveedor según el perfil de presupuesto. */
+// IDs vigentes (jun-2026). NO usar IDs con sufijo de fecha retirados.
 const MODEL_MATRIX: Record<AIProvider, Record<BudgetTier, string>> = {
   claude: {
-    economico: 'claude-3-5-haiku-20241022',
-    equilibrado: 'claude-sonnet-4-20250514',
-    maxima: 'claude-opus-4-20250514',
+    economico: 'claude-haiku-4-5',
+    equilibrado: 'claude-sonnet-4-6',
+    maxima: 'claude-opus-4-8',
   },
   openai: {
     economico: 'gpt-4o-mini',
@@ -43,7 +44,7 @@ const MODEL_MATRIX: Record<AIProvider, Record<BudgetTier, string>> = {
   gemini: {
     economico: 'gemini-2.0-flash',
     equilibrado: 'gemini-2.0-flash',
-    maxima: 'gemini-1.5-pro',
+    maxima: 'gemini-2.0-flash',
   },
 };
 
