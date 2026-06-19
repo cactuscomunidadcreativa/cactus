@@ -10,6 +10,7 @@ import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cac
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
 
 export interface StudioAgent { slug: string; name: string; role: string; color: string; image: string }
 export interface StudioField { key: string; label: string; type: 'text' | 'textarea' | 'select'; options?: string[]; placeholder?: string }
@@ -83,6 +84,7 @@ function Crear({ agent, config, onSave }: { agent: StudioAgent; config: StudioCo
   const [error, setError] = useState<string | null>(null);
   const [out, setOut] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
   const c = agent.color;
   const set = (k: string, v: string) => setValues((p) => ({ ...p, [k]: v }));
   const titleVal = values[config.titleKey]?.trim();
@@ -93,7 +95,7 @@ function Crear({ agent, config, onSave }: { agent: StudioAgent; config: StudioCo
     const lines = config.fields.map((f) => `- ${f.label}: ${values[f.key]?.trim() || '—'}`).join('\n');
     const prompt = withDoc(`${config.systemRole}\n${config.task}\nDatos:\n${lines}\nSin preámbulo.`, doc, config.docIntro);
     try {
-      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }], maxTokens: config.maxTokens || 1600 }) });
+      const res = await fetch('/api/cactus/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }], maxTokens: config.maxTokens || 1600 }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       setOut(String(data.content || '').trim());
@@ -118,6 +120,7 @@ function Crear({ agent, config, onSave }: { agent: StudioAgent; config: StudioCo
           </div>
         ))}
         <div className="mb-3"><DocAttach accent={c} attached={doc} onChange={setDoc} label={config.docLabel} /></div>
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
         <button onClick={generate} disabled={loading || !titleVal} className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Generar {config.outputLabel.toLowerCase()}</button>
         {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
       </div>
