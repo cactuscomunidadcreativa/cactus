@@ -21,11 +21,17 @@ export async function POST(req: Request) {
   let form: FormData;
   try { form = await req.formData(); } catch { return NextResponse.json({ error: 'Bad request' }, { status: 400 }); }
   const file = form.get('image') as File | null;
-  const prompt = String(form.get('prompt') || '').trim();
+  const rawPrompt = String(form.get('prompt') || '').trim();
   const format = String(form.get('format') || 'square');
+  const mode = String(form.get('mode') || '');
   if (!file || typeof file.arrayBuffer !== 'function') return NextResponse.json({ error: 'Falta la imagen.' }, { status: 400 });
-  if (!prompt) return NextResponse.json({ error: 'Describe el cambio a aplicar.' }, { status: 400 });
+  if (!rawPrompt) return NextResponse.json({ error: 'Describe el cambio a aplicar.' }, { status: 400 });
   if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: 'Imagen muy grande (máx 8 MB).' }, { status: 400 });
+
+  // En modo avatar/foto preservamos la identidad de la persona de la foto.
+  const prompt = (mode === 'avatar' || mode === 'photo')
+    ? `Mantén EXACTAMENTE a la misma persona de la foto: mismo rostro, rasgos faciales, estructura ósea, tono de piel, barba, lentes y peinado. NO cambies su identidad ni la conviertas en otra persona. ${rawPrompt}. Retrato profesional fotorrealista, iluminación de estudio, fondo neutro, alta fidelidad.`
+    : rawPrompt;
 
   const blob = new Blob([await file.arrayBuffer()], { type: file.type || 'image/png' });
 

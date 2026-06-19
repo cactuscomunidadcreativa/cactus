@@ -47,6 +47,7 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
   const [format, setFormat] = useState<'square' | 'story' | 'wide'>('square');
   const [style, setStyle] = useState<'vivid' | 'natural'>('vivid');
   const [subAgent, setSubAgent] = useState<string | null>(null);
+  const [srcUploaded, setSrcUploaded] = useState(false); // la imagen actual es una foto subida por el usuario
 
   // estado de imagen
   const [current, setCurrent] = useState<Img | null>(null);
@@ -82,11 +83,25 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
     const focus = subAgent ? getSubAgents(agent.slug).find((s) => s.key === subAgent)?.focus : '';
     const fullBrief = focus ? `${focus} ${brief.trim()}` : brief.trim();
     try {
-      const res = await fetch('/api/cactus/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brief: fullBrief, mode: config.mode, format, style }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
-      await setFromUrl(data.url);
-      setLog([{ role: 'agent', text: 'Aquí está tu primera versión. Pídeme los cambios que quieras.' }]);
+      // Si hay una FOTO subida, transformamos ESA imagen (preserva tu identidad)
+      // en vez de inventar a otra persona desde cero.
+      if (srcUploaded && current?.blob) {
+        const fd = new FormData();
+        fd.append('image', current.blob, 'foto.png'); fd.append('prompt', fullBrief);
+        fd.append('format', format); fd.append('mode', config.mode);
+        const res = await fetch('/api/cactus/design/edit', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'No se pudo transformar tu foto.');
+        await setFromUrl(data.url); // sigue siendo tu persona → mantenemos srcUploaded
+        setLog([{ role: 'agent', text: 'Listo, transformé tu foto manteniendo tu identidad. Pide ajustes si quieres.' }]);
+      } else {
+        const res = await fetch('/api/cactus/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brief: fullBrief, mode: config.mode, format, style }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
+        setSrcUploaded(false);
+        await setFromUrl(data.url);
+        setLog([{ role: 'agent', text: 'Aquí está tu primera versión. Pídeme los cambios que quieras.' }]);
+      }
     } catch (e: any) { setError(e?.message || 'Error'); } finally { setBusy(''); }
   }
 
@@ -95,7 +110,8 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
     const display = URL.createObjectURL(f);
     const img: Img = { display, blob: f, raw: display };
     setCurrent(img); resetAdj(); setHistory((h) => [img, ...h].slice(0, 12));
-    setLog([{ role: 'agent', text: 'Listo, partimos de tu imagen. Dime qué cambio quieres.' }]);
+    setSrcUploaded(true);
+    setLog([{ role: 'agent', text: 'Foto cargada. Escribe cómo la quieres (ej. "avatar profesional, fondo neutro") y pulsa Generar: la transformo manteniendo tu cara.' }]);
     if (fileRef.current) fileRef.current.value = '';
   }
 
@@ -148,7 +164,7 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
             <div className="mb-2 flex gap-1">{FORMATS.map((f) => <button key={f.key} onClick={() => setFormat(f.key)} className={`flex-1 rounded-md px-1.5 py-1 text-[11px] font-medium ${format === f.key ? 'text-white' : 'border border-border text-muted-foreground hover:bg-muted'}`} style={format === f.key ? { backgroundColor: c } : undefined}>{f.label}</button>)}</div>
             <div className="mb-3 flex gap-1">{(['vivid', 'natural'] as const).map((s) => <button key={s} onClick={() => setStyle(s)} className={`flex-1 rounded-md px-1.5 py-1 text-[11px] font-medium ${style === s ? 'text-white' : 'border border-border text-muted-foreground hover:bg-muted'}`} style={style === s ? { backgroundColor: c } : undefined}>{s === 'vivid' ? 'Vibrante' : 'Natural'}</button>)}</div>
             <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
-            <button onClick={generate} disabled={busy !== '' || !brief.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{busy === 'gen' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} Generar</button>
+            <button onClick={generate} disabled={busy !== '' || !brief.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{busy === 'gen' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} {srcUploaded ? 'Transformar mi foto' : 'Generar'}</button>
           </div>
           <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4">
             <button onClick={() => fileRef.current?.click()} className="flex w-full flex-col items-center gap-2 text-center text-muted-foreground hover:text-foreground"><Upload className="h-6 w-6" /><span className="text-xs">{config.uploadHint}</span></button>
