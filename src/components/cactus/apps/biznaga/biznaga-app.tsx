@@ -11,6 +11,7 @@ import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cac
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { DocAttach, withDoc, type Attached } from '@/components/cactus/apps/shared/doc-attach';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
 
 interface BiznagaAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -238,6 +239,7 @@ function Investigar({ agent, onSave, onGoList }: { agent: BiznagaAgent; onSave: 
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [doc, setDoc] = useState<Attached | null>(null);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
 
   async function generate() {
     const t = topic.trim();
@@ -254,7 +256,7 @@ function Investigar({ agent, onSave, onGoList }: { agent: BiznagaAgent; onSave: 
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }] }),
+        body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo investigar.');
@@ -296,6 +298,7 @@ function Investigar({ agent, onSave, onGoList }: { agent: BiznagaAgent; onSave: 
           />
         </Field>
         <div className="mb-3"><DocAttach accent={agent.color} attached={doc} onChange={setDoc} label="Adjuntar fuente o datos" /></div>
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={agent.color} />
         <button
           onClick={generate}
           disabled={loading || !topic.trim()}

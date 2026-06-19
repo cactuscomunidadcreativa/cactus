@@ -10,6 +10,7 @@ import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cac
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
 
 interface CereusAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -155,6 +156,7 @@ function Crear({ agent, autos, onSave }: { agent: CereusAgent; autos: ReturnType
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
 
   async function generate() {
     if (!title.trim() || loading) return;
@@ -168,7 +170,7 @@ Escribe en español, con voz de marca cuidada y editorial. Usa encabezados y vi�
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }] }),
+        body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
@@ -187,6 +189,7 @@ Escribe en español, con voz de marca cuidada y editorial. Usa encabezados y vi�
         <Field label="Tipo"><Select value={kind} onChange={(v) => setKind(v as KindKey)} options={KINDS.map((k) => ({ value: k.key, label: k.label }))} /></Field>
         <Field label="Producto / colección"><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ej. abrigo de lana oversize" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" /></Field>
         <Field label="Contexto de marca (opcional)"><textarea value={context} onChange={(e) => setContext(e.target.value)} rows={3} placeholder="Ej. marca minimalista, sostenible, público joven" className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" /></Field>
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={agent.color} />
         <button onClick={generate} disabled={loading || !title.trim()} className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: agent.color }}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}{loading ? 'Creando…' : 'Crear con Cereus'}
         </button>

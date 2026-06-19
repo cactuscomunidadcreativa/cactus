@@ -7,6 +7,7 @@ import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import { getBudgetTier } from '@/lib/cactus/budget-server';
+import { subAgentDirective } from '@/lib/cactus/sub-agents';
 import type { AIChatMessage } from '@/lib/ai';
 
 export const maxDuration = 60;
@@ -23,14 +24,16 @@ export async function POST(req: Request) {
 
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Bad request' }, { status: 400 }); }
-  const { slug, messages, maxTokens } = body || {};
+  const { slug, messages, maxTokens, subAgent } = body || {};
   if (!slug || !getAgent(slug)) return NextResponse.json({ error: 'Agente desconocido' }, { status: 400 });
   if (!Array.isArray(messages) || messages.length === 0) return NextResponse.json({ error: 'Faltan mensajes' }, { status: 400 });
 
   // Tokens de salida: 2000 por defecto; configurable hasta 4000 (p. ej. contenido largo de Pitaya).
   const tokenCap = Math.min(4000, Math.max(256, Number(maxTokens) || 2000));
 
-  const systemPrompt = buildAgentSystemPrompt(slug, buildBrandContext(brand));
+  // Sub-agente especializado (Bloque 6): reorienta el system prompt del agente.
+  const systemPrompt = buildAgentSystemPrompt(slug, buildBrandContext(brand))
+    + subAgentDirective(slug, typeof subAgent === 'string' ? subAgent : null);
   const tier = await getBudgetTier();
 
   try {

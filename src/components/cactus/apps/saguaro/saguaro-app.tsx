@@ -11,6 +11,7 @@ import { AgentAppShell, type AppNavItem, type ShellUser } from '@/components/cac
 import { KpiRow, type Kpi } from '@/components/cactus/app-shell/kpi-row';
 import { QuickActionsBar } from '@/components/cactus/app-shell/quick-actions-bar';
 import { useAutomations, AutomationsPanel } from '@/components/cactus/apps/shared/automations';
+import { SubAgentBar } from '@/components/cactus/apps/shared/sub-agent-bar';
 
 interface SaguaroAgent { slug: string; name: string; role: string; color: string; image: string }
 
@@ -427,6 +428,7 @@ function Generar({ agent, onSave }: { agent: SaguaroAgent; onSave: (f: Flow) => 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ name: string; steps: { name: string; role: string; approval?: boolean }[]; note: string } | null>(null);
+  const [subAgent, setSubAgent] = useState<string | null>(null);
 
   async function generate() {
     const g = goal.trim();
@@ -439,7 +441,7 @@ Reglas: entre 4 y 7 pasos, en orden lógico; marca approval=true en los pasos qu
     try {
       const res = await fetch('/api/cactus/agent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: agent.slug, messages: [{ role: 'user', content: prompt }] }),
+        body: JSON.stringify({ slug: agent.slug, subAgent, messages: [{ role: 'user', content: prompt }] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
@@ -471,6 +473,7 @@ Reglas: entre 4 y 7 pasos, en orden lógico; marca approval=true en los pasos qu
         <Field label="Área (opcional)">
           <input value={area} onChange={(e) => setArea(e.target.value)} placeholder="Ej. Operaciones" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
         </Field>
+        <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={agent.color} />
         <button onClick={generate} disabled={loading || !goal.trim()} className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: agent.color }}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}{loading ? 'Diseñando…' : 'Diseñar flujo'}
         </button>
