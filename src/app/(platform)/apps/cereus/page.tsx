@@ -1,52 +1,43 @@
+import { notFound, redirect } from 'next/navigation';
+import { CereusApp } from '@/components/cactus/apps/cereus/cereus-app';
+import { getAgent } from '@/lib/cactus/agents-catalog';
 import { createClient } from '@/lib/supabase/server';
-import Link from 'next/link';
-import { Lock } from 'lucide-react';
-import { redirect } from 'next/navigation';
-import { CereusDashboard } from '@/modules/cereus/components/cereus-dashboard';
+import { getActiveCompanyId } from '@/lib/cactus/companies';
+import { getEffectiveAgentImages } from '@/lib/cactus/agent-images';
+import { getAccessStatus } from '@/lib/cactus/access';
 
-export default async function CereusPage() {
+export const metadata = { title: 'Cereus · Fashion & Product Studio · Cactus' };
+
+export default async function CereusAppPage() {
+  const agent = getAgent('cereus');
+  if (!agent) notFound();
+
+  let image = agent.image;
+  let user: { name: string; email?: string } | undefined;
+  let credits: number | undefined;
+
   const supabase = await createClient();
+  if (supabase) {
+    const { data: { user: u } } = await supabase.auth.getUser();
+    if (!u) redirect('/login?redirect=/apps/cereus');
 
-  if (!supabase) {
-    redirect('/login');
-  }
+    const companyId = await getActiveCompanyId(supabase, u.id);
+    const images = await getEffectiveAgentImages(supabase, companyId);
+    if (images[agent.slug]) image = images[agent.slug];
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    redirect('/login');
-  }
+    const access = await getAccessStatus(supabase, u);
+    credits = access.byok ? -1 : access.credits;
 
-  // Check active subscription
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('status, tier_id')
-    .eq('user_id', user.id)
-    .eq('app_id', 'cereus')
-    .in('status', ['active', 'trialing'])
-    .limit(1)
-    .single();
-
-  if (!subscription) {
-    return (
-      <div className="max-w-md mx-auto text-center py-16">
-        <Lock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-        <h2 className="text-xl font-display font-bold mb-2">Access Required</h2>
-        <p className="text-muted-foreground mb-6">
-          You need an active CEREUS subscription to access the Atelier dashboard.
-        </p>
-        <Link
-          href="/marketplace"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-cereus-gold text-white rounded-lg font-medium hover:bg-cereus-gold/90 transition-colors"
-        >
-          View Plans
-        </Link>
-      </div>
-    );
+    const { data: profile } = await supabase
+      .from('profiles').select('full_name').eq('id', u.id).maybeSingle();
+    user = { name: profile?.full_name || u.email?.split('@')[0] || 'Tú', email: u.email ?? undefined };
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <CereusDashboard />
-    </div>
+    <CereusApp
+      agent={{ slug: agent.slug, name: agent.name, role: agent.role, color: agent.color, image }}
+      user={user}
+      credits={credits}
+    />
   );
 }
