@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
 import { LanguageSelector } from '@/components/shared/language-selector';
 import { WhatsAppLink } from '@/components/shared/whatsapp-link';
+import { BudgetSettings } from '@/components/cactus/settings/budget-settings';
 import { CreditCard, Loader2, MessageCircle } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -116,6 +117,9 @@ export default function SettingsPage() {
         </h2>
         {userId && <WhatsAppLink userId={userId} />}
       </section>
+
+      {/* Presupuesto de IA (control de gasto) */}
+      <BudgetSettings />
 
       {/* Billing */}
       <section className="bg-card border border-border rounded-lg p-6">

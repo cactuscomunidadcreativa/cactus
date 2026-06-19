@@ -27,7 +27,7 @@ export const claudeAdapter: AIProviderAdapter = {
     }
 
     const body: Record<string, unknown> = {
-      model: 'claude-sonnet-4-20250514',
+      model: request.model || 'claude-sonnet-4-20250514',
       max_tokens: request.maxTokens || 1024,
       messages,
     };

@@ -73,6 +73,7 @@ export async function generateAngles(params: {
   objective: ObjectiveKey;
   channel: ChannelKey;
   profiles: ProfileKey[];
+  tier?: 'economico' | 'equilibrado' | 'maxima';
 }): Promise<GenerateResult> {
   const { brand, objective, channel } = params;
   const obj = OBJECTIVES.find((o) => o.key === objective)!;
@@ -107,6 +108,7 @@ Formato EXACTO:
   const res = await generateContent({
     prompt,
     systemPrompt: PEYOTE_SYSTEM,
+    tier: params.tier,
     maxTokens: 3000,
     temperature: 0.8,
   });

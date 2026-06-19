@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateAngles } from '@/lib/eq/generate';
+import { getBudgetTier } from '@/lib/cactus/budget-server';
 import type { ProfileKey } from '@/lib/eq/profiles';
 
 export const maxDuration = 60;
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
       objective: objective || 'deseo',
       channel: channel || 'instagram',
       profiles: (profiles as ProfileKey[]) || [],
+      tier: await getBudgetTier(),
     });
     return NextResponse.json(result);
   } catch (err: any) {

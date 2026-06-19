@@ -16,6 +16,7 @@ export const geminiAdapter: AIProviderAdapter = {
     if (!apiKey) throw new Error('GOOGLE_AI_API_KEY not configured');
 
     const start = Date.now();
+    const model = request.model || MODEL;
 
     // Construir contents (multi-turno o prompt simple)
     const contents: { role: string; parts: { text: string }[] }[] = [];
@@ -39,7 +40,7 @@ export const geminiAdapter: AIProviderAdapter = {
     }
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,7 +63,7 @@ export const geminiAdapter: AIProviderAdapter = {
     return {
       content: text,
       provider: 'gemini',
-      model: MODEL,
+      model,
       inputTokens: data.usageMetadata?.promptTokenCount || 0,
       outputTokens: data.usageMetadata?.candidatesTokenCount || 0,
       durationMs,

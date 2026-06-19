@@ -6,6 +6,7 @@ import { buildBrandContext } from '@/lib/cactus/brain';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
+import { getBudgetTier } from '@/lib/cactus/budget-server';
 import type { AIChatMessage } from '@/lib/ai';
 
 export const maxDuration = 60;
@@ -30,11 +31,13 @@ export async function POST(req: Request) {
   const tokenCap = Math.min(4000, Math.max(256, Number(maxTokens) || 2000));
 
   const systemPrompt = buildAgentSystemPrompt(slug, buildBrandContext(brand));
+  const tier = await getBudgetTier();
 
   try {
     const res = await generateChat({
       messages: messages as AIChatMessage[],
       systemPrompt,
+      tier,
       maxTokens: tokenCap,
       temperature: 0.7,
     });

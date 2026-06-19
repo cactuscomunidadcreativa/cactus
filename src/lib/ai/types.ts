@@ -9,6 +9,10 @@ export interface AIRequest {
   prompt: string;
   systemPrompt?: string;
   provider?: AIProvider;
+  /** id de modelo explícito; si se omite, el adapter usa su modelo por defecto */
+  model?: string;
+  /** perfil de presupuesto; el router lo traduce a un modelo concreto */
+  tier?: 'economico' | 'equilibrado' | 'maxima';
   maxTokens?: number;
   temperature?: number;
   messages?: AIChatMessage[];

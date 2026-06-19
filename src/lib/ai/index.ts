@@ -5,10 +5,18 @@ import {
   getConfiguredProviders,
   getFallbackProvider,
 } from './provider-factory';
+import { modelForTier } from '@/lib/cactus/budget';
 
 export type { AIRequest, AIResponse, AIStatus, AIProvider, AIChatMessage };
 export { generateImage, generateImages, editImage } from './image';
 export type { ImageGenerationRequest, ImageGenerationResponse } from './image';
+
+/** Aplica el perfil de presupuesto (tier) -> modelo concreto del proveedor dado. */
+function withTierModel(request: AIRequest, provider: AIProvider): AIRequest {
+  if (request.model || !request.tier) return request;
+  const model = modelForTier(provider, request.tier);
+  return model ? { ...request, model } : request;
+}
 
 export async function generateContent(request: AIRequest): Promise<AIResponse> {
   const provider = request.provider || await getDefaultProvider();
@@ -17,17 +25,17 @@ export async function generateContent(request: AIRequest): Promise<AIResponse> {
   if (!(await adapter.isConfigured())) {
     const fallback = await getFallbackProvider(provider);
     if (fallback) {
-      return getAdapter(fallback).generate(request);
+      return getAdapter(fallback).generate(withTierModel(request, fallback));
     }
     throw new Error('No AI provider configured. Add API keys in Admin panel or .env.local');
   }
 
   try {
-    return await adapter.generate(request);
+    return await adapter.generate(withTierModel(request, provider));
   } catch (error) {
     const fallback = await getFallbackProvider(provider);
     if (fallback) {
-      return getAdapter(fallback).generate(request);
+      return getAdapter(fallback).generate(withTierModel(request, fallback));
     }
     throw error;
   }
@@ -37,6 +45,7 @@ export async function generateChat(params: {
   messages: AIChatMessage[];
   systemPrompt: string;
   provider?: AIProvider;
+  tier?: AIRequest['tier'];
   maxTokens?: number;
   temperature?: number;
 }): Promise<AIResponse> {
@@ -45,6 +54,7 @@ export async function generateChat(params: {
     systemPrompt: params.systemPrompt,
     messages: params.messages,
     provider: params.provider,
+    tier: params.tier,
     maxTokens: params.maxTokens || 1024,
     temperature: params.temperature ?? 0.7,
   });

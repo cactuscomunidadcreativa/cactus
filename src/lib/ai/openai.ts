@@ -36,7 +36,7 @@ export const openaiAdapter: AIProviderAdapter = {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: request.model || 'gpt-4o-mini',
         messages,
         max_tokens: request.maxTokens || 1024,
         temperature: request.temperature ?? 0.7,
