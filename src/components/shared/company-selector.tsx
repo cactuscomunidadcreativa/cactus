@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Building2, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { useToast } from '@/components/shared/toast';
+
+const SWITCH_KEY = 'cactus.companySwitched';
 
 export interface CompanyOption {
   id: string;
@@ -22,6 +25,15 @@ export function CompanySelector({ companies, activeId }: Props) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const { success } = useToast();
+
+  useEffect(() => {
+    try {
+      const name = sessionStorage.getItem(SWITCH_KEY);
+      if (name) { sessionStorage.removeItem(SWITCH_KEY); success(`Ahora estás en ${name}`); }
+    } catch { /* noop */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -45,6 +57,7 @@ export function CompanySelector({ companies, activeId }: Props) {
         body: JSON.stringify({ companyId: id }),
       });
       if (r.ok) {
+        try { sessionStorage.setItem(SWITCH_KEY, companies.find((c) => c.id === id)?.name || ''); } catch { /* noop */ }
         window.location.reload(); // recarga limpia: re-lee todo lo scopeado por empresa
         return;
       }

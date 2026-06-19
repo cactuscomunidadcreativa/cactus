@@ -5,8 +5,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Building2, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { useToast } from '@/components/shared/toast';
 
 interface Company { id: string; name: string; role?: string }
+
+const SWITCH_KEY = 'cactus.companySwitched';
 
 export function CompanyBadge() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -14,6 +17,16 @@ export function CompanyBadge() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const { success } = useToast();
+
+  // Avisito tras cambiar de empresa (se setea antes de recargar).
+  useEffect(() => {
+    try {
+      const name = sessionStorage.getItem(SWITCH_KEY);
+      if (name) { sessionStorage.removeItem(SWITCH_KEY); success(`Ahora estás en ${name}`); }
+    } catch { /* noop */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -44,7 +57,11 @@ export function CompanyBadge() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: id }),
       });
-      if (r.ok) { window.location.reload(); return; }
+      if (r.ok) {
+        try { sessionStorage.setItem(SWITCH_KEY, companies.find((c) => c.id === id)?.name || ''); } catch { /* noop */ }
+        window.location.reload();
+        return;
+      }
     } catch { /* noop */ }
     setBusy(null); setOpen(false);
   }
