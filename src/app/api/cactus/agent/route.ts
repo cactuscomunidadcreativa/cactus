@@ -9,6 +9,7 @@ import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import { getBudgetTier } from '@/lib/cactus/budget-server';
 import { subAgentDirective } from '@/lib/cactus/sub-agents';
 import { getAutomationDirectives } from '@/lib/cactus/automations-server';
+import { retrieveViaRamona } from '@/lib/cactus/ramona-context';
 import type { AIChatMessage } from '@/lib/ai';
 
 export const maxDuration = 60;
@@ -16,10 +17,11 @@ export const maxDuration = 60;
 export async function POST(req: Request) {
   const supabase = await createClient();
   let brand = null;
+  let companyId: string | null = null;
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const companyId = await getActiveCompanyId(supabase, user.id);
+    companyId = await getActiveCompanyId(supabase, user.id);
     brand = await getActiveBrandKit(supabase, user.id, companyId);
   }
 
@@ -32,9 +34,14 @@ export async function POST(req: Request) {
   // Tokens de salida: 2000 por defecto; configurable hasta 4000 (p. ej. contenido largo de Pitaya).
   const tokenCap = Math.min(4000, Math.max(256, Number(maxTokens) || 2000));
 
+  // Profundidad del Cerebro vía Ramona (Cerebro paso 2): recupera contexto
+  // profundo y validado para la última consulta del usuario. Fail-safe -> ''.
+  const lastUser = [...(messages as AIChatMessage[])].reverse().find((m) => m.role === 'user')?.content || '';
+  const ragContext = supabase ? await retrieveViaRamona(supabase, { companyId, agentSlug: slug, query: lastUser }) : '';
+
   // Sub-agente especializado (Bloque 6) + automatizaciones activas (Bloque 7):
   // ambos reorientan el system prompt del agente.
-  const systemPrompt = buildAgentSystemPrompt(slug, buildBrandContext(brand))
+  const systemPrompt = buildAgentSystemPrompt(slug, buildBrandContext(brand), ragContext)
     + subAgentDirective(slug, typeof subAgent === 'string' ? subAgent : null)
     + await getAutomationDirectives(slug);
   const tier = await getBudgetTier();
