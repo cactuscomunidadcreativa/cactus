@@ -27,7 +27,8 @@ const AI_GROUPS: { title: string; keys: { key: string; label: string }[] }[] = [
     { key: 'elevenlabs_api_key', label: 'ElevenLabs — voz premium + clonación' },
   ] },
   { title: 'Música', keys: [
-    { key: 'replicate_api_token', label: 'Replicate — música (MusicGen) · token r8_…' },
+    { key: 'replicate_api_token', label: 'Replicate — pistas largas (MusicGen) · token r8_…' },
+    { key: 'piapi_api_key', label: 'PiAPI — jingles cortos (Kling Sound)' },
     { key: 'suno_api_key', label: 'Suno — música (opcional)' },
   ] },
 ];

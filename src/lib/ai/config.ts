@@ -11,6 +11,7 @@ interface AIConfig {
   sunoApiKey: string;
   elevenLabsApiKey: string;
   replicateApiKey: string;
+  piapiApiKey: string;
   defaultProvider: AIProvider;
   fallbackEnabled: boolean;
   globalMonthlyTokenLimit: number;
@@ -71,6 +72,7 @@ export async function getAIConfig(): Promise<AIConfig> {
     sunoApiKey: dbConfig['suno_api_key'] || process.env.SUNO_API_KEY || '',
     elevenLabsApiKey: dbConfig['elevenlabs_api_key'] || process.env.ELEVENLABS_API_KEY || '',
     replicateApiKey: dbConfig['replicate_api_token'] || process.env.REPLICATE_API_TOKEN || '',
+    piapiApiKey: dbConfig['piapi_api_key'] || process.env.PIAPI_API_KEY || '',
     defaultProvider: (dbConfig['ai_default_provider'] || process.env.AI_DEFAULT_PROVIDER || 'claude') as AIProvider,
     fallbackEnabled: (dbConfig['ai_fallback_enabled'] ?? process.env.AI_FALLBACK_ENABLED ?? 'true') !== 'false',
     globalMonthlyTokenLimit: parseInt(dbConfig['global_monthly_token_limit'] || '-1', 10),
@@ -91,13 +93,14 @@ export async function getAPIKey(provider: AIProvider): Promise<string> {
 }
 
 /** Llave de una integración no-LLM-de-texto (video, música, voz). */
-export async function getIntegrationKey(name: 'kling' | 'kling-secret' | 'suno' | 'elevenlabs' | 'replicate'): Promise<string> {
+export async function getIntegrationKey(name: 'kling' | 'kling-secret' | 'suno' | 'elevenlabs' | 'replicate' | 'piapi'): Promise<string> {
   const config = await getAIConfig();
   if (name === 'kling') return config.klingApiKey;
   if (name === 'kling-secret') return config.klingSecretKey;
   if (name === 'suno') return config.sunoApiKey;
   if (name === 'elevenlabs') return config.elevenLabsApiKey;
   if (name === 'replicate') return config.replicateApiKey;
+  if (name === 'piapi') return config.piapiApiKey;
   return '';
 }
 

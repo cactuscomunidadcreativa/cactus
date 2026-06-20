@@ -17,6 +17,7 @@ const PRESETS = [
 
 export function PereskiaApp({ agent, user, credits }: { agent: PereskiaAgent; user?: ShellUser; credits?: number }) {
   const [prompt, setPrompt] = useState('');
+  const [provider, setProvider] = useState<'musicgen' | 'kling'>('musicgen');
   const [duration, setDuration] = useState(12);
   const [subAgent, setSubAgent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,7 +36,7 @@ export function PereskiaApp({ agent, user, credits }: { agent: PereskiaAgent; us
     try {
       const res = await fetch('/api/cactus/music', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: full, duration }),
+        body: JSON.stringify({ prompt: full, duration, provider }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar la música.');
@@ -60,8 +61,27 @@ export function PereskiaApp({ agent, user, credits }: { agent: PereskiaAgent; us
               <button key={p} onClick={() => setPrompt(p)} className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:bg-muted">{p.split(',')[0]}</button>
             ))}
           </div>
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">Tipo</label>
+          <div className="mb-3 flex gap-1.5">
+            <button onClick={() => { setProvider('musicgen'); if (duration < 5) setDuration(12); }}
+              className="flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium" style={provider === 'musicgen' ? { backgroundColor: c, color: '#fff' } : { border: '1px solid var(--border)' }}>
+              Pista larga (MusicGen)
+            </button>
+            <button onClick={() => { setProvider('kling'); setDuration(10); }}
+              className="flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium" style={provider === 'kling' ? { backgroundColor: c, color: '#fff' } : { border: '1px solid var(--border)' }}>
+              Jingle corto (Kling)
+            </button>
+          </div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">Duración: {duration}s</label>
-          <input type="range" min={5} max={30} step={1} value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="mb-3 w-full" />
+          {provider === 'kling' ? (
+            <div className="mb-3 flex gap-1.5">
+              {[5, 10].map((d) => (
+                <button key={d} onClick={() => setDuration(d)} className="flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium" style={duration === d ? { backgroundColor: c, color: '#fff' } : { border: '1px solid var(--border)' }}>{d}s</button>
+              ))}
+            </div>
+          ) : (
+            <input type="range" min={5} max={30} step={1} value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="mb-3 w-full" />
+          )}
           <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
           <button onClick={generate} disabled={loading || !prompt.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}{loading ? 'Componiendo…' : 'Generar música'}
