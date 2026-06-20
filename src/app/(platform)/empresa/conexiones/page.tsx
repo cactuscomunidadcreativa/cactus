@@ -16,7 +16,7 @@ export default function ConexionesPage() {
         </span>
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-2xl font-bold">Conexiones</h1>
-          <p className="text-sm text-muted-foreground">Conecta tus herramientas para que los agentes actúen en el mundo real: pagos, ads, email, render y más.</p>
+          <p className="text-sm text-muted-foreground">Conecta tus herramientas de negocio para que los agentes actúen: pagos, ads, email, WhatsApp y más. La IA (texto, imagen, voz, video) ya viene incluida — no necesitas llaves.</p>
         </div>
       </header>
       <IntegrationsHub />

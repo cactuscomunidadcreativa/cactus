@@ -48,13 +48,19 @@ export function IntegrationsHub() {
     if (q.get('ok') || q.get('error')) window.history.replaceState({}, '', window.location.pathname);
   }, []);
 
+  // La IA (texto, imagen, video, voz, música, 3D) la provee la plataforma —
+  // el usuario NO conecta llaves de IA. Aquí solo van sus herramientas de negocio.
+  const PLATFORM_CATEGORIES = new Set(['ia', 'video', 'audio', '3d']);
+  const userIntegrations = useMemo(() => INTEGRATIONS.filter((i) => !PLATFORM_CATEGORIES.has(i.category)), []);
+
   const byCategory = useMemo(() => {
     const m: Record<string, IntegrationProvider[]> = {};
-    for (const p of INTEGRATIONS) (m[p.category] ||= []).push(p);
+    for (const p of userIntegrations) (m[p.category] ||= []).push(p);
     return m;
-  }, []);
+  }, [userIntegrations]);
 
-  const connectedCount = status ? Object.values(status).filter((s) => s.connected).length : 0;
+  const userSlugs = useMemo(() => new Set(userIntegrations.map((i) => i.slug)), [userIntegrations]);
+  const connectedCount = status ? Object.values(status).filter((s) => s.connected && userSlugs.has(s.slug)).length : 0;
 
   if (!status) return <div className="flex justify-center py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /></div>;
 
@@ -81,7 +87,7 @@ export function IntegrationsHub() {
 
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
-          <Plug className="h-3.5 w-3.5" /> {connectedCount} de {INTEGRATIONS.length} conectadas
+          <Plug className="h-3.5 w-3.5" /> {connectedCount} de {userIntegrations.length} conectadas
         </span>
         <span className="text-xs">Las llaves se guardan cifradas (AES-256-GCM) y nunca vuelven al navegador.</span>
       </div>
