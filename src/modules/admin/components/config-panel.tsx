@@ -11,18 +11,24 @@ interface ConfigPanelProps {
   onSave: (key: string, value: string) => Promise<boolean>;
 }
 
-const API_KEY_CONFIGS = [
-  { key: 'anthropic_api_key', labelKey: 'anthropicKey' },
-  { key: 'openai_api_key', labelKey: 'openaiKey' },
-];
-
-// Proveedores adicionales (labels literales, sin i18n)
-const PROVIDER_KEY_CONFIGS = [
-  { key: 'google_ai_api_key', label: 'Google AI · Gemini (texto/multimodal)' },
-  { key: 'kling_api_key', label: 'Kling AI · Access Key (video)' },
-  { key: 'kling_secret_key', label: 'Kling AI · Secret Key (video)' },
-  { key: 'suno_api_key', label: 'Suno (música)' },
-  { key: 'elevenlabs_api_key', label: 'ElevenLabs (voz + clonación)' },
+// Llaves de IA que provee la PLATAFORMA (las usan todas las empresas).
+// Agrupadas por para-qué-sirve para que sea claro qué enciende cada una.
+const AI_GROUPS: { title: string; keys: { key: string; label: string }[] }[] = [
+  { title: 'Texto y multimodal', keys: [
+    { key: 'anthropic_api_key', label: 'Claude (Anthropic) — texto, el motor principal' },
+    { key: 'openai_api_key', label: 'OpenAI (GPT + imágenes + voz TTS)' },
+    { key: 'google_ai_api_key', label: 'Google AI · Gemini (alternativa)' },
+  ] },
+  { title: 'Video', keys: [
+    { key: 'kling_api_key', label: 'Kling · Access Key' },
+    { key: 'kling_secret_key', label: 'Kling · Secret Key' },
+  ] },
+  { title: 'Voz', keys: [
+    { key: 'elevenlabs_api_key', label: 'ElevenLabs — voz premium + clonación' },
+  ] },
+  { title: 'Música', keys: [
+    { key: 'suno_api_key', label: 'Suno — música (o el proveedor que elijas)' },
+  ] },
 ];
 
 const WA_KEY_CONFIGS = [
@@ -156,13 +162,22 @@ export function ConfigPanel({ configs, onSave }: ConfigPanelProps) {
 
   return (
     <div className="space-y-8">
-      {/* API Keys */}
+      {/* Inteligencia Artificial — llaves de plataforma */}
       <div>
-        <h3 className="text-sm font-medium mb-1">{t('apiKeys')}</h3>
-        <p className="text-xs text-muted-foreground mb-4">{t('description')}</p>
-        <div className="space-y-4">
-          {API_KEY_CONFIGS.map(({ key, labelKey }) => renderKeyInput(key, labelKey))}
-          {PROVIDER_KEY_CONFIGS.map(({ key, label }) => renderKeyInput(key, '', true, label))}
+        <h3 className="text-sm font-medium mb-1">Inteligencia Artificial</h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Estas llaves las pone la plataforma y las usan <strong>todas las empresas</strong>. Los usuarios no traen
+          sus propias llaves de IA — su consumo se controla con créditos/presupuesto.
+        </p>
+        <div className="space-y-6">
+          {AI_GROUPS.map((g) => (
+            <div key={g.title}>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">{g.title}</p>
+              <div className="space-y-4">
+                {g.keys.map(({ key, label }) => renderKeyInput(key, '', true, label))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
