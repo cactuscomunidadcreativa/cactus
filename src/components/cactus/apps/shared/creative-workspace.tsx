@@ -18,6 +18,7 @@ export interface WsConfig {
   promptPlaceholder: string;
   changePlaceholder: string;
   uploadHint: string;        // qué subir (referencia/pose/tu foto)
+  presets?: string[];        // estilos rápidos que se añaden al brief
 }
 
 const FORMATS: { key: 'square' | 'story' | 'wide'; label: string }[] = [
@@ -35,6 +36,43 @@ async function urlToBlob(url: string): Promise<Blob | null> {
 }
 function downloadUrl(url: string, name: string) {
   const a = document.createElement('a'); a.href = url; a.download = name; a.target = '_blank'; a.rel = 'noopener'; a.click();
+}
+
+// Reduce y convierte la foto (incl. HEIC de iPhone en Safari) a JPEG <~1MB,
+// para no superar el límite de subida y aceptar formatos del teléfono.
+async function prepareImage(file: File): Promise<Blob> {
+  try {
+    const url = URL.createObjectURL(file);
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = () => reject(new Error('decode'));
+      im.src = url;
+    });
+    const max = 1536;
+    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
+    const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('canvas');
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/jpeg', 0.9));
+    if (!blob) throw new Error('blob');
+    return blob;
+  } catch {
+    return file; // último recurso: sube el original (puede fallar si es HEIC en desktop)
+  }
+}
+
+// Lee JSON de una respuesta; si el cuerpo no es JSON (p. ej. 413 'Request Entity
+// Too Large' en texto), devuelve un error amigable según el status.
+async function readJsonOrError(res: Response): Promise<any> {
+  const txt = await res.text();
+  try { return JSON.parse(txt); } catch {
+    if (res.status === 413) return { error: 'La foto pesa demasiado. Prueba con una más liviana.' };
+    return { error: 'El servidor respondió un error inesperado. Intenta de nuevo.' };
+  }
 }
 
 export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsAgent; user?: ShellUser; credits?: number; config: WsConfig }) {
@@ -87,16 +125,16 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
       // en vez de inventar a otra persona desde cero.
       if (srcUploaded && current?.blob) {
         const fd = new FormData();
-        fd.append('image', current.blob, 'foto.png'); fd.append('prompt', fullBrief);
+        fd.append('image', current.blob, 'foto.jpg'); fd.append('prompt', fullBrief);
         fd.append('format', format); fd.append('mode', config.mode);
         const res = await fetch('/api/cactus/design/edit', { method: 'POST', body: fd });
-        const data = await res.json();
+        const data = await readJsonOrError(res);
         if (!res.ok) throw new Error(data.error || 'No se pudo transformar tu foto.');
         await setFromUrl(data.url); // sigue siendo tu persona → mantenemos srcUploaded
         setLog([{ role: 'agent', text: 'Listo, transformé tu foto manteniendo tu identidad. Pide ajustes si quieres.' }]);
       } else {
         const res = await fetch('/api/cactus/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brief: fullBrief, mode: config.mode, format, style }) });
-        const data = await res.json();
+        const data = await readJsonOrError(res);
         if (!res.ok) throw new Error(data.error || 'No se pudo generar.');
         setSrcUploaded(false);
         await setFromUrl(data.url);
@@ -105,14 +143,20 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
     } catch (e: any) { setError(e?.message || 'Error'); } finally { setBusy(''); }
   }
 
-  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return;
-    const display = URL.createObjectURL(f);
-    const img: Img = { display, blob: f, raw: display };
-    setCurrent(img); resetAdj(); setHistory((h) => [img, ...h].slice(0, 12));
-    setSrcUploaded(true);
-    setLog([{ role: 'agent', text: 'Foto cargada. Escribe cómo la quieres (ej. "avatar profesional, fondo neutro") y pulsa Generar: la transformo manteniendo tu cara.' }]);
     if (fileRef.current) fileRef.current.value = '';
+    setBusy('edit'); setError(null);
+    try {
+      const blob = await prepareImage(f); // reduce + convierte (HEIC→JPEG)
+      const display = URL.createObjectURL(blob);
+      const img: Img = { display, blob, raw: display };
+      setCurrent(img); resetAdj(); setHistory((h) => [img, ...h].slice(0, 12));
+      setSrcUploaded(true);
+      setLog([{ role: 'agent', text: 'Foto cargada. Escribe cómo la quieres (ej. "avatar profesional, fondo neutro") y pulsa Generar: la transformo manteniendo tu cara.' }]);
+    } catch {
+      setError('No pude leer esa foto. Prueba con JPG o PNG.');
+    } finally { setBusy(''); }
   }
 
   async function applyChange() {
@@ -122,9 +166,9 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
     setBusy('edit'); setError(null);
     setLog((l) => [...l, { role: 'user', text: t }]); setChange('');
     try {
-      const fd = new FormData(); fd.append('image', current.blob, 'img.png'); fd.append('prompt', t); fd.append('format', format);
+      const fd = new FormData(); fd.append('image', current.blob, 'img.jpg'); fd.append('prompt', t); fd.append('format', format); fd.append('mode', config.mode);
       const res = await fetch('/api/cactus/design/edit', { method: 'POST', body: fd });
-      const data = await res.json();
+      const data = await readJsonOrError(res);
       if (!res.ok) throw new Error(data.error || 'No se pudo aplicar el cambio.');
       await setFromUrl(data.url);
       setLog((l) => [...l, { role: 'agent', text: 'Aplicado ✦. ¿Otro ajuste?' }]);
@@ -161,6 +205,14 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
           <div className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-2 font-display font-semibold">{config.genLabel}</h3>
             <textarea value={brief} onChange={(e) => setBrief(e.target.value)} rows={4} placeholder={config.promptPlaceholder} className="mb-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
+            {config.presets && config.presets.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                {config.presets.map((p) => (
+                  <button key={p} type="button" onClick={() => setBrief((b) => (b.trim() ? `${b.trim()}, ${p}` : p))}
+                    className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:bg-muted">+ {p}</button>
+                ))}
+              </div>
+            )}
             <div className="mb-2 flex gap-1">{FORMATS.map((f) => <button key={f.key} onClick={() => setFormat(f.key)} className={`flex-1 rounded-md px-1.5 py-1 text-[11px] font-medium ${format === f.key ? 'text-white' : 'border border-border text-muted-foreground hover:bg-muted'}`} style={format === f.key ? { backgroundColor: c } : undefined}>{f.label}</button>)}</div>
             <div className="mb-3 flex gap-1">{(['vivid', 'natural'] as const).map((s) => <button key={s} onClick={() => setStyle(s)} className={`flex-1 rounded-md px-1.5 py-1 text-[11px] font-medium ${style === s ? 'text-white' : 'border border-border text-muted-foreground hover:bg-muted'}`} style={style === s ? { backgroundColor: c } : undefined}>{s === 'vivid' ? 'Vibrante' : 'Natural'}</button>)}</div>
             <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
@@ -168,7 +220,7 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
           </div>
           <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4">
             <button onClick={() => fileRef.current?.click()} className="flex w-full flex-col items-center gap-2 text-center text-muted-foreground hover:text-foreground"><Upload className="h-6 w-6" /><span className="text-xs">{config.uploadHint}</span></button>
-            <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
+            <input ref={fileRef} type="file" accept="image/*,.heic,.heif" hidden onChange={onFile} />
           </div>
           {history.length > 1 && (
             <div className="rounded-2xl border border-border bg-card p-4">

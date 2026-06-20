@@ -8,7 +8,15 @@ const config: WsConfig = {
   genLabel: 'Crear avatar',
   promptPlaceholder: 'Ej. avatar de marca: mujer 30s, profesional cercana, estilo realista, fondo neutro…',
   changePlaceholder: 'Pide un cambio (o sube tu foto y di “conviérteme en avatar 3D”)',
-  uploadHint: 'Sube TU foto para crear tu propio avatar',
+  uploadHint: 'Sube TU foto para crear tu propio avatar (acepta HEIC del iPhone)',
+  presets: [
+    'avatar profesional, fondo neutro',
+    'estilo LinkedIn, saco',
+    'fondo de oficina desenfocado',
+    'iluminación de estudio',
+    'sonrisa cálida, mirada a cámara',
+    'blanco y negro editorial',
+  ],
 };
 
 export function AriocarpusApp(props: { agent: WsAgent; user?: ShellUser; credits?: number }) {
