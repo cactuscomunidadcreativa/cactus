@@ -27,7 +27,8 @@ const AI_GROUPS: { title: string; keys: { key: string; label: string }[] }[] = [
     { key: 'elevenlabs_api_key', label: 'ElevenLabs — voz premium + clonación' },
   ] },
   { title: 'Música', keys: [
-    { key: 'suno_api_key', label: 'Suno — música (o el proveedor que elijas)' },
+    { key: 'replicate_api_token', label: 'Replicate — música (MusicGen) · token r8_…' },
+    { key: 'suno_api_key', label: 'Suno — música (opcional)' },
   ] },
 ];
 
