@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { generateContent } from '@/lib/ai';
+import { generateContent, generateImage } from '@/lib/ai';
 import { buildAgentSystemPrompt } from '@/lib/cactus/agent-prompts';
 import { buildBrandContext } from '@/lib/cactus/brain';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
@@ -125,8 +125,17 @@ export async function POST(req: Request) {
 
     // Ejecución v2 (Fase C): modo profundo = sub-agentes acotados (opt-in body.deep)
     const deep = !!body?.deep;
+    const kind = deliverableKind(task.agent_slug);
     let content: string, provider: string, model: string, inTok = 0, outTok = 0, subCount = 0, cached = false;
-    if (deep) {
+    let imageUrl: string | null = null;
+    if (kind === 'image') {
+      // Agente visual: genera IMAGEN real (no texto) y la guarda como entregable.
+      const imgPrompt = `${task.action}${project.objective ? ` (objetivo: ${project.objective})` : ''}${brand?.name ? ` para la marca ${brand.name}` : ''}. Alta calidad, composición limpia, listo para usar.`;
+      const img = await generateImage({ prompt: imgPrompt, size: '1024x1024', quality: 'standard' });
+      imageUrl = img.url;
+      content = img.revisedPrompt || `Imagen: ${task.action}`;
+      provider = 'gpt-image'; model = 'gpt-image';
+    } else if (deep) {
       const r = await runWithSubAgents({ system, action: task.action, objective: project.objective || '', max: 3 });
       content = r.content; subCount = r.subCount;
       for (const u of r.usages) { inTok += u.inputTokens || 0; outTok += u.outputTokens || 0; }
@@ -153,10 +162,12 @@ export async function POST(req: Request) {
       }
     }
 
-    const costUsd = estimateCostUsd({
-      model: provider === 'claude' ? 'claude' : provider === 'gemini' ? 'gemini' : 'gpt',
-      inputTokens: inTok, outputTokens: outTok,
-    });
+    const costUsd = kind === 'image'
+      ? estimateCostUsd({ model: 'gpt-image', images: 1 })
+      : estimateCostUsd({
+          model: provider === 'claude' ? 'claude' : provider === 'gemini' ? 'gemini' : 'gpt',
+          inputTokens: inTok, outputTokens: outTok,
+        });
     const credits = usdToCredits(costUsd);
 
     // Consumo (Acción 4): registro atómico por día/empresa/agente/modelo
@@ -167,8 +178,8 @@ export async function POST(req: Request) {
 
     const { data: deliv } = await supabase.from('cactus_deliverables').insert({
       user_id: user.id, project_id: projectId, task_id: task.id, agent_slug: task.agent_slug,
-      title: task.action.slice(0, 80), kind: deliverableKind(task.agent_slug), status: 'ready',
-      content, meta: { credits, model, deep, subCount, cached }, ...(companyId ? { company_id: companyId } : {}),
+      title: task.action.slice(0, 80), kind, status: 'ready',
+      content, url: imageUrl, meta: { credits, model, deep, subCount, cached }, ...(companyId ? { company_id: companyId } : {}),
     }).select('id').single();
 
     // Auditoría granular (Fase C)

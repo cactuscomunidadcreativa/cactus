@@ -448,6 +448,22 @@ function DeliverableItem({ d, onRefresh }: { d: OrchestratorDeliverable; onRefre
           <button onClick={() => setOpen((o) => !o)} disabled={busy !== ''} title="Corregir / regenerar" className="rounded p-1 hover:bg-muted disabled:opacity-50"><RefreshCw className="h-3.5 w-3.5 text-muted-foreground" /></button>
         </div>
       </div>
+      {d.url && (
+        <div className="mt-2">
+          {d.kind === 'image' ? (
+            <a href={d.url} target="_blank" rel="noopener noreferrer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={d.url} alt={d.title} className="w-full rounded-lg border border-border" />
+            </a>
+          ) : d.kind === 'audio' ? (
+            <audio controls src={d.url} className="w-full" />
+          ) : d.kind === 'video' ? (
+            <video controls src={d.url} className="w-full rounded-lg" />
+          ) : (
+            <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-xs text-cactus-green hover:underline">Abrir entregable</a>
+          )}
+        </div>
+      )}
       {open && (
         <div className="mt-2 space-y-2">
           <textarea value={fb} onChange={(e) => setFb(e.target.value)} rows={2} placeholder="¿Qué mejorar? (opcional — Ramona lo aprende)" className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs" />
