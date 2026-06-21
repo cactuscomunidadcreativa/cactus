@@ -94,16 +94,12 @@ export async function POST(req: Request) {
   if (companyId) {
     const available = await isAgentAvailable(supabase, companyId, task.agent_slug);
     if (!available) {
-      if (activateMode && approveTaskId === task.id) {
-        await activateAgent(supabase, { companyId, userId: user.id, slug: task.agent_slug, mode: activateMode, taskId: task.id });
-      } else {
-        const ag = getAgent(task.agent_slug);
-        const state = await loadOrchestratorState(supabase, user.id, companyId);
-        return NextResponse.json({
-          state, hasMore: true,
-          needsActivation: { taskId: task.id, agentSlug: task.agent_slug, agentName: ag?.name || task.agent_slug },
-        });
-      }
+      // Auto-activar el agente para que el plan corra sin trabarse (el gasto ya
+      // lo controla el sistema de créditos/presupuesto). Antes esto devolvía
+      // needsActivation y el bucle se quedaba en 0%.
+      try {
+        await activateAgent(supabase, { companyId, userId: user.id, slug: task.agent_slug, mode: activateMode || 'one_shot', taskId: task.id });
+      } catch { /* si no se puede activar, intentamos ejecutar igual */ }
     }
   }
 
