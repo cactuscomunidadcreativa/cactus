@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   Send, Check, MessageSquare, ListTodo, FolderKanban, CalendarDays, Activity,
-  Loader2, Sparkles, Inbox, Circle, Play, ShieldAlert, ThumbsUp, RefreshCw, Brain,
+  Loader2, Sparkles, Inbox, Circle, Play, ShieldAlert, ThumbsUp, RefreshCw, Brain, ChevronDown,
 } from 'lucide-react';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 import { taskProgress, type OrchestratorTask, type OrchestratorDeliverable } from '@/lib/cactus/orchestrator';
@@ -385,19 +385,23 @@ function EmptyState({ icon: Icon, text }: { icon: typeof ListTodo; text: string 
 function Deliverables({ items, onRefresh }: { items: OrchestratorDeliverable[]; onRefresh: () => void }) {
   // Solo la última versión de cada entregable (las correcciones crean versiones nuevas)
   const latest = items.filter((d) => (d as any).is_latest !== false);
+  const [open, setOpen] = useState(true);
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="mb-3 flex items-center justify-between">
+      <button onClick={() => setOpen((o) => !o)} className="mb-3 flex w-full items-center justify-between">
         <h3 className="font-display font-semibold">Entregables</h3>
-        <span className="text-xs text-muted-foreground">{latest.length}</span>
-      </div>
-      {latest.length === 0 ? (
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {latest.length}
+          <ChevronDown className={`h-4 w-4 transition-transform ${open ? '' : '-rotate-90'}`} />
+        </span>
+      </button>
+      {!open ? null : latest.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
           <Inbox className="h-6 w-6 opacity-50" />
           <p className="text-xs">Aún no hay entregables. Ramona los irá generando con el equipo.</p>
         </div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="max-h-[70vh] space-y-2 overflow-y-auto pr-1">
           {latest.map((d) => <DeliverableItem key={d.id} d={d} onRefresh={onRefresh} />)}
         </ul>
       )}

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { generateChat, type AIChatMessage } from '@/lib/ai';
+import { generateChat, generateImage, type AIChatMessage } from '@/lib/ai';
 import { planFromGoal } from '@/lib/cactus/ramona';
+import { getAgent } from '@/lib/cactus/agents-catalog';
 import { buildBrandContext } from '@/lib/cactus/brain';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 import { getAccessStatus, NO_PLAN_REPLY } from '@/lib/cactus/access';
@@ -102,6 +103,37 @@ export async function POST(req: Request) {
 
   // Persiste el mensaje del usuario
   await supabase.from('cactus_project_messages').insert({ user_id: user.id, project_id: projectId, role: 'user', content: message, ...(companyId ? { company_id: companyId } : {}) });
+
+  // ── Pedido directo de imagen: genera AHORA y la pone en Entregables ────────
+  const wantsImage =
+    /\b(imagen|im[aá]genes|ilustraci[oó]n|p[oó]ster|poster|gr[aá]fic|arte|dise[ñn]o|portada|banner|story|stories|foto)\b/i.test(message) &&
+    /\b(mu[eé]stra|mu[eé]strame|ver|dame|genera|generar|haz|hazme|crea|crear|quiero|necesito|p[oó]n|dibuja|el archivo|la imagen)\b/i.test(message);
+  if (wantsImage) {
+    try {
+      const { data: priors } = await supabase
+        .from('cactus_deliverables')
+        .select('agent_slug, title, content')
+        .eq('project_id', projectId).eq('status', 'ready')
+        .order('created_at', { ascending: true }).limit(8);
+      const ctx = (priors || [])
+        .filter((p: any) => (p.content || '').trim())
+        .map((p: any) => `[${getAgent(p.agent_slug)?.name || p.agent_slug}] ${(p.content || '').slice(0, 700)}`)
+        .join('\n\n');
+      const imgPrompt = `${message}${brand?.name ? ` para la marca ${brand.name}` : ''}. Alta calidad, composición limpia, listo para usar.${ctx ? `\n\nConcepto y copy ya definidos por el equipo (respétalos, incluido el texto literal si va incrustado):\n${ctx}` : ''}`;
+      const img = await generateImage({ prompt: imgPrompt, size: '1024x1024', quality: 'standard' });
+      const credits = usdToCredits(estimateCostUsd({ model: 'gpt-image', images: 1 }));
+      await supabase.from('cactus_deliverables').insert({
+        user_id: user.id, project_id: projectId, agent_slug: 'cardon',
+        title: message.slice(0, 80), kind: 'image', status: 'ready',
+        content: img.revisedPrompt || '', url: img.url, ...(companyId ? { company_id: companyId } : {}),
+      });
+      const reply = '¡Listo! Generé la imagen y ya está en tu panel de Entregables (arriba a la derecha). Si quieres ajustes, dímelos. 🌵';
+      await supabase.from('cactus_project_messages')
+        .insert({ user_id: user.id, project_id: projectId, role: 'assistant', content: reply, credits, ...(companyId ? { company_id: companyId } : {}) });
+      const state = await loadOrchestratorState(supabase, user.id, companyId);
+      return NextResponse.json({ state });
+    } catch { /* si falla, sigue al flujo normal de chat/plan */ }
+  }
 
   // ¿Ya hay tareas? Si no, Ramona arma el plan y lo persiste.
   const existingTasks = await getTasks(supabase, projectId);
