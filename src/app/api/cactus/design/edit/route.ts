@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { editImage } from '@/lib/ai';
+import { getIntegrationKey } from '@/lib/ai/config';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
 
 export const runtime = 'nodejs';
@@ -33,12 +34,43 @@ export async function POST(req: Request) {
     ? `Mantén EXACTAMENTE a la misma persona de la foto: mismo rostro, rasgos faciales, estructura ósea, tono de piel, barba, lentes y peinado. NO cambies su identidad ni la conviertas en otra persona. ${rawPrompt}. Retrato profesional fotorrealista, iluminación de estudio, fondo neutro, alta fidelidad.`
     : rawPrompt;
 
-  const blob = new Blob([await file.arrayBuffer()], { type: file.type || 'image/png' });
+  const bytes = Buffer.from(await file.arrayBuffer());
 
+  // ── Avatar/foto: Flux Kontext (Replicate) PRESERVA la identidad mucho mejor
+  //    que gpt-image. Si hay key de Replicate, lo usamos para no cambiar la cara.
+  const replicate = (mode === 'avatar' || mode === 'photo') ? await getIntegrationKey('replicate') : '';
+  if (replicate) {
+    try {
+      const dataUri = `data:${file.type || 'image/jpeg'};base64,${bytes.toString('base64')}`;
+      const kPrompt = `${rawPrompt}. Keep the exact same person and face — same facial features, bone structure, skin tone, beard and glasses. Do not change their identity. Professional headshot, studio lighting, neutral background, photorealistic.`;
+      let res = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${replicate}`, 'Content-Type': 'application/json', Prefer: 'wait' },
+        body: JSON.stringify({ input: { prompt: kPrompt, input_image: dataUri, aspect_ratio: 'match_input_image', output_format: 'jpg', safety_tolerance: 2 } }),
+      });
+      let pred = await res.json();
+      if (res.ok) {
+        for (let i = 0; i < 25 && (pred.status === 'starting' || pred.status === 'processing'); i++) {
+          await new Promise((r) => setTimeout(r, 2000));
+          const poll = await fetch(pred.urls.get, { headers: { Authorization: `Bearer ${replicate}` } });
+          pred = await poll.json();
+        }
+        const url = Array.isArray(pred.output) ? pred.output[0] : pred.output;
+        if (pred.status === 'succeeded' && url) {
+          const costUsd = 0.04;
+          return NextResponse.json({ url, credits: usdToCredits(costUsd), costUsd, engine: 'flux-kontext' });
+        }
+      }
+      // si Kontext falla, caemos a gpt-image abajo
+    } catch { /* fallback */ }
+  }
+
+  // ── Respaldo: gpt-image edit (puede variar más la cara) ────────────────────
+  const blob = new Blob([bytes], { type: file.type || 'image/png' });
   try {
     const img = await editImage({ image: blob, prompt, size: SIZE[format] || SIZE.square });
     const costUsd = estimateCostUsd({ model: 'gpt-image', images: 1 });
-    return NextResponse.json({ url: img.url, revisedPrompt: img.revisedPrompt, credits: usdToCredits(costUsd), costUsd });
+    return NextResponse.json({ url: img.url, revisedPrompt: img.revisedPrompt, credits: usdToCredits(costUsd), costUsd, engine: 'gpt-image' });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Error editando la imagen' }, { status: 500 });
   }
