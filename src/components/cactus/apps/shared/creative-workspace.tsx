@@ -132,7 +132,10 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
         const data = await readJsonOrError(res);
         if (!res.ok) throw new Error(data.error || 'No se pudo transformar tu foto.');
         await setFromUrl(data.url); // sigue siendo tu persona → mantenemos srcUploaded
-        setLog([{ role: 'agent', text: 'Listo, transformé tu foto manteniendo tu identidad. Pide ajustes si quieres.' }]);
+        const engineMsg = data.engine === 'flux-kontext'
+          ? 'Listo ✦ (motor Flux Kontext — mantiene tu cara). Pide ajustes si quieres.'
+          : 'Listo, pero usé el motor de respaldo (gpt-image), que puede variar la cara. Falta la llave de Replicate para mantener tu identidad.';
+        setLog([{ role: 'agent', text: engineMsg }]);
       } else {
         const res = await fetch('/api/cactus/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brief: fullBrief, mode: config.mode, format, style }) });
         const data = await readJsonOrError(res);

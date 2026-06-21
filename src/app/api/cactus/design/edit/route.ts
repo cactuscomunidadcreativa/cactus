@@ -49,6 +49,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({ input: { prompt: kPrompt, input_image: dataUri, aspect_ratio: 'match_input_image', output_format: 'jpg', safety_tolerance: 2 } }),
       });
       let pred = await res.json();
+      if (!res.ok) console.error('[design/edit] flux-kontext create error', res.status, JSON.stringify(pred).slice(0, 300));
       if (res.ok) {
         for (let i = 0; i < 25 && (pred.status === 'starting' || pred.status === 'processing'); i++) {
           await new Promise((r) => setTimeout(r, 2000));
@@ -60,9 +61,10 @@ export async function POST(req: Request) {
           const costUsd = 0.04;
           return NextResponse.json({ url, credits: usdToCredits(costUsd), costUsd, engine: 'flux-kontext' });
         }
+        console.error('[design/edit] flux-kontext no-success', pred?.status, JSON.stringify(pred?.error || pred).slice(0, 300));
       }
       // si Kontext falla, caemos a gpt-image abajo
-    } catch { /* fallback */ }
+    } catch (e: any) { console.error('[design/edit] flux-kontext threw', e?.message); }
   }
 
   // ── Respaldo: gpt-image edit (puede variar más la cara) ────────────────────
