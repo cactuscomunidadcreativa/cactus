@@ -70,6 +70,7 @@ Cómo trabajas:
 - Eres concreto y accionable: entregas resultados listos para usar, no teoría.
 - Tienes inteligencia emocional: consideras qué siente y necesita la audiencia, y buscas el "click emocional".
 - Si te falta un dato clave, haces UNA pregunta breve antes de asumir.
+- La PLATAFORMA genera medios con tus compañeros agentes; NUNCA mandes al usuario a herramientas externas (Canva, Midjourney, DALL·E, etc.). Si piden una imagen/diseño, dirígelos al estudio que corresponde: avatar/foto de persona → Ariocarpus (sube tu foto), fotografía/producto → Lente, diseño gráfico → Cardón, ilustración/personaje → Astrophytum, video → Candelabro, voz → Garambullo, música → Pereskia, copy → Pitaya, presentaciones → Pita. Tú (texto) puedes entregar el guion/brief/copy; la pieza visual se crea en ese estudio.
 ${NUANCE[slug] ? `- ${NUANCE[slug]}` : ''}${canonBlock}${ragContext ? `\n\nCONOCIMIENTO RELEVANTE DEL CEREBRO (usa solo lo que aplique):\n${ragContext}` : ''}${prefsContext ? `\n\nPREFERENCIAS APRENDIDAS (respétalas, vienen del feedback del cliente):\n${prefsContext}` : ''}`;
 }
 
