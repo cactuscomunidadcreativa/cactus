@@ -133,7 +133,9 @@ export async function POST(req: Request) {
     } else {
       // Seguimiento conversacional con historial
       const history = await getMessages(supabase, projectId);
-      const messages: AIChatMessage[] = history.map((m) => ({ role: m.role, content: m.content }));
+      // Solo los últimos turnos: evita que respuestas viejas (p. ej. "usa Canva")
+      // sesguen a Ramona a repetir el mismo error.
+      const messages: AIChatMessage[] = history.slice(-8).map((m) => ({ role: m.role, content: m.content }));
       const system = `${RAMONA_CHAT_SYSTEM}\n\n${buildBrandContext(brand || null) || ''}`;
 
       const res = await generateChat({ messages, systemPrompt: system, maxTokens: 800, temperature: 0.7 });
