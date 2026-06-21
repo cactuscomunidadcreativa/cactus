@@ -117,7 +117,22 @@ export async function POST(req: Request) {
     const prefsContext = await getLearnedContext(supabase, { companyId, agentSlug: task.agent_slug, userId: user.id });
     // Editor de agentes: persona/modelo/foto editados por la empresa
     const agentCfg = await getEffectiveAgentConfig(supabase, companyId, task.agent_slug);
-    const system = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext, prefsContext, agentCfg || undefined);
+    const baseSystem = buildAgentSystemPrompt(task.agent_slug, buildBrandContext(brand || null), ragContext, prefsContext, agentCfg || undefined);
+
+    // Continuidad del proyecto: pasa lo que YA produjeron los agentes previos
+    // para que no se pierda el concepto (concepto → copy → imagen → compone).
+    const { data: priors } = await supabase
+      .from('cactus_deliverables')
+      .select('agent_slug, title, content, task_id')
+      .eq('project_id', projectId).eq('status', 'ready')
+      .order('created_at', { ascending: true }).limit(10);
+    const priorContext = (priors || [])
+      .filter((p: any) => p.task_id !== task.id && (p.content || '').trim())
+      .map((p: any) => `[${getAgent(p.agent_slug)?.name || p.agent_slug}] ${p.title}:\n${(p.content || '').slice(0, 900)}`)
+      .join('\n\n');
+    const system = priorContext
+      ? `${baseSystem}\n\nLO QUE YA PRODUJO EL EQUIPO EN ESTE PROYECTO (continúalo y mantén coherencia total; NO lo contradigas ni cambies el concepto/copy):\n${priorContext}`
+      : baseSystem;
 
     // Ejecución v2 (Fase C): modo profundo = sub-agentes acotados (opt-in body.deep)
     const deep = !!body?.deep;
@@ -125,8 +140,8 @@ export async function POST(req: Request) {
     let content: string, provider: string, model: string, inTok = 0, outTok = 0, subCount = 0, cached = false;
     let imageUrl: string | null = null;
     if (kind === 'image') {
-      // Agente visual: genera IMAGEN real (no texto) y la guarda como entregable.
-      const imgPrompt = `${task.action}${project.objective ? ` (objetivo: ${project.objective})` : ''}${brand?.name ? ` para la marca ${brand.name}` : ''}. Alta calidad, composición limpia, listo para usar.`;
+      // Agente visual: genera IMAGEN real usando el concepto y copy ya definidos.
+      const imgPrompt = `${task.action}${project.objective ? ` (objetivo: ${project.objective})` : ''}${brand?.name ? ` para la marca ${brand.name}` : ''}. Alta calidad, composición limpia, listo para usar.${priorContext ? `\n\nUSA ESTE CONCEPTO Y COPY YA DEFINIDOS POR EL EQUIPO (respeta el texto literal si hay que incrustarlo):\n${priorContext}` : ''}`;
       const img = await generateImage({ prompt: imgPrompt, size: '1024x1024', quality: 'standard' });
       imageUrl = img.url;
       content = img.revisedPrompt || `Imagen: ${task.action}`;
