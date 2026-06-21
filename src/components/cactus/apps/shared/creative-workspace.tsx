@@ -86,6 +86,7 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
   const [style, setStyle] = useState<'vivid' | 'natural'>('vivid');
   const [subAgent, setSubAgent] = useState<string | null>(null);
   const [srcUploaded, setSrcUploaded] = useState(false); // la imagen actual es una foto subida por el usuario
+  const [dragging, setDragging] = useState(false);
 
   // estado de imagen
   const [current, setCurrent] = useState<Img | null>(null);
@@ -143,9 +144,8 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
     } catch (e: any) { setError(e?.message || 'Error'); } finally { setBusy(''); }
   }
 
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f) return;
-    if (fileRef.current) fileRef.current.value = '';
+  async function handleFile(f: File) {
+    if (!f.type.startsWith('image/') && !/\.(heic|heif)$/i.test(f.name)) { setError('Sube una imagen (JPG, PNG o HEIC).'); return; }
     setBusy('edit'); setError(null);
     try {
       const blob = await prepareImage(f); // reduce + convierte (HEIC→JPEG)
@@ -157,6 +157,16 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
     } catch {
       setError('No pude leer esa foto. Prueba con JPG o PNG.');
     } finally { setBusy(''); }
+  }
+
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]; if (fileRef.current) fileRef.current.value = '';
+    if (f) handleFile(f);
+  }
+
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault(); setDragging(false);
+    const f = e.dataTransfer.files?.[0]; if (f) handleFile(f);
   }
 
   async function applyChange() {
@@ -218,8 +228,18 @@ export function CreativeWorkspace({ agent, user, credits, config }: { agent: WsA
             <SubAgentBar slug={agent.slug} value={subAgent} onChange={setSubAgent} accent={c} />
             <button onClick={generate} disabled={busy !== '' || !brief.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50" style={{ backgroundColor: c }}>{busy === 'gen' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />} {srcUploaded ? 'Transformar mi foto' : 'Generar'}</button>
           </div>
-          <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4">
-            <button onClick={() => fileRef.current?.click()} className="flex w-full flex-col items-center gap-2 text-center text-muted-foreground hover:text-foreground"><Upload className="h-6 w-6" /><span className="text-xs">{config.uploadHint}</span></button>
+          <div
+            onDragOver={(e) => { e.preventDefault(); if (!dragging) setDragging(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setDragging(false); }}
+            onDrop={onDrop}
+            className="rounded-2xl border-2 border-dashed p-4 transition-colors"
+            style={{ borderColor: dragging ? c : 'var(--border)', backgroundColor: dragging ? c + '12' : 'rgb(127 127 127 / 0.06)' }}
+          >
+            <button onClick={() => fileRef.current?.click()} className="flex w-full flex-col items-center gap-2 text-center text-muted-foreground hover:text-foreground">
+              <Upload className="h-6 w-6" />
+              <span className="text-xs">{dragging ? 'Suelta la foto aquí…' : config.uploadHint}</span>
+              <span className="text-[10px] text-muted-foreground/70">Arrastra y suelta, o haz clic</span>
+            </button>
             <input ref={fileRef} type="file" accept="image/*,.heic,.heif" hidden onChange={onFile} />
           </div>
           {history.length > 1 && (
