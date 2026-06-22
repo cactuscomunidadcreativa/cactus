@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { BookOpen, Boxes, Plug, Database, FileText, Link2, Plus, ArrowRight } from 'lucide-react';
+import { BookOpen, Boxes, Plug, Database, FileText, Link2, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { BrandKitForm } from '@/components/cactus/brand-kit-form';
 import { BrainReindex } from '@/components/cactus/brain-reindex';
+import { BrainDropzone } from '@/components/cactus/brain-dropzone';
 import { KpiRow } from '@/components/cactus/app-shell/kpi-row';
 import { AGENTS } from '@/lib/cactus/agents-catalog';
 import { CompaniesManager, type CompanyRow } from '@/components/cactus/companies-manager';
@@ -93,10 +94,13 @@ export default async function BrainPage() {
         {/* Lateral: RAG + conocimiento + integraciones */}
         <div className="space-y-6">
           <BrainReindex />
+          <div className="space-y-2">
+            <h2 className="font-display font-semibold">Añadir contenido</h2>
+            <BrainDropzone />
+          </div>
           <section className="rounded-2xl border border-border bg-card p-4">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-display font-semibold">Base de conocimiento</h2>
-              <button className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"><Plus className="h-3.5 w-3.5" /> Agregar</button>
             </div>
             {items.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
