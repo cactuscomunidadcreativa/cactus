@@ -18,14 +18,10 @@ export async function getLearnedContext(db: DB, opts: { companyId: string | null
       if (p.scope === 'company' || (p.scope === 'agent' && p.agent_slug === opts.agentSlug)) lines.push(`- ${p.content}`);
     }
   } catch { /* tabla ausente */ }
-  try {
-    if (opts.userId) {
-      const { data } = await db.from('user_preferences').select('agent_slug, content').eq('user_id', opts.userId).limit(15);
-      for (const p of (data || [])) {
-        if (!p.agent_slug || p.agent_slug === opts.agentSlug) lines.push(`- ${p.content}`);
-      }
-    }
-  } catch { /* noop */ }
+  // NO se inyecta user_preferences: esa tabla es por user_id (sin company_id) y nada la
+  // escribe en el código, así que solo podía filtrar datos entre empresas (la misma clase
+  // de fuga que metía ROWI en otra empresa). El aprendizaje por empresa vive en
+  // business_preferences (arriba), que sí está scopeado por company_id.
   return lines.slice(0, 12).join('\n').slice(0, 1500);
 }
 

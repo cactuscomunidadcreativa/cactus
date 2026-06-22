@@ -30,6 +30,13 @@ export async function POST(req: Request) {
   const { data: d } = await supabase.from('cactus_deliverables').select('*').eq('id', id).eq('user_id', user.id).maybeSingle();
   if (!d) return NextResponse.json({ ok: false, error: 'Entregable no encontrado.' }, { status: 404 });
 
+  // Aislamiento multiempresa: no regenerar un entregable de OTRA empresa estando en esta
+  // (RLS deja leer todas las filas del usuario; el filtro de empresa lo hace la app).
+  // Filas legacy sin company_id (d.company_id null) se permiten y se re-versionan en la activa.
+  if (companyId && d.company_id && d.company_id !== companyId) {
+    return NextResponse.json({ ok: false, error: 'Ese entregable es de otra empresa.' }, { status: 403 });
+  }
+
   const { data: project } = await supabase.from('cactus_projects').select('objective').eq('id', d.project_id).maybeSingle();
   const brand = await getActiveBrandKit(supabase, user.id, companyId);
 
