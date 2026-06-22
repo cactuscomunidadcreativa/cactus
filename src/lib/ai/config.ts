@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { AIProvider } from './types';
+import { decryptSecret } from '@/lib/cactus/crypto';
 
 interface AIConfig {
   anthropicApiKey: string;
@@ -40,13 +41,21 @@ async function loadConfigFromDB(): Promise<Record<string, string>> {
 
     const { data } = await supabase
       .from('platform_config')
-      .select('key, value');
+      .select('key, value, encrypted');
 
     if (!data) return {};
 
     const config: Record<string, string> = {};
     for (const row of data) {
-      config[row.key] = row.value;
+      let v: string = row.value;
+      // Descifra las llaves marcadas como cifradas. Si decryptSecret devuelve null
+      // (sin CACTUS_SECRETS_KEY, o fila legacy guardada en texto plano pero con el
+      // flag encrypted:true del código viejo) → usa el valor crudo (compatibilidad).
+      if (row.encrypted && v) {
+        const dec = decryptSecret(v);
+        if (dec !== null) v = dec;
+      }
+      config[row.key] = v;
     }
     return config;
   } catch (error) {

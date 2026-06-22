@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { clearConfigCache } from '@/lib/ai/config';
+import { encryptSecret } from '@/lib/cactus/crypto';
 
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // Llaves que deben guardarse cifradas (se enmascaran al leer).
@@ -53,12 +55,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, skipped: true });
   }
 
+  // Cifra de verdad las llaves secretas con AES-256-GCM (crypto.ts). Antes se
+  // guardaban en texto plano con encrypted:true (flag cosmético) → quedaban en
+  // claro en la DB. Ahora: si hay CACTUS_SECRETS_KEY se cifra; si no, se guarda
+  // en claro con encrypted:false para no bloquear al admin (en prod la llave existe).
+  const isSecret = SECRET_KEYS.has(key);
+  let storedValue = value || '';
+  let encrypted = false;
+  if (isSecret && storedValue) {
+    const enc = encryptSecret(storedValue);
+    if (enc) { storedValue = enc; encrypted = true; }
+  }
+
   await supabase
     .from('platform_config')
     .upsert({
       key,
-      value: value || '',
-      encrypted: SECRET_KEYS.has(key),
+      value: storedValue,
+      encrypted,
       updated_by: user.id,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'key' });
