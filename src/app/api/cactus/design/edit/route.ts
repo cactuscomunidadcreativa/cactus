@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { editImage } from '@/lib/ai';
 import { getIntegrationKey } from '@/lib/ai/config';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
+import { persistImage } from '@/lib/cactus/image-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -59,7 +60,9 @@ export async function POST(req: Request) {
         const url = Array.isArray(pred.output) ? pred.output[0] : pred.output;
         if (pred.status === 'succeeded' && url) {
           const costUsd = 0.04;
-          return NextResponse.json({ url, credits: usdToCredits(costUsd), costUsd, engine: 'flux-kontext' });
+          // Re-sube a Storage: la URL de Replicate es temporal y rompería el avatar al rato.
+          const permanentUrl = await persistImage(url, { scope: 'avatar', slug: mode || 'edit' });
+          return NextResponse.json({ url: permanentUrl, credits: usdToCredits(costUsd), costUsd, engine: 'flux-kontext' });
         }
         console.error('[design/edit] flux-kontext no-success', pred?.status, JSON.stringify(pred?.error || pred).slice(0, 300));
       }
@@ -72,7 +75,8 @@ export async function POST(req: Request) {
   try {
     const img = await editImage({ image: blob, prompt, size: SIZE[format] || SIZE.square });
     const costUsd = estimateCostUsd({ model: 'gpt-image', images: 1 });
-    return NextResponse.json({ url: img.url, revisedPrompt: img.revisedPrompt, credits: usdToCredits(costUsd), costUsd, engine: 'gpt-image' });
+    const permanentUrl = await persistImage(img.url, { scope: 'avatar', slug: mode || 'edit' });
+    return NextResponse.json({ url: permanentUrl, revisedPrompt: img.revisedPrompt, credits: usdToCredits(costUsd), costUsd, engine: 'gpt-image' });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Error editando la imagen' }, { status: 500 });
   }

@@ -10,6 +10,7 @@ import { loadOrchestratorState, getTasks, getMessages } from '@/lib/cactus/orche
 import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import { getCompanyPlan } from '@/lib/cactus/agent-access';
 import { checkQuota, registerUsage } from '@/lib/cactus/usage';
+import { persistImage } from '@/lib/cactus/image-store';
 
 export const maxDuration = 60;
 
@@ -130,11 +131,13 @@ export async function POST(req: Request) {
         .join('\n\n');
       const imgPrompt = `${message}${brand?.name ? ` para la marca ${brand.name}` : ''}. Alta calidad, composición limpia, listo para usar.${ctx ? `\n\nConcepto y copy ya definidos por el equipo (respétalos, incluido el texto literal si va incrustado):\n${ctx}` : ''}`;
       const img = await generateImage({ prompt: imgPrompt, size: '1024x1024', quality: 'standard' });
+      // Re-sube a Storage: la URL de OpenAI es temporal (~1h) y se rompería en Entregables.
+      const permanentUrl = await persistImage(img.url, { scope: companyId, slug: 'cardon' });
       const credits = usdToCredits(estimateCostUsd({ model: 'gpt-image', images: 1 }));
       await supabase.from('cactus_deliverables').insert({
         user_id: user.id, project_id: projectId, agent_slug: 'cardon',
         title: message.slice(0, 80), kind: 'image', status: 'ready',
-        content: img.revisedPrompt || '', url: img.url, ...(companyId ? { company_id: companyId } : {}),
+        content: img.revisedPrompt || '', url: permanentUrl, ...(companyId ? { company_id: companyId } : {}),
       });
       const reply = '¡Listo! Generé la imagen y ya está en tu panel de Entregables (arriba a la derecha). Si quieres ajustes, dímelos. 🌵';
       await supabase.from('cactus_project_messages')

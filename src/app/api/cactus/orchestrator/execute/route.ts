@@ -17,6 +17,7 @@ import { runWithSubAgents } from '@/lib/cactus/subagents';
 import { recordModelUsage } from '@/lib/cactus/audit';
 import { resolveMode, planForMode, hashKey, getCached, setCached } from '@/lib/cactus/resource-engine';
 import { getLearnedContext } from '@/lib/cactus/preferences';
+import { persistImage } from '@/lib/cactus/image-store';
 
 export const maxDuration = 60;
 
@@ -136,16 +137,27 @@ export async function POST(req: Request) {
 
     // Ejecución v2 (Fase C): modo profundo = sub-agentes acotados (opt-in body.deep)
     const deep = !!body?.deep;
-    const kind = deliverableKind(task.agent_slug);
+    let kind = deliverableKind(task.agent_slug);
     let content: string, provider: string, model: string, inTok = 0, outTok = 0, subCount = 0, cached = false;
     let imageUrl: string | null = null;
     if (kind === 'image') {
       // Agente visual: genera IMAGEN real usando el concepto y copy ya definidos.
       const imgPrompt = `${task.action}${project.objective ? ` (objetivo: ${project.objective})` : ''}${brand?.name ? ` para la marca ${brand.name}` : ''}. Alta calidad, composición limpia, listo para usar.${priorContext ? `\n\nUSA ESTE CONCEPTO Y COPY YA DEFINIDOS POR EL EQUIPO (respeta el texto literal si hay que incrustarlo):\n${priorContext}` : ''}`;
-      const img = await generateImage({ prompt: imgPrompt, size: '1024x1024', quality: 'standard' });
-      imageUrl = img.url;
-      content = img.revisedPrompt || `Imagen: ${task.action}`;
-      provider = 'gpt-image'; model = 'gpt-image';
+      try {
+        const img = await generateImage({ prompt: imgPrompt, size: '1024x1024', quality: 'standard' });
+        // Re-sube a Storage: la URL de OpenAI es temporal (~1h) y desaparecería de Entregables.
+        imageUrl = await persistImage(img.url, { scope: companyId, slug: task.agent_slug });
+        content = img.revisedPrompt || `Imagen: ${task.action}`;
+        provider = 'gpt-image'; model = 'gpt-image';
+      } catch (imgErr: any) {
+        // NO tumbar el plan: si la imagen falla (p. ej. falta la key de OpenAI),
+        // el paso se completa como NOTA de texto con el brief, en vez de lanzar
+        // 500 y dejar todo el plan en 0%. El usuario puede regenerarla luego.
+        kind = 'text';
+        imageUrl = null;
+        content = `⚠️ No se pudo generar la imagen automáticamente (${(imgErr?.message || 'error').toString().slice(0, 140)}). Brief listo para regenerarla:\n\n${imgPrompt}`;
+        provider = 'none'; model = 'none';
+      }
     } else if (deep) {
       const r = await runWithSubAgents({ system, action: task.action, objective: project.objective || '', max: 3 });
       content = r.content; subCount = r.subCount;

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateImage } from '@/lib/ai';
 import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
+import { persistImage } from '@/lib/cactus/image-store';
 
 export const maxDuration = 60;
 
@@ -48,9 +49,12 @@ export async function POST(req: Request) {
 
   try {
     const img = await generateImage({ prompt, size: SIZE[format] || SIZE.square, quality: 'standard', style });
+    // Re-sube a Storage: la URL de OpenAI es temporal (~1h); persistir evita que el
+    // preview/entregable se rompa al rato.
+    const permanentUrl = await persistImage(img.url, { scope: 'design', slug: String(body.mode || 'design') });
     const costUsd = estimateCostUsd({ model: 'gpt-image', images: 1 });
     return NextResponse.json({
-      url: img.url,
+      url: permanentUrl,
       revisedPrompt: img.revisedPrompt,
       credits: usdToCredits(costUsd),
       costUsd,
