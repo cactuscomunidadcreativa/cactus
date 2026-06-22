@@ -101,10 +101,10 @@ export async function getActiveBrandKit(
       const { data } = await latestActiveBrand(db, userId, (q) => q);
       return data;
     }
-    if (own.data) return own.data;
-    // marca legacy sin empresa asignada → úsala (se atará al re-guardar / en el backfill)
-    const legacy = await latestActiveBrand(db, userId, (q) => q.is('company_id', null));
-    return legacy.data;
+    // SOLO la marca de la empresa activa. NO caer a marcas de otras empresas ni
+    // a legacy sin empresa: eso filtraba datos entre empresas (p. ej. ROWI en
+    // el contexto de Eduardo González). Si esta empresa no tiene marca → null.
+    return own.data || null;
   } catch {
     return null;
   }

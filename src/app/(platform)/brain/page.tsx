@@ -34,16 +34,19 @@ export default async function BrainPage() {
   if (supabase) {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { count: bc } = await supabase.from('cactus_brand_kits').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+      // Empresa activa PRIMERO: todo el conocimiento se filtra por ella (aislamiento).
+      activeCompanyId = await getActiveCompanyId(supabase, user.id);
+
+      const scope = (q: any): any => (activeCompanyId ? q.eq('company_id', activeCompanyId) : q);
+      const { count: bc } = await scope(supabase.from('cactus_brand_kits').select('id', { count: 'exact', head: true }).eq('user_id', user.id));
       brandCount = bc || 0;
-      const { data: ki, count: ic } = await supabase
+      const { data: ki, count: ic } = await scope(supabase
         .from('cactus_knowledge_items').select('id, title, kind, source_url, created_at', { count: 'exact' })
-        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(6);
+        .eq('user_id', user.id)).order('created_at', { ascending: false }).limit(6);
       items = ki || [];
       itemCount = ic || 0;
 
-      // Multiempresa: lista de empresas + marcas por empresa + empresa activa
-      activeCompanyId = await getActiveCompanyId(supabase, user.id);
+      // Multiempresa: lista de empresas + marcas por empresa
       const list = await listUserCompanies(supabase, user.id);
       const byCompany = new Map<string, string[]>();
       try {
