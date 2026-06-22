@@ -6,8 +6,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UploadCloud, Loader2, Check, FileText, Type, Link2 } from 'lucide-react';
-
-const TEXT_RE = /\.(txt|md|markdown|csv|tsv|json|html?|log|rtf|vtt|srt)$/i;
+import { extractText } from '@/lib/cactus/doc-extract';
 
 export function BrainDropzone() {
   const router = useRouter();
@@ -38,12 +37,26 @@ export function BrainDropzone() {
   }
 
   async function handleFiles(files: File[]) {
-    const texts = files.filter((f) => TEXT_RE.test(f.name) || f.type.startsWith('text/'));
-    const skipped = files.length - texts.length;
-    if (texts.length === 0) { setMsg({ ok: false, text: 'Por ahora subo archivos de texto (.txt, .md, .csv, .json, .html). Para PDF/Word, pega el texto.' }); return; }
-    const items = await Promise.all(texts.map(async (f) => ({ title: f.name, content: (await f.text()).slice(0, 100000), kind: 'doc' })));
-    await send(items.filter((i) => i.content.trim()));
-    if (skipped > 0) setMsg((m) => m && m.ok ? { ok: true, text: `${m.text} (${skipped} archivo(s) no-texto omitido(s))` } : m);
+    setBusy(true); setMsg(null);
+    try {
+      const items: { title: string; content: string; kind: string }[] = [];
+      const failed: string[] = [];
+      for (const f of files) {
+        if (/\.docx?$/i.test(f.name)) { failed.push(f.name); continue; } // Word aún no
+        let content = '';
+        try { content = (await extractText(f)).slice(0, 100000); } catch { /* noop */ }
+        if (content.trim()) items.push({ title: f.name, content, kind: f.type === 'application/pdf' || /\.pdf$/i.test(f.name) ? 'pdf' : 'doc' });
+        else failed.push(f.name);
+      }
+      if (items.length) await send(items);
+      else setBusy(false);
+      if (failed.length) {
+        setMsg({ ok: items.length > 0, text: `${items.length ? `Añadí ${items.length}. ` : ''}No pude leer: ${failed.join(', ')}. (Word/.docx aún no; pega el texto.)` });
+      }
+    } catch (e: any) {
+      setMsg({ ok: false, text: e?.message || 'No pude procesar el archivo.' });
+      setBusy(false);
+    }
   }
 
   function onDrop(e: React.DragEvent) {
@@ -73,8 +86,8 @@ export function BrainDropzone() {
         >
           {busy ? <Loader2 className="h-7 w-7 animate-spin text-cactus-green" /> : <UploadCloud className="h-7 w-7 text-cactus-green" />}
           <p className="text-sm font-medium">{drag ? 'Suelta el contenido aquí…' : 'Arrastra archivos o haz clic'}</p>
-          <p className="text-[11px] text-muted-foreground">.txt, .md, .csv, .json, .html — el Cerebro lo aprende</p>
-          <input ref={fileRef} type="file" multiple accept=".txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.log,.rtf,.vtt,.srt,text/*" hidden onChange={(e) => { const f = Array.from(e.target.files || []); if (fileRef.current) fileRef.current.value = ''; if (f.length) handleFiles(f); }} />
+          <p className="text-[11px] text-muted-foreground">PDF, imágenes (con OCR), Excel, .txt, .md, .csv — el Cerebro lo aprende</p>
+          <input ref={fileRef} type="file" multiple accept=".pdf,.txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.log,.rtf,.vtt,.srt,.xlsx,.xls,.ods,image/*,text/*,application/pdf" hidden onChange={(e) => { const f = Array.from(e.target.files || []); if (fileRef.current) fileRef.current.value = ''; if (f.length) handleFiles(f); }} />
         </div>
       )}
 
