@@ -25,15 +25,43 @@ export async function POST(req: Request) {
   const companyId = await getActiveCompanyId(supabase, user.id);
   let added = 0;
   for (const it of clean) {
+    // Si es una URL web sin contenido, intenta leer el texto de la página (RAG).
+    let content = it.content;
+    if (!content && it.sourceUrl && /^https?:\/\//i.test(it.sourceUrl)) {
+      content = await fetchUrlText(it.sourceUrl);
+    }
     const { data, error } = await supabase
       .from('cactus_knowledge_items')
-      .insert({ user_id: user.id, title: it.title.slice(0, 200), kind: it.kind, content: it.content || null, source_url: it.sourceUrl || null, ...(companyId ? { company_id: companyId } : {}) })
+      .insert({ user_id: user.id, title: it.title.slice(0, 200), kind: it.kind, content: content || null, source_url: it.sourceUrl || null, ...(companyId ? { company_id: companyId } : {}) })
       .select('id').single();
     if (error || !data) continue;
     added++;
-    if (companyId && it.content) {
-      try { await indexKnowledgeItem(supabase, companyId, { id: data.id, title: it.title, content: it.content, kind: it.kind }); } catch { /* indexa luego con Reindexar */ }
+    if (companyId && content) {
+      try { await indexKnowledgeItem(supabase, companyId, { id: data.id, title: it.title, content, kind: it.kind }); } catch { /* indexa luego con Reindexar */ }
     }
   }
   return NextResponse.json({ added });
+}
+
+// Lee el texto visible de una URL (best-effort, con timeout). Redes con login
+// devuelven poco; webs públicas sí dan contenido útil.
+async function fetchUrlText(url: string): Promise<string> {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 12000);
+    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 CactusBot' }, signal: ctrl.signal });
+    clearTimeout(t);
+    if (!res.ok) return '';
+    const html = await res.text();
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return text.slice(0, 20000);
+  } catch {
+    return '';
+  }
 }

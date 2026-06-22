@@ -43,10 +43,18 @@ export function BrainDropzone() {
       const failed: string[] = [];
       for (const f of files) {
         if (/\.docx?$/i.test(f.name)) { failed.push(f.name); continue; } // Word aún no
+        const isImg = f.type.startsWith('image/');
+        const isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
         let content = '';
         try { content = (await extractText(f)).slice(0, 100000); } catch { /* noop */ }
-        if (content.trim()) items.push({ title: f.name, content, kind: f.type === 'application/pdf' || /\.pdf$/i.test(f.name) ? 'pdf' : 'doc' });
-        else failed.push(f.name);
+        if (content.trim()) {
+          items.push({ title: f.name, content, kind: isPdf ? 'pdf' : isImg ? 'image' : 'doc' });
+        } else if (isImg) {
+          // Imagen sin texto (logo, foto): la catalogamos igual como referencia.
+          items.push({ title: f.name, content: `Imagen de referencia de la marca: ${f.name}`, kind: 'image' });
+        } else {
+          failed.push(f.name);
+        }
       }
       if (items.length) await send(items);
       else setBusy(false);
@@ -103,10 +111,19 @@ export function BrainDropzone() {
 
       {tab === 'url' && (
         <div className="space-y-2">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título (ej. Mi web)" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
-          <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
-          <button onClick={() => send([{ title: title.trim() || url, sourceUrl: url.trim(), kind: 'url' }])} disabled={busy || !url.trim()} className="inline-flex items-center gap-2 rounded-lg bg-cactus-green px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Guardar URL
+          <p className="text-[11px] text-muted-foreground">Pega tu web y tus redes (una por línea). Leo el texto de las webs; las redes quedan como referencia.</p>
+          <textarea value={url} onChange={(e) => setUrl(e.target.value)} rows={5}
+            placeholder={'https://www.eduardogonzalez.coach\nhttps://instagram.com/tu_usuario\nhttps://www.facebook.com/tu_pagina\nhttps://www.linkedin.com/in/tu_perfil'}
+            className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none" />
+          <button
+            onClick={() => {
+              const links = url.split(/[\n,\s]+/).map((u) => u.trim()).filter((u) => /^https?:\/\//i.test(u));
+              if (links.length) send(links.map((u) => ({ title: u.replace(/^https?:\/\/(www\.)?/i, '').slice(0, 60), sourceUrl: u, kind: 'url' })));
+              else setMsg({ ok: false, text: 'Pon al menos un enlace que empiece con http(s)://' });
+            }}
+            disabled={busy || !url.trim()}
+            className="inline-flex items-center gap-2 rounded-lg bg-cactus-green px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Guardar enlaces
           </button>
         </div>
       )}
