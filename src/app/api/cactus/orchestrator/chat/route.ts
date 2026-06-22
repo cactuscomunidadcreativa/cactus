@@ -26,7 +26,16 @@ MUY IMPORTANTE — la plataforma SÍ ejecuta y produce archivos:
 - Si un paso requiere aprobación (por costo o porque publica algo), pídele al usuario que lo
   apruebe en el panel de "Agentes activos".
 - No prometas tiempos exactos ni digas "generando ahora, dame un momento" si no se está
-  ejecutando; mejor di que el equipo ya está en ello y que verá el resultado en Entregables.`;
+  ejecutando; mejor di que el equipo ya está en ello y que verá el resultado en Entregables.
+
+SÉ RESOLUTIVA Y FLUIDA (lo más importante):
+- Cuando te piden algo, HAZLO. No interrogues. Asume valores por defecto razonables
+  (formato según el canal, estilo y paleta de la marca, tono de marca) y dilos en UNA línea.
+- Haz como MÁXIMO una pregunta, y solo si es imprescindible para no equivocarte. Si puedes
+  asumir, asume y entrega; el usuario te corrige después.
+- Evita listas largas de opciones y confirmaciones tipo "¿con cuál arrancamos?". Avanza tú.
+- Si piden una imagen/diseño, ya se generó automáticamente: NO pidas más datos, solo avisa
+  que está en Entregables y ofrece ajustarla.`;
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -106,8 +115,8 @@ export async function POST(req: Request) {
 
   // ── Pedido directo de imagen: genera AHORA y la pone en Entregables ────────
   const wantsImage =
-    /\b(imagen|im[aá]genes|ilustraci[oó]n|p[oó]ster|poster|gr[aá]fic|arte|dise[ñn]o|portada|banner|story|stories|foto)\b/i.test(message) &&
-    /\b(mu[eé]stra|mu[eé]strame|ver|dame|genera|generar|haz|hazme|crea|crear|quiero|necesito|p[oó]n|dibuja|el archivo|la imagen)\b/i.test(message);
+    /\b(imagen|im[aá]genes|ilustraci[oó]n|p[oó]ster|poster|gr[aá]fic|arte|dise[ñn]o|portada|banner|story|stories|foto|avatar|logo|mascota|personaje|flyer|mockup|dibujo|sticker)\b/i.test(message) &&
+    /\b(mu[eé]stra|mu[eé]strame|ver|dame|genera|generar|haz|hazme|crea|crear|cre[aá]me|quiero|necesito|p[oó]n|dibuja|dise[ñn]a|el archivo|la imagen)\b/i.test(message);
   if (wantsImage) {
     try {
       const { data: priors } = await supabase
