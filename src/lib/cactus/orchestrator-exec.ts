@@ -22,8 +22,11 @@ export function sensitiveReason(agentSlug: string, action: string): string {
 }
 
 export function deliverableKind(agentSlug: string): string {
-  if (['candelabro', 'sanpedro'].includes(agentSlug)) return 'video';
-  if (['garambullo', 'pereskia'].includes(agentSlug)) return 'audio';
+  // Honestidad: el orquestador NO renderiza video/música reales (eso es Fase F /
+  // los estudios dedicados). Para estos agentes entrega el GUIÓN/brief como 'doc',
+  // en vez de etiquetar 'video'/'audio' un entregable que en realidad es texto.
+  if (['candelabro', 'sanpedro'].includes(agentSlug)) return 'doc';   // guión de video
+  if (['garambullo', 'pereskia'].includes(agentSlug)) return 'doc';   // brief/letra de audio
   if (['cardon', 'lente', 'astrophytum', 'ariocarpus'].includes(agentSlug)) return 'image';
   if (agentSlug === 'pita') return 'deck';
   if (getAgent(agentSlug)?.division === 'business') return 'data';

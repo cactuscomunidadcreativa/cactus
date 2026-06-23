@@ -47,6 +47,7 @@ export async function hasRole(
 ): Promise<boolean> {
   if (isSuperAdmin(user.email)) return true;
   const role = await getRole(db, user.id, companyId);
-  if (role === null) return true;
+  // Fail-closed: sin rol/membresía NO se concede (igual que canManageCompany).
+  if (role === null) return false;
   return allowed.includes(role);
 }
