@@ -49,9 +49,13 @@ export async function POST(req: Request) {
       .from('companies').insert({ org_id: orgId, name, slug, plan_id: plan?.id || null }).select('id, name, slug').single();
     if (cErr) throw cErr;
 
-    // 4) Membresía owner
+    // 4) Membresía owner — si falla, BORRA la empresa recién creada para no
+    //    dejar una empresa huérfana (sin membresía = inaccesible y duplicada).
     const { error: mErr } = await admin.from('memberships').insert({ user_id: user.id, company_id: company.id, role: 'owner', status: 'active' });
-    if (mErr) throw mErr;
+    if (mErr) {
+      await admin.from('companies').delete().eq('id', company.id);
+      throw mErr;
+    }
 
     return NextResponse.json({ ok: true, company });
   } catch (err: any) {

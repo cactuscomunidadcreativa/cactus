@@ -431,6 +431,28 @@ BEGIN
   END LOOP;
 END $$;
 
+-- ── Dedup de empresas/organizaciones + invariante (espejo de 044) ───────────
+-- Limpia creaciones parciales/duplicadas (empresa huérfana sin membresía) y
+-- previene la recurrencia. Idempotente.
+DELETE FROM public.companies c
+ WHERE NOT EXISTS (SELECT 1 FROM public.memberships m WHERE m.company_id = c.id)
+   AND NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.primary_company_id = c.id);
+
+DELETE FROM public.organizations o
+ WHERE NOT EXISTS (SELECT 1 FROM public.companies c WHERE c.org_id = o.id);
+
+UPDATE public.companies c
+   SET slug = 'empresa-' || left(md5(c.id::text), 6)
+ WHERE c.slug IS NULL
+   AND c.id <> (
+     SELECT c2.id FROM public.companies c2
+      WHERE c2.org_id = c.org_id AND c2.slug IS NULL
+      ORDER BY c2.created_at ASC, c2.id ASC LIMIT 1
+   );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_company_default_per_org
+  ON public.companies(org_id) WHERE slug IS NULL;
+
 -- ════════════════════════════════════════════════════════════════════════════
 -- FASE A · ACCIONES 3–8 (espejo de supabase/migrations/035_phase_a_3to8.sql)
 -- on/off de agentes · consumo/cuotas · alertas · dominios/canales. Idempotente.
