@@ -38,7 +38,15 @@ export async function persistImage(
       contentType = m[1] || 'image/png';
       buffer = Buffer.from(m[2], 'base64');
     } else if (/^https?:\/\//.test(src)) {
-      const res = await fetch(src);
+      // Timeout: corta la descarga a ~25s para que no cuelgue la serverless.
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 25_000);
+      let res: Response;
+      try {
+        res = await fetch(src, { signal: ctrl.signal });
+      } finally {
+        clearTimeout(timer);
+      }
       if (!res.ok) return src;
       contentType = res.headers.get('content-type') || 'image/png';
       buffer = Buffer.from(await res.arrayBuffer());

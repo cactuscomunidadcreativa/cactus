@@ -29,19 +29,31 @@ export const openaiAdapter: AIProviderAdapter = {
       messages.push({ role: 'user', content: request.prompt });
     }
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: request.model || 'gpt-4o-mini',
-        messages,
-        max_tokens: request.maxTokens || 1024,
-        temperature: request.temperature ?? 0.7,
-      }),
-    });
+    // Timeout: corta el fetch a ~30s para que el proveedor no cuelgue la serverless.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30_000);
+    let res: Response;
+    try {
+      res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: request.model || 'gpt-4o-mini',
+          messages,
+          max_tokens: request.maxTokens || 1024,
+          temperature: request.temperature ?? 0.7,
+        }),
+        signal: ctrl.signal,
+      });
+    } catch (e) {
+      if ((e as Error)?.name === 'AbortError') throw new Error('timeout del proveedor OpenAI');
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (!res.ok) {
       const err = await res.text();

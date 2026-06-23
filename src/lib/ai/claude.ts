@@ -39,15 +39,27 @@ export const claudeAdapter: AIProviderAdapter = {
     // NOTA: los modelos Claude 4.7/4.8 (y Fable) rechazan temperature/top_p/top_k
     // con error 400. No los enviamos; el comportamiento se guía por prompt.
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify(body),
-    });
+    // Timeout: corta el fetch a ~30s para que el proveedor no cuelgue la serverless.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30_000);
+    let res: Response;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      });
+    } catch (e) {
+      if ((e as Error)?.name === 'AbortError') throw new Error('timeout del proveedor Claude (Anthropic)');
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (!res.ok) {
       const err = await res.text();

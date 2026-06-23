@@ -13,6 +13,7 @@
  */
 
 import { generateContent } from '@/lib/ai';
+import { assertSafePublicUrl } from '@/lib/cactus/safe-url';
 
 export interface ScrapedBrandData {
   name: string;
@@ -137,14 +138,29 @@ export async function scrapeBrandFromUrl(url: string): Promise<ScrapeResult> {
       url = `https://${url}`;
     }
 
+    // Anti-SSRF: valida que la URL sea pública (no localhost ni red interna)
+    // ANTES de tocarla. Si apunta adentro, lanza y caemos al catch de abajo.
+    const safe = await assertSafePublicUrl(url);
+    url = safe.toString();
+
     // Fetch the page
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; RamonaBot/1.0; +https://cactus.app)',
         'Accept': 'text/html,application/xhtml+xml',
       },
+      redirect: 'manual',
       signal: AbortSignal.timeout(10000),
     });
+
+    // Un 3xx podría redirigir a la red interna; no seguimos redirects aquí.
+    if (response.status >= 300 && response.status < 400) {
+      return {
+        success: false,
+        error: `Redirect no permitido: ${response.status}`,
+        source_url: url,
+      };
+    }
 
     if (!response.ok) {
       return {

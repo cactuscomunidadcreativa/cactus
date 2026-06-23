@@ -39,14 +39,26 @@ export const geminiAdapter: AIProviderAdapter = {
       body.systemInstruction = { parts: [{ text: request.systemPrompt }] };
     }
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }
-    );
+    // Timeout: corta el fetch a ~30s para que el proveedor no cuelgue la serverless.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30_000);
+    let res: Response;
+    try {
+      res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: ctrl.signal,
+        }
+      );
+    } catch (e) {
+      if ((e as Error)?.name === 'AbortError') throw new Error('timeout del proveedor Gemini');
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (!res.ok) {
       const err = await res.text();

@@ -40,19 +40,31 @@ export async function generateImage(
   };
   const size = SIZE_MAP[request.size || '1024x1024'] || '1024x1024';
 
-  const res = await fetch('https://api.openai.com/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-image-1',
-      prompt: request.prompt,
-      n: 1,
-      size,
-    }),
-  });
+  // Timeout: corta el fetch a ~30s para que el proveedor no cuelgue la serverless.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 30_000);
+  let res: Response;
+  try {
+    res = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-1',
+        prompt: request.prompt,
+        n: 1,
+        size,
+      }),
+      signal: ctrl.signal,
+    });
+  } catch (e) {
+    if ((e as Error)?.name === 'AbortError') throw new Error('timeout del proveedor OpenAI (imágenes)');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     const err = await res.text();
@@ -103,11 +115,23 @@ export async function editImage(opts: {
   form.append('size', size);
   form.append('image', opts.image, 'image.png');
 
-  const res = await fetch('https://api.openai.com/v1/images/edits', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}` }, // sin Content-Type: FormData pone el boundary
-    body: form,
-  });
+  // Timeout: corta el fetch a ~30s para que el proveedor no cuelgue la serverless.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 30_000);
+  let res: Response;
+  try {
+    res = await fetch('https://api.openai.com/v1/images/edits', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}` }, // sin Content-Type: FormData pone el boundary
+      body: form,
+      signal: ctrl.signal,
+    });
+  } catch (e) {
+    if ((e as Error)?.name === 'AbortError') throw new Error('timeout del proveedor OpenAI (edición de imágenes)');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Image edit API error ${res.status}: ${err}`);

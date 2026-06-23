@@ -26,6 +26,7 @@ export default async function AstrophytumAppPage() {
     if (images[agent.slug]) image = images[agent.slug];
 
     const access = await getAccessStatus(supabase, u);
+    if (!access.allowed) redirect('/packs'); // bloqueo visual: sin plan/créditos no se ve la app
     credits = access.byok ? -1 : access.credits;
 
     const { data: profile } = await supabase

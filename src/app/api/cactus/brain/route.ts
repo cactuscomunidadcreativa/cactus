@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveCompanyId } from '@/lib/cactus/companies';
 import { indexKnowledgeItem } from '@/lib/cactus/rag';
+import { safeFetchText } from '@/lib/cactus/safe-url';
 
 export const maxDuration = 60;
+export const runtime = 'nodejs'; // safeFetchText usa dns/promises (anti-SSRF)
 
 interface InItem { title?: string; content?: string; kind?: string; sourceUrl?: string }
 
@@ -47,12 +49,10 @@ export async function POST(req: Request) {
 // devuelven poco; webs públicas sí dan contenido útil.
 async function fetchUrlText(url: string): Promise<string> {
   try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 12000);
-    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 CactusBot' }, signal: ctrl.signal });
-    clearTimeout(t);
-    if (!res.ok) return '';
-    const html = await res.text();
+    // safeFetchText valida que la URL sea pública (anti-SSRF) y sigue redirects
+    // revalidando cada salto; si apunta a la red interna lanza y caemos al catch.
+    const html = await safeFetchText(url, { timeoutMs: 12000 });
+    if (!html) return '';
     const text = html
       .replace(/<script[\s\S]*?<\/script>/gi, ' ')
       .replace(/<style[\s\S]*?<\/style>/gi, ' ')

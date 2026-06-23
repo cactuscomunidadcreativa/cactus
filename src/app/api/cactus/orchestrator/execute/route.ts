@@ -45,8 +45,15 @@ export async function POST(req: Request) {
 
   // Verifica que el proyecto sea del usuario
   const { data: project } = await supabase
-    .from('cactus_projects').select('id, objective').eq('id', projectId).eq('user_id', user.id).maybeSingle();
+    .from('cactus_projects').select('id, objective, company_id').eq('id', projectId).eq('user_id', user.id).maybeSingle();
   if (!project) return NextResponse.json({ error: 'Proyecto no encontrado.' }, { status: 404 });
+
+  // Aislamiento multiempresa: si hay empresa activa y el proyecto pertenece a OTRA
+  // empresa, no se actúa sobre él (404, como si no existiera). Filas legacy con
+  // company_id null se permiten (comportamiento previo a multiempresa).
+  if (companyId && project.company_id && project.company_id !== companyId) {
+    return NextResponse.json({ error: 'Proyecto no encontrado.' }, { status: 404 });
+  }
 
   const brand = await getActiveBrandKit(supabase, user.id, companyId);
 

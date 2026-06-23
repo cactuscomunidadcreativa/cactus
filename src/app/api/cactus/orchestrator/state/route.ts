@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { loadOrchestratorState, type OrchestratorState } from '@/lib/cactus/orchestrator';
+import { getActiveCompanyId } from '@/lib/cactus/companies';
 
 export const maxDuration = 30;
 
@@ -17,6 +18,8 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const state = await loadOrchestratorState(supabase, user.id);
+  // Multiempresa: scope por empresa activa (null = comportamiento previo / sin desplegar).
+  const companyId = await getActiveCompanyId(supabase, user.id);
+  const state = await loadOrchestratorState(supabase, user.id, companyId);
   return NextResponse.json({ state });
 }

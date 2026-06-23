@@ -7,11 +7,13 @@ export const maxDuration = 60;
 
 // Clona una voz en ElevenLabs a partir de muestras de audio subidas por el usuario.
 export async function POST(req: Request) {
+  // Fail-closed: sin Supabase NO se atiende (el viejo `if (supabase)` dejaba
+  // pasar tráfico anónimo si faltaba una env var). Clonar no es facturable: solo
+  // exigimos sesión, sin guard de gasto.
   const supabase = await createClient();
-  if (supabase) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  if (!supabase) return NextResponse.json({ error: 'No disponible.' }, { status: 503 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const key = (await companyKey('elevenlabs')) || (await getIntegrationKey('elevenlabs'));
   if (!key) return NextResponse.json({ error: 'Clonación no disponible: conecta ElevenLabs en /empresa/conexiones.' }, { status: 400 });
 
@@ -28,9 +30,14 @@ export async function POST(req: Request) {
     out.append('description', `Voz clonada en Cactus: ${name}`);
     for (const f of files) out.append('files', f, f.name || 'sample.mp3');
 
-    const res = await fetch('https://api.elevenlabs.io/v1/voices/add', {
-      method: 'POST', headers: { 'xi-api-key': key }, body: out,
-    });
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30000);
+    let res: Response;
+    try {
+      res = await fetch('https://api.elevenlabs.io/v1/voices/add', {
+        method: 'POST', headers: { 'xi-api-key': key }, body: out, signal: ctrl.signal,
+      });
+    } finally { clearTimeout(timer); }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) return NextResponse.json({ error: data?.detail?.message || `ElevenLabs error ${res.status}` }, { status: 500 });
     return NextResponse.json({ voiceId: data.voice_id, name });

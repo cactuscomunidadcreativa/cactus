@@ -36,7 +36,12 @@ export async function POST(req: NextRequest) {
         }
       }
     } else {
-      // Mock/admin tester format (JSON)
+      // Mock/admin tester format (JSON) — sin firma. Fail-closed en producción:
+      // un POST JSON {phone,content} no se puede verificar, así que se rechaza
+      // (solo se deja para dev/test). El flujo firmado de Twilio (arriba) sigue intacto.
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
       const body = await req.json();
       phone = body.phone;
       content = body.content;

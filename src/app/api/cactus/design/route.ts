@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateImage } from '@/lib/ai';
-import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
+import { estimateCostUsd } from '@/lib/cactus/credits';
 import { persistImage } from '@/lib/cactus/image-store';
+import { guardAiAccess, chargeAiUsage } from '@/lib/cactus/ai-guard';
+import { getActiveCompanyId } from '@/lib/cactus/companies';
 
 export const maxDuration = 60;
 
@@ -18,15 +20,21 @@ const STYLE_HINT: Record<string, string> = {
 };
 
 export async function POST(req: Request) {
+  // Fail-closed: sin Supabase NO se atiende una ruta que gasta IA (generar imagen
+  // es de lo más caro). Antes el `if (supabase)` dejaba pasar tráfico anónimo.
   const supabase = await createClient();
-  if (supabase) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  if (!supabase) return NextResponse.json({ error: 'No disponible.' }, { status: 503 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const companyId = await getActiveCompanyId(supabase, user.id);
 
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Bad request' }, { status: 400 }); }
   if (!body?.brief) return NextResponse.json({ error: 'Describe la pieza a diseñar.' }, { status: 400 });
+
+  // Gate de acceso + cuota mensual ANTES de generar (cierra la fuga de IA gratis).
+  const guard = await guardAiAccess(supabase, user, companyId);
+  if (!guard.ok) return guard.response;
 
   const format = body.format || 'square';
   const style = body.style === 'natural' ? 'natural' : 'vivid';
@@ -53,10 +61,16 @@ export async function POST(req: Request) {
     // preview/entregable se rompa al rato.
     const permanentUrl = await persistImage(img.url, { scope: 'design', slug: String(body.mode || 'design') });
     const costUsd = estimateCostUsd({ model: 'gpt-image', images: 1 });
+    // Registra consumo + descuenta créditos (antes esto no se cobraba nunca).
+    const credits = await chargeAiUsage(supabase, {
+      access: guard.access, companyId, userId: user.id, agentSlug: 'cardon',
+      provider: 'gpt-image', model: 'gpt-image', kind: 'agent_run',
+      tokensIn: 0, tokensOut: 0, costUsd,
+    });
     return NextResponse.json({
       url: permanentUrl,
       revisedPrompt: img.revisedPrompt,
-      credits: usdToCredits(costUsd),
+      credits,
       costUsd,
     });
   } catch (err: any) {

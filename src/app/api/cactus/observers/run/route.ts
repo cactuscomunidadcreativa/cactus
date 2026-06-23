@@ -8,9 +8,11 @@ export const maxDuration = 60;
 // Disparado por Vercel Cron (ver vercel.json). Vercel agrega
 // "Authorization: Bearer <CRON_SECRET>" automáticamente si CRON_SECRET está set.
 export async function GET(req: Request) {
+  // Fail-closed: si NO hay CRON_SECRET configurado o el header no coincide → 401.
+  // (Antes, sin CRON_SECRET el guard se saltaba y la ruta quedaba abierta.)
   const secret = process.env.CRON_SECRET;
   const auth = req.headers.get('authorization') || '';
-  if (secret && auth !== `Bearer ${secret}`) {
+  if (!secret || auth !== `Bearer ${secret}`) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 

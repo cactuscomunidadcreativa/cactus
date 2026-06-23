@@ -13,11 +13,15 @@ export async function embed(text: string): Promise<number[] | null> {
   if (!clean) return null;
   const key = await getAPIKey('openai');
   if (!key) return null;
+  // Timeout: corta el fetch a ~20s para que el proveedor no cuelgue la serverless.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20_000);
   try {
     const res = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: EMBED_MODEL, input: clean.slice(0, 8000) }),
+      signal: ctrl.signal,
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -25,6 +29,8 @@ export async function embed(text: string): Promise<number[] | null> {
     return Array.isArray(v) ? v : null;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -33,11 +39,15 @@ export async function embedBatch(texts: string[]): Promise<(number[] | null)[]> 
   const clean = texts.map((t) => (t || '').trim());
   const key = await getAPIKey('openai');
   if (!key || !clean.some(Boolean)) return texts.map(() => null);
+  // Timeout: corta el fetch a ~20s para que el proveedor no cuelgue la serverless.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20_000);
   try {
     const res = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: EMBED_MODEL, input: clean.map((t) => t.slice(0, 8000) || ' ') }),
+      signal: ctrl.signal,
     });
     if (!res.ok) return texts.map(() => null);
     const data = await res.json();
@@ -48,6 +58,8 @@ export async function embedBatch(texts: string[]): Promise<(number[] | null)[]> 
     return out;
   } catch {
     return texts.map(() => null);
+  } finally {
+    clearTimeout(timer);
   }
 }
 

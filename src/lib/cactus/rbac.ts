@@ -32,7 +32,9 @@ export async function canManageCompany(
 ): Promise<boolean> {
   if (isSuperAdmin(user.email)) return true;
   const role = await getRole(db, user.id, companyId);
-  if (role === null) return true; // pre-deploy / sin membresía → no bloquear (degrada)
+  // Fail-closed: sin rol/membresía NO se administra (antes degradaba a permitir,
+  // dejando que cualquiera gestionara una empresa si faltaba la fila de membership).
+  if (role === null) return false;
   return MANAGER_ROLES.includes(role);
 }
 
