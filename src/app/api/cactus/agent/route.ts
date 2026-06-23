@@ -3,27 +3,26 @@ import { createClient } from '@/lib/supabase/server';
 import { generateChat } from '@/lib/ai';
 import { buildAgentSystemPrompt } from '@/lib/cactus/agent-prompts';
 import { buildBrandContext } from '@/lib/cactus/brain';
-import { estimateCostUsd, usdToCredits } from '@/lib/cactus/credits';
+import { estimateCostUsd } from '@/lib/cactus/credits';
 import { getAgent } from '@/lib/cactus/agents-catalog';
 import { getActiveCompanyId, getActiveBrandKit } from '@/lib/cactus/companies';
 import { getBudgetTier } from '@/lib/cactus/budget-server';
 import { subAgentDirective } from '@/lib/cactus/sub-agents';
 import { getAutomationDirectives } from '@/lib/cactus/automations-server';
 import { retrieveViaRamona } from '@/lib/cactus/ramona-context';
+import { guardAiAccess, chargeAiUsage } from '@/lib/cactus/ai-guard';
 import type { AIChatMessage } from '@/lib/ai';
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
+  // Fail-closed: sin Supabase NO se atiende (antes el bloque `if (supabase)`
+  // dejaba pasar tráfico anónimo a una ruta que gasta IA si faltaba una env var).
   const supabase = await createClient();
-  let brand = null;
-  let companyId: string | null = null;
-  if (supabase) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    companyId = await getActiveCompanyId(supabase, user.id);
-    brand = await getActiveBrandKit(supabase, user.id, companyId);
-  }
+  if (!supabase) return NextResponse.json({ error: 'No disponible.' }, { status: 503 });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const companyId = await getActiveCompanyId(supabase, user.id);
 
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Bad request' }, { status: 400 }); }
@@ -31,13 +30,19 @@ export async function POST(req: Request) {
   if (!slug || !getAgent(slug)) return NextResponse.json({ error: 'Agente desconocido' }, { status: 400 });
   if (!Array.isArray(messages) || messages.length === 0) return NextResponse.json({ error: 'Faltan mensajes' }, { status: 400 });
 
+  // Gate de acceso + cuota mensual ANTES de gastar IA (cierra la fuga de IA gratis).
+  const guard = await guardAiAccess(supabase, user, companyId);
+  if (!guard.ok) return guard.response;
+
+  const brand = await getActiveBrandKit(supabase, user.id, companyId);
+
   // Tokens de salida: 2000 por defecto; configurable hasta 4000 (p. ej. contenido largo de Pitaya).
   const tokenCap = Math.min(4000, Math.max(256, Number(maxTokens) || 2000));
 
   // Profundidad del Cerebro vía Ramona (Cerebro paso 2): recupera contexto
   // profundo y validado para la última consulta del usuario. Fail-safe -> ''.
   const lastUser = [...(messages as AIChatMessage[])].reverse().find((m) => m.role === 'user')?.content || '';
-  const ragContext = supabase ? await retrieveViaRamona(supabase, { companyId, agentSlug: slug, query: lastUser }) : '';
+  const ragContext = await retrieveViaRamona(supabase, { companyId, agentSlug: slug, query: lastUser });
 
   // Sub-agente especializado (Bloque 6) + automatizaciones activas (Bloque 7):
   // ambos reorientan el system prompt del agente.
@@ -58,7 +63,13 @@ export async function POST(req: Request) {
       model: res.provider === 'claude' ? 'claude' : res.provider === 'gemini' ? 'gemini' : 'gpt',
       inputTokens: res.inputTokens, outputTokens: res.outputTokens,
     });
-    return NextResponse.json({ content: res.content, credits: usdToCredits(costUsd), costUsd, model: res.model });
+    // Registra consumo + descuenta créditos (antes esto no se cobraba nunca).
+    const credits = await chargeAiUsage(supabase, {
+      access: guard.access, companyId, userId: user.id, agentSlug: slug,
+      provider: res.provider, model: res.model, kind: 'agent_run',
+      tokensIn: res.inputTokens, tokensOut: res.outputTokens, costUsd,
+    });
+    return NextResponse.json({ content: res.content, credits, costUsd, model: res.model });
   } catch (err: any) {
     console.error('[cactus/agent] error:', slug, err?.message || err);
     const raw = String(err?.message || '');
