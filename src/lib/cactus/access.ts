@@ -35,14 +35,17 @@ export async function getAccessStatus(
   // Wallet de créditos
   const { data: wallet } = await db
     .from('cactus_credit_wallets')
-    .select('balance, byok')
+    .select('balance')
     .eq('user_id', user.id)
     .maybeSingle();
-  const byok = !!wallet?.byok;
-  const credits = byok ? -1 : (wallet?.balance ?? 0);
+  // BYOK ELIMINADO (decisión de negocio): la plataforma provee y COBRA la IA;
+  // "olvidemos que cada quien trae sus APIs". El super-admin ya retornó arriba
+  // con acceso ilimitado; el resto paga por suscripción o créditos. Se ignora
+  // a propósito cualquier flag wallet.byok heredado.
+  const credits = wallet?.balance ?? 0;
 
-  const allowed = hasSubscription || byok || credits > 0;
-  return { allowed, hasSubscription, credits, byok, reason: allowed ? 'ok' : 'no_plan' };
+  const allowed = hasSubscription || credits > 0;
+  return { allowed, hasSubscription, credits, byok: false, reason: allowed ? 'ok' : 'no_plan' };
 }
 
 /** Mensaje de Ramona cuando no hay plan activo. */
